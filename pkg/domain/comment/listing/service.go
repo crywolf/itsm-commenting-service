@@ -1,6 +1,6 @@
 package listing
 
-import "github.com/KompiTech/commenting-service/pkg/domain/comment"
+import "github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 
 // Repository provides access to the comment storage.
 type Repository interface {

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/KompiTech/commenting-service/pkg/domain/comment"
-	"github.com/KompiTech/commenting-service/pkg/repository"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 )

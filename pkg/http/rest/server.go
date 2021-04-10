@@ -3,8 +3,8 @@ package rest
 import (
 	"net/http"
 
-	"github.com/KompiTech/commenting-service/pkg/domain/comment/adding"
-	"github.com/KompiTech/commenting-service/pkg/domain/comment/listing"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 )

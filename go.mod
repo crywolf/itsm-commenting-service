@@ -1,4 +1,4 @@
-module github.com/KompiTech/commenting-service
+module github.com/KompiTech/itsm-commenting-service
 
 go 1.14
 

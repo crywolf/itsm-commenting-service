@@ -1,6 +1,6 @@
 package adding
 
-import "github.com/KompiTech/commenting-service/pkg/domain/comment"
+import "github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 
 // Service provides beer adding operations
 type Service interface {

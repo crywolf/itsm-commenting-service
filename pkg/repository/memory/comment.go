@@ -1,7 +1,7 @@
 package memory
 
 import (
-	"github.com/KompiTech/commenting-service/pkg/domain/entity"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
 )
 
 // Comment object

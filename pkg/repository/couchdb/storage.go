@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/KompiTech/commenting-service/pkg/domain/comment"
-	"github.com/KompiTech/commenting-service/pkg/repository"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"go.uber.org/zap"
 
 	_ "github.com/go-kivik/couchdb" // The CouchDB driver

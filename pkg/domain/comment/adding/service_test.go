@@ -3,10 +3,10 @@ package adding_test
 import (
 	"testing"
 
-	"github.com/KompiTech/commenting-service/pkg/domain/comment"
-	"github.com/KompiTech/commenting-service/pkg/domain/comment/adding"
-	"github.com/KompiTech/commenting-service/pkg/domain/entity"
-	"github.com/KompiTech/commenting-service/pkg/repository/memory"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
+	"github.com/KompiTech/itsm-commenting-service/pkg/repository/memory"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

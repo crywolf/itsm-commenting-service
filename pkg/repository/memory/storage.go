@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/KompiTech/commenting-service/pkg/domain/comment"
-	"github.com/KompiTech/commenting-service/pkg/repository"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 )
 
 // Storage storage keeps data in memory

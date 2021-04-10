@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/KompiTech/commenting-service/pkg/domain/comment/adding"
-	"github.com/KompiTech/commenting-service/pkg/domain/comment/listing"
-	"github.com/KompiTech/commenting-service/pkg/http/rest"
-	"github.com/KompiTech/commenting-service/pkg/repository/couchdb"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
+	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"go.uber.org/zap"
 )
 
