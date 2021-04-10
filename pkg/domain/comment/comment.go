@@ -6,7 +6,7 @@ import "github.com/KompiTech/commenting-service/pkg/domain/entity"
 type Comment struct {
 	UUID       string        `json:"uuid,omitempty"`
 	Entity     entity.Entity `json:"entity"`
-	Text       string        `json:"text"`
+	Text       string        `json:"text,omitempty"`
 	ExternalID string        `json:"external_id,omitempty"`
 	// ReadBy
 	CreatedAt string `json:"created_at,omitempty"`

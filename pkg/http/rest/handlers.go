@@ -22,6 +22,7 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 		var newComment comment.Comment
 		err := decoder.Decode(&newComment)
 		if err != nil {
+			s.logger.Error("could not decode JSON from request", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -36,7 +37,8 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 				return
 			}
 
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			msg := fmt.Sprintf("comment could not be created: %s", err.Error())
+			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
 
@@ -69,6 +71,7 @@ func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ htt
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(asset)
 		if err != nil {
+			s.logger.Error("could not encode JSON response", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

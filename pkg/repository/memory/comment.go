@@ -7,7 +7,7 @@ import (
 // Comment object
 type Comment struct {
 	ID         string
-	Entity     entity.Entity `json:"entity"`
+	Entity     entity.Entity
 	Text       string
 	ExternalID string
 	// ReadBy
