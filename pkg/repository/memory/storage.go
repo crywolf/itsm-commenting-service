@@ -16,7 +16,7 @@ type Storage struct {
 
 // AddComment saves the given asset to the repository and returns it's ID
 func (m *Storage) AddComment(c comment.Comment) (string, error) {
-	id, err := repository.GenerateID()
+	id, err := repository.GenerateUUID()
 	if err != nil {
 		log.Fatal(err)
 	}

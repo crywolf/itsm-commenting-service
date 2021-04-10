@@ -87,7 +87,7 @@ func (s *DBStorage) AddComment(c comment.Comment) (string, error) {
 
 	db := s.client.DB(ctx, dbName)
 
-	uuid, err := repository.GenerateID()
+	uuid, err := repository.GenerateUUID()
 	if err != nil {
 		return "", err
 	}
