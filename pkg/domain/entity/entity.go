@@ -12,7 +12,7 @@ type Entity struct {
 	uuid   string
 }
 
-// NewEntity return Entity type referencing some <entity> with <uuid>
+// NewEntity returns Entity type referencing some <entity> with <uuid>
 func NewEntity(entity, uuid string) Entity {
 	return Entity{
 		entity: entity,
@@ -34,7 +34,7 @@ func (e Entity) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e.String())
 }
 
-// UnmarshalJSON sets *Entity to a copy of data
+// UnmarshalJSON sets *Entity values from JSON data
 func (e *Entity) UnmarshalJSON(data []byte) error {
 	var s string
 	err := json.Unmarshal(data, &s)

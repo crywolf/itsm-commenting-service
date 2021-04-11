@@ -8,8 +8,8 @@ type Error struct {
 	httpStatus int
 }
 
-// New returns an error with the supplied message and HTTP status code
-func New(message string, httpStatus int) error {
+// NewError returns an error with the supplied message and HTTP status code
+func NewError(message string, httpStatus int) error {
 	return &Error{
 		message:    message,
 		httpStatus: httpStatus,

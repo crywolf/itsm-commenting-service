@@ -112,7 +112,7 @@ func (s *DBStorage) AddComment(c comment.Comment) (string, error) {
 			}
 
 			msg := fmt.Sprintf("Comment could not be added: %s", reason)
-			return "", repository.New(msg, httpError.StatusCode())
+			return "", ErrorConflict(msg)
 		}
 
 		return "", err
@@ -145,7 +145,7 @@ func (s *DBStorage) GetComment(id string) (comment.Comment, error) {
 			}
 
 			msg := fmt.Sprintf("Comment could not be retrieved: %s", reason)
-			return c, repository.New(msg, httpError.StatusCode())
+			return c, ErrorNorFound(msg)
 		}
 
 		return c, err
