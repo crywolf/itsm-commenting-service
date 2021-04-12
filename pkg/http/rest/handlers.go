@@ -22,27 +22,28 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 		var newComment comment.Comment
 		err := decoder.Decode(&newComment)
 		if err != nil {
-			s.logger.Error("could not decode JSON from request", zap.Error(err))
+			s.logger.Warn("could not decode JSON from request", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		id, err := s.adder.AddComment(newComment)
 		if err != nil {
-			s.logger.Error("AddComment handler failed", zap.Error(err))
-
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
+				s.logger.Warn("AddComment handler failed", zap.Error(err))
 				http.Error(w, err.Error(), httpError.StatusCode())
 				return
 			}
 
+			s.logger.Error("AddComment handler failed", zap.Error(err))
 			msg := fmt.Sprintf("comment could not be created: %s", err.Error())
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
 
-		assetURI := fmt.Sprintf("%s/comments/%s", s.Addr, id)
+		URIschema := "http://"
+		assetURI := fmt.Sprintf("%s%s/comments/%s", URIschema, s.Addr, id)
 
 		w.Header().Set("Location", assetURI)
 		w.WriteHeader(http.StatusCreated)
@@ -58,12 +59,14 @@ func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ htt
 
 		asset, err := s.lister.GetComment(id)
 		if err != nil {
+			s.logger.Warn("GetComment handler failed", zap.Error(err))
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
 				http.Error(w, err.Error(), httpError.StatusCode())
 				return
 			}
 
+			s.logger.Error("GetComment handler failed", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

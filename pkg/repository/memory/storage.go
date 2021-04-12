@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"io"
 	"log"
 	"time"
 
@@ -8,15 +9,21 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 )
 
+type Clock interface {
+	Now() time.Time
+}
+
 // Storage storage keeps data in memory
 type Storage struct {
+	Rand     io.Reader
+	Clock    Clock
 	comments []Comment
 	//	worknotes []Comment
 }
 
 // AddComment saves the given asset to the repository and returns it's ID
 func (m *Storage) AddComment(c comment.Comment) (string, error) {
-	id, err := repository.GenerateUUID()
+	id, err := repository.GenerateUUID(m.Rand)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,7 +32,7 @@ func (m *Storage) AddComment(c comment.Comment) (string, error) {
 		ID:        id,
 		Entity:    c.Entity,
 		Text:      c.Text,
-		CreatedAt: time.Now().Format(time.RFC3339),
+		CreatedAt: m.Clock.Now().Format(time.RFC3339),
 	}
 	m.comments = append(m.comments, newC)
 

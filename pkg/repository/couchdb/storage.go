@@ -45,32 +45,32 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 		fmt.Sprintf("http://%s:%s@%s:%s/", cfg.Username, cfg.Passwd, cfg.Host, cfg.Port),
 	)
 	if err != nil {
-		panic(err)
+		logger.Fatal("couchdb client initialization failed", zap.Error(err))
 	}
 
 	ctx := context.TODO()
 
 	commExists, err := client.DBExists(ctx, dbComments)
 	if err != nil {
-		panic(err)
+		logger.Fatal("couchdb connection failed", zap.Error(err))
 	}
 
 	if !commExists {
 		err := client.CreateDB(ctx, dbComments)
 		if err != nil {
-			panic(err)
+			logger.Fatal("couchdb database creation failed", zap.Error(err))
 		}
 	}
 
 	wnExists, err := client.DBExists(ctx, dbWorknotes)
 	if err != nil {
-		panic(err)
+		logger.Fatal("couchdb connection failed", zap.Error(err))
 	}
 
 	if !wnExists {
 		err := client.CreateDB(ctx, dbWorknotes)
 		if err != nil {
-			panic(err)
+			logger.Fatal("couchdb database creation failed", zap.Error(err))
 		}
 	}
 
@@ -87,7 +87,7 @@ func (s *DBStorage) AddComment(c comment.Comment) (string, error) {
 
 	db := s.client.DB(ctx, dbName)
 
-	uuid, err := repository.GenerateUUID()
+	uuid, err := repository.GenerateUUID(nil)
 	if err != nil {
 		return "", err
 	}
@@ -101,7 +101,7 @@ func (s *DBStorage) AddComment(c comment.Comment) (string, error) {
 
 	rev, err := db.Put(ctx, uuid, newC)
 	if err != nil {
-		s.logger.Error("CouchDB PUT failed", zap.Error(err))
+		s.logger.Warn("CouchDB PUT failed", zap.Error(err))
 
 		var httpError *chttp.HTTPError
 		if errors.As(err, &httpError) {
@@ -134,7 +134,7 @@ func (s *DBStorage) GetComment(id string) (comment.Comment, error) {
 	row := db.Get(ctx, id)
 	err := row.ScanDoc(&c)
 	if err != nil {
-		s.logger.Error("CouchDB GET failed", zap.Error(err))
+		s.logger.Warn("CouchDB GET failed", zap.Error(err))
 
 		var httpError *chttp.HTTPError
 		if errors.As(err, &httpError) {

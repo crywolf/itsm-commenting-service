@@ -7,6 +7,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/memory"
+	"github.com/KompiTech/itsm-commenting-service/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -22,7 +23,11 @@ func TestAddComment(t *testing.T) {
 		Entity: entity.NewEntity("incident", "7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"),
 	}
 
-	mockStorage := new(memory.Storage)
+	clock := testutils.FixedClock{}
+	mockStorage := &memory.Storage{
+		Clock: clock,
+	}
+
 	s := adding.NewService(mockStorage)
 
 	_, err := s.AddComment(c1)
@@ -46,7 +51,11 @@ func TestGetComment(t *testing.T) {
 		Entity: entity.NewEntity("incident", "7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"),
 	}
 
-	mockStorage := new(memory.Storage)
+	clock := testutils.FixedClock{}
+	mockStorage := &memory.Storage{
+		Clock: clock,
+	}
+
 	s := adding.NewService(mockStorage)
 
 	id1, err := s.AddComment(c1)
@@ -59,9 +68,11 @@ func TestGetComment(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, c1.Text, com1.Text)
 	assert.Equal(t, c1.Entity, com1.Entity)
+	assert.Equal(t, clock.NowFormatted(), com1.CreatedAt)
 
 	com2, err := mockStorage.GetComment(id2)
 	require.NoError(t, err)
 	assert.Equal(t, c2.Text, com2.Text)
 	assert.Equal(t, c2.Entity, com2.Entity)
+	assert.Equal(t, clock.NowFormatted(), com2.CreatedAt)
 }
