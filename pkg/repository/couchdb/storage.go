@@ -11,9 +11,9 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"go.uber.org/zap"
 
-	_ "github.com/go-kivik/couchdb" // The CouchDB driver
-	"github.com/go-kivik/couchdb/chttp"
-	"github.com/go-kivik/kivik"
+	_ "github.com/go-kivik/couchdb/v3" // The CouchDB driver
+	"github.com/go-kivik/couchdb/v3/chttp"
+	"github.com/go-kivik/kivik/v3"
 )
 
 const (
