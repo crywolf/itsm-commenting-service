@@ -16,86 +16,15 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/testutils"
 	"github.com/go-kivik/kivikmock/v3"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-type AddingMock struct {
-	mock.Mock
-}
-
-func (o *AddingMock) AddComment(c comment.Comment) (string, error) {
-	args := o.Called(c)
-	return args.String(0), args.Error(1)
-}
-
-func TestAddComment(t *testing.T) {
-	logger := testutils.NewTestLogger()
-	defer func() { _ = logger.Sync() }()
-
-	adder := new(AddingMock)
-	adder.On("AddComment", mock.AnythingOfType("comment.Comment")).
-		Return("38316161-3035-4864-ad30-6231392d3433", nil)
-
-	server := NewServer(Config{
-		Addr:          "service.url",
-		Logger:        logger,
-		AddingService: adder,
-	})
-
-	payload := []byte(`{
-		"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
-		"text": "test with entity 1"
-	}`)
-
-	body := bytes.NewReader(payload)
-	req := httptest.NewRequest("POST", "/comments", body)
-
-	w := httptest.NewRecorder()
-	server.ServeHTTP(w, req)
-	resp := w.Result()
-
-	//adder.AssertExpectations(t)
-	assert.Equal(t, http.StatusCreated, resp.StatusCode, "Status code")
-	expectedLocation := "http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"
-	assert.Equal(t, expectedLocation, resp.Header.Get("Location"), "Location header")
-}
-
-type AdderStub struct{}
-
-func (a AdderStub) AddComment(_ comment.Comment) (id string, err error) {
-	id = "38316161-3035-4864-ad30-6231392d3433"
-	return id, err
-}
-
-func TestAddCommentAdderStub(t *testing.T) {
-	logger := testutils.NewTestLogger()
-	defer func() { _ = logger.Sync() }()
-
-	adder := &AdderStub{}
-
-	server := NewServer(Config{
-		Addr:          "service.url",
-		Logger:        logger,
-		AddingService: adder,
-	})
-
-	payload := []byte(`{
-		"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
-		"text": "test with entity 1"
-	}`)
-
-	body := bytes.NewReader(payload)
-	req := httptest.NewRequest("POST", "/comments", body)
-
-	w := httptest.NewRecorder()
-	server.ServeHTTP(w, req)
-	resp := w.Result()
-
-	assert.Equal(t, http.StatusCreated, resp.StatusCode, "Status code")
-	expectedLocation := "http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"
-	assert.Equal(t, expectedLocation, resp.Header.Get("Location"), "Location header")
-}
+/*
+  Some other tests that are not much important.
+  Everything is tested in files with tests for specific handlers.
+  This was just the first stage without service mocking, just to test the idea :)
+  This file can be safely removed.
+*/
 
 func TestAddCommentDBMock(t *testing.T) {
 	logger := testutils.NewTestLogger()
@@ -197,6 +126,46 @@ func TestGetCommentDBMock(t *testing.T) {
 	}`
 	require.JSONEqf(t, expectedJSON, string(b), "response does not match")
 }
+
+//////////////////////////////
+
+type AdderStub struct{}
+
+func (a AdderStub) AddComment(_ comment.Comment) (id string, err error) {
+	id = "38316161-3035-4864-ad30-6231392d3433"
+	return id, err
+}
+
+func TestAddCommentAdderStub(t *testing.T) {
+	logger := testutils.NewTestLogger()
+	defer func() { _ = logger.Sync() }()
+
+	adder := &AdderStub{}
+
+	server := NewServer(Config{
+		Addr:          "service.url",
+		Logger:        logger,
+		AddingService: adder,
+	})
+
+	payload := []byte(`{
+		"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
+		"text": "test with entity 1"
+	}`)
+
+	body := bytes.NewReader(payload)
+	req := httptest.NewRequest("POST", "/comments", body)
+
+	w := httptest.NewRecorder()
+	server.ServeHTTP(w, req)
+	resp := w.Result()
+
+	assert.Equal(t, http.StatusCreated, resp.StatusCode, "Status code")
+	expectedLocation := "http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"
+	assert.Equal(t, expectedLocation, resp.Header.Get("Location"), "Location header")
+}
+
+/////////////////////////
 
 func TestAddCommentMemoryStorage(t *testing.T) {
 	logger := testutils.NewTestLogger()

@@ -39,5 +39,6 @@ func main() {
 		ListingService: lister,
 	})
 
+	logger.Info("starting server...")
 	logger.Fatal("server start failed", zap.Error(http.ListenAndServe(server.Addr, server)))
 }

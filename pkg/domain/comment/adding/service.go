@@ -13,13 +13,13 @@ type Repository interface {
 	AddComment(comment.Comment) (id string, err error)
 }
 
-type service struct {
-	r Repository
-}
-
 // NewService creates an adding service
 func NewService(r Repository) Service {
 	return &service{r}
+}
+
+type service struct {
+	r Repository
 }
 
 // AddComment persists the given comment to storage

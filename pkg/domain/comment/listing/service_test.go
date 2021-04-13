@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetComment(t *testing.T) {
+func TestGetCommentService(t *testing.T) {
 	c1 := comment.Comment{
 		Text:   "Test 1",
 		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
