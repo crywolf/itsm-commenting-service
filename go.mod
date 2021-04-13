@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/go-kivik/couchdb/v3 v3.2.7
 	github.com/go-kivik/kivik/v3 v3.2.3
+	github.com/go-kivik/kivikmock/v3 v3.2.0
 	github.com/google/uuid v1.2.0
 	github.com/gopherjs/gopherjs v0.0.0-20210406100015-1e088ea4ee04 // indirect
 	github.com/julienschmidt/httprouter v1.3.0

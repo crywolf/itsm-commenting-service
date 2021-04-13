@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -25,12 +26,15 @@ const (
 type DBStorage struct {
 	client   *kivik.Client
 	logger   *zap.Logger
+	rand     io.Reader
 	username string
 	passwd   string
 }
 
 // Config contains values for the data source
 type Config struct {
+	Client   *kivik.Client
+	Rand     io.Reader
 	Host     string
 	Port     string
 	Username string
@@ -40,12 +44,19 @@ type Config struct {
 // NewStorage creates new couchdb storage with initialized client
 // Also creates nonexistent databases
 func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
-	client, err := kivik.New(
-		"couch",
-		fmt.Sprintf("http://%s:%s@%s:%s/", cfg.Username, cfg.Passwd, cfg.Host, cfg.Port),
-	)
-	if err != nil {
-		logger.Fatal("couchdb client initialization failed", zap.Error(err))
+	var client *kivik.Client
+	var err error
+
+	if cfg.Client == nil {
+		client, err = kivik.New(
+			"couch",
+			fmt.Sprintf("http://%s:%s@%s:%s/", cfg.Username, cfg.Passwd, cfg.Host, cfg.Port),
+		)
+		if err != nil {
+			logger.Fatal("couchdb client initialization failed", zap.Error(err))
+		}
+	} else {
+		client = cfg.Client
 	}
 
 	ctx := context.TODO()
@@ -77,6 +88,7 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 	return &DBStorage{
 		client: client,
 		logger: logger,
+		rand:   cfg.Rand,
 	}
 }
 
@@ -87,7 +99,7 @@ func (s *DBStorage) AddComment(c comment.Comment) (string, error) {
 
 	db := s.client.DB(ctx, dbName)
 
-	uuid, err := repository.GenerateUUID(nil)
+	uuid, err := repository.GenerateUUID(s.rand)
 	if err != nil {
 		return "", err
 	}

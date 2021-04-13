@@ -28,7 +28,7 @@ func TestGetComment(t *testing.T) {
 		Clock: clock,
 	}
 
-	s := listing.NewService(mockStorage)
+	lister := listing.NewService(mockStorage)
 
 	id1, err := mockStorage.AddComment(c1)
 	require.NoError(t, err)
@@ -36,19 +36,19 @@ func TestGetComment(t *testing.T) {
 	id2, err := mockStorage.AddComment(c2)
 	require.NoError(t, err)
 
-	com1, err := s.GetComment(id1)
+	com1, err := lister.GetComment(id1)
 	require.NoError(t, err)
 	assert.Equal(t, c1.Text, com1.Text)
 	assert.Equal(t, c1.Entity, com1.Entity)
 	assert.Equal(t, clock.NowFormatted(), com1.CreatedAt)
 
-	com2, err := s.GetComment(id2)
+	com2, err := lister.GetComment(id2)
 	require.NoError(t, err)
 	assert.Equal(t, c2.Text, com2.Text)
 	assert.Equal(t, c2.Entity, com2.Entity)
 	assert.Equal(t, clock.NowFormatted(), com2.CreatedAt)
 
-	com3, err := s.GetComment("NonexistentID")
+	com3, err := lister.GetComment("NonexistentID")
 	require.EqualError(t, err, "record was not found")
 	assert.Empty(t, com3)
 }
