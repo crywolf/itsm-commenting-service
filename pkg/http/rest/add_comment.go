@@ -32,13 +32,12 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
 				s.logger.Warn("AddComment handler failed", zap.Error(err))
-				http.Error(w, err.Error(), httpError.StatusCode())
+				s.JSONError(w, err.Error(), httpError.StatusCode())
 				return
 			}
 
 			s.logger.Error("AddComment handler failed", zap.Error(err))
-			msg := fmt.Sprintf("comment could not be created: %s", err.Error())
-			http.Error(w, msg, http.StatusInternalServerError)
+			s.JSONError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 

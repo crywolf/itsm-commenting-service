@@ -22,12 +22,12 @@ func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ htt
 			s.logger.Warn("GetComment handler failed", zap.Error(err))
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
-				http.Error(w, err.Error(), httpError.StatusCode())
+				s.JSONError(w, err.Error(), httpError.StatusCode())
 				return
 			}
 
 			s.logger.Error("GetComment handler failed", zap.Error(err))
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			s.JSONError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -35,7 +35,7 @@ func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ htt
 		err = json.NewEncoder(w).Encode(asset)
 		if err != nil {
 			s.logger.Error("could not encode JSON response", zap.Error(err))
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			s.JSONError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
