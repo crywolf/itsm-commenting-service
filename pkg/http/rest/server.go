@@ -54,7 +54,6 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // The error message should be plain text.
 func (s Server) JSONError(w http.ResponseWriter, error string, code int) {
 	w.Header().Set("Content-Type", "application/json")
-	//	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(code)
 	_, _ = fmt.Fprintln(w, `{"error":"`+error+`"}`)
 }

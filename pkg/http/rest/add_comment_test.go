@@ -8,28 +8,19 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-type AddingMock struct {
-	mock.Mock
-}
-
-func (a *AddingMock) AddComment(c comment.Comment) (string, error) {
-	args := a.Called(c)
-	return args.String(0), args.Error(1)
-}
-
 func TestAddCommentHandler(t *testing.T) {
 	logger := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
 	t.Run("when comment exists", func(t *testing.T) {
-		adder := new(AddingMock)
+		adder := new(mocks.AddingMock)
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment")).
 			Return("38316161-3035-4864-ad30-6231392d3433", nil)
 
@@ -57,7 +48,7 @@ func TestAddCommentHandler(t *testing.T) {
 	})
 
 	t.Run("when repository returns conflict error (ie. trying to add already stored comment)", func(t *testing.T) {
-		adder := new(AddingMock)
+		adder := new(mocks.AddingMock)
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment")).
 			Return("", couchdb.ErrorConflict("Comment already exists"))
 
@@ -80,7 +71,6 @@ func TestAddCommentHandler(t *testing.T) {
 		resp := w.Result()
 
 		defer func() { _ = resp.Body.Close() }()
-
 		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("could not read response: %v", err)
@@ -90,11 +80,11 @@ func TestAddCommentHandler(t *testing.T) {
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
 		expectedJSON := `{"error":"Comment already exists"}`
-		assert.JSONEqf(t, expectedJSON, string(b), "response does not match")
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 
 	t.Run("when repository returns some other general error", func(t *testing.T) {
-		adder := new(AddingMock)
+		adder := new(mocks.AddingMock)
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment")).
 			Return("", errors.New("some error occurred"))
 
@@ -117,7 +107,6 @@ func TestAddCommentHandler(t *testing.T) {
 		resp := w.Result()
 
 		defer func() { _ = resp.Body.Close() }()
-
 		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("could not read response: %v", err)
@@ -127,6 +116,6 @@ func TestAddCommentHandler(t *testing.T) {
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
 		expectedJSON := `{"error":"some error occurred"}`
-		assert.JSONEqf(t, expectedJSON, string(b), "response does not match")
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 }

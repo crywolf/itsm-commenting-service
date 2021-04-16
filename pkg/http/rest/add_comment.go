@@ -23,6 +23,7 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 		err := decoder.Decode(&newComment)
 		if err != nil {
 			s.logger.Warn("could not decode JSON from request", zap.Error(err))
+			// TODO test + JSON error
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

@@ -109,7 +109,6 @@ func TestGetCommentDBMock(t *testing.T) {
 	resp := w.Result()
 
 	defer func() { _ = resp.Body.Close() }()
-
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("could not read response: %v", err)
@@ -124,7 +123,7 @@ func TestGetCommentDBMock(t *testing.T) {
 		"entity":"incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444",
 		"created_at":"2021-04-01T12:34:56+02:00"
 	}`
-	require.JSONEqf(t, expectedJSON, string(b), "response does not match")
+	require.JSONEq(t, expectedJSON, string(b), "response does not match")
 }
 
 //////////////////////////////
@@ -231,7 +230,6 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 	resp := w.Result()
 
 	defer func() { _ = resp.Body.Close() }()
-
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("could not read response: %v", err)
@@ -246,5 +244,5 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 		"entity":"incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444",
 		"created_at":"2021-04-01T12:34:56+02:00"
 	}`
-	require.JSONEqf(t, expectedJSON, string(b), "response does not match")
+	require.JSONEq(t, expectedJSON, string(b), "response does not match")
 }

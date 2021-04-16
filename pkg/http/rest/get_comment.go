@@ -16,6 +16,12 @@ func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ htt
 		s.logger.Info("GetComment handler called")
 
 		id := params.ByName("id")
+		if id == "" {
+			eMsg := "malformed URL"
+			s.logger.Warn("GetComment handler failed", zap.String("error", eMsg))
+			s.JSONError(w, eMsg, http.StatusBadRequest)
+			return
+		}
 
 		asset, err := s.lister.GetComment(id)
 		if err != nil {

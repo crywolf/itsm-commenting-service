@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"go.uber.org/zap"
 
@@ -18,8 +19,12 @@ import (
 )
 
 const (
+	// database names
 	dbComments  = "comments"
 	dbWorknotes = "worknotes"
+
+	// defaultPageSize is the default couchDB value for 'limit' in 'find' query
+	defaultPageSize = 25
 )
 
 // DBStorage storage stores data in couchdb
@@ -71,6 +76,16 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 		if err != nil {
 			logger.Fatal("couchdb database creation failed", zap.Error(err))
 		}
+
+		db := client.DB(ctx, dbComments)
+
+		index := map[string]interface{}{
+			"fields": []string{"created_at"},
+		}
+		err = db.CreateIndex(ctx, "", "", index)
+		if err != nil {
+			logger.Fatal("couchdb database index creation failed", zap.Error(err))
+		}
 	}
 
 	wnExists, err := client.DBExists(ctx, dbWorknotes)
@@ -83,6 +98,16 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 		if err != nil {
 			logger.Fatal("couchdb database creation failed", zap.Error(err))
 		}
+
+		db := client.DB(ctx, dbWorknotes)
+
+		index := map[string]interface{}{
+			"fields": []string{"created_at"},
+		}
+		err = db.CreateIndex(ctx, "", "", index)
+		if err != nil {
+			logger.Fatal("couchdb database index creation failed", zap.Error(err))
+		}
 	}
 
 	return &DBStorage{
@@ -92,7 +117,7 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 	}
 }
 
-// AddComment saves the given asset to the database and returns it's ID
+// AddComment saves the given comment to the database and returns it's ID
 func (s *DBStorage) AddComment(c comment.Comment) (string, error) {
 	dbName := dbComments
 	ctx := context.TODO()
@@ -123,8 +148,8 @@ func (s *DBStorage) AddComment(c comment.Comment) (string, error) {
 				reason = "Comment already exists"
 			}
 
-			msg := fmt.Sprintf("Comment could not be added: %s", reason)
-			return "", ErrorConflict(msg)
+			eMsg := fmt.Sprintf("Comment could not be added: %s", reason)
+			return "", ErrorConflict(eMsg)
 		}
 
 		return "", err
@@ -135,7 +160,7 @@ func (s *DBStorage) AddComment(c comment.Comment) (string, error) {
 	return uuid, nil
 }
 
-// GetComment returns a comment with the specified ID
+// GetComment returns comment with the specified ID
 func (s *DBStorage) GetComment(id string) (comment.Comment, error) {
 	ctx := context.TODO()
 
@@ -156,8 +181,8 @@ func (s *DBStorage) GetComment(id string) (comment.Comment, error) {
 				reason = fmt.Sprintf("Comment with uuid='%s' does not exist", id)
 			}
 
-			msg := fmt.Sprintf("Comment could not be retrieved: %s", reason)
-			return c, ErrorNorFound(msg)
+			eMsg := fmt.Sprintf("Comment could not be retrieved: %s", reason)
+			return c, ErrorNorFound(eMsg)
 		}
 
 		return c, err
@@ -166,4 +191,61 @@ func (s *DBStorage) GetComment(id string) (comment.Comment, error) {
 	s.logger.Info(fmt.Sprintf("Comment fetched %s", c))
 
 	return c, nil
+}
+
+// QueryComments finds documents using a declarative JSON querying syntax
+func (s *DBStorage) QueryComments(query map[string]interface{}) (listing.QueryResult, error) {
+	ctx := context.TODO()
+
+	var docs []map[string]interface{}
+
+	db := s.client.DB(ctx, dbComments)
+
+	rows, err := db.Find(ctx, query)
+	if err != nil {
+		s.logger.Warn("CouchDB FIND failed", zap.Error(err))
+
+		var httpError *chttp.HTTPError
+		if errors.As(err, &httpError) {
+			if httpError.StatusCode() == http.StatusBadRequest {
+				return listing.QueryResult{}, ErrorBadRequest(httpError.Reason)
+			}
+		}
+
+		return listing.QueryResult{}, err
+	}
+
+	for rows.Next() {
+		var doc map[string]interface{}
+		err := rows.ScanDoc(&doc)
+		if err != nil {
+			return listing.QueryResult{}, err
+		}
+
+		docs = append(docs, doc)
+	}
+
+	var bookmark string
+	limit := defaultPageSize
+
+	// do not set bookmark if the length of returned results is smaller
+	// then the requested limit
+	lim, exists := query["limit"]
+	if exists {
+		fLimit, ok := lim.(float64)
+		if ok {
+			limit = int(fLimit)
+		}
+	}
+
+	if len(docs) == limit {
+		bookmark = rows.Bookmark()
+	}
+
+	result := listing.QueryResult{
+		Result:   docs,
+		Bookmark: bookmark,
+	}
+
+	return result, err
 }

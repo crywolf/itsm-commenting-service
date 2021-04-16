@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 )
 
+// Clock provides Now method to enable mocking
 type Clock interface {
 	Now() time.Time
 }
@@ -76,4 +78,9 @@ func (m *Storage) GetAllComments() []comment.Comment {
 	}
 
 	return comments
+}
+
+// QueryComments is not implemented
+func (m *Storage) QueryComments(_ map[string]interface{}) (listing.QueryResult, error) {
+	panic("not implemented")
 }
