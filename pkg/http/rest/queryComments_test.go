@@ -1,12 +1,12 @@
 package rest
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
@@ -20,6 +20,9 @@ import (
 func TestQueryCommentsHandler(t *testing.T) {
 	logger := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
+
+	// TODO add tests to test that query or JSON query in URL params are correctly parsed
+	// and the service is called with correct queries
 
 	t.Run("when some comments were found according to query", func(t *testing.T) {
 		result := []map[string]interface{}{
@@ -50,14 +53,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 			ListingService: lister,
 		})
 
-		payload := []byte(`{
-			"selector":{"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"},
-			"sort":[{"created_at":"desc"}],
-			"fields":["created_at","created_by","text","uuid","read_by"]
-		}`)
-
-		body := bytes.NewReader(payload)
-		req := httptest.NewRequest("POST", "/comments/query", body)
+		req := httptest.NewRequest("GET", "/comments?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", nil)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -114,14 +110,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 			ListingService: lister,
 		})
 
-		payload := []byte(`{
-			"selector":{"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"},
-			"sort":[{"created_at":"desc"}],
-			"fields":["created_at","created_by","text","uuid","read_by"]
-		}`)
-
-		body := bytes.NewReader(payload)
-		req := httptest.NewRequest("POST", "/comments/query", body)
+		req := httptest.NewRequest("GET", "/comments", nil)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -151,10 +140,8 @@ func TestQueryCommentsHandler(t *testing.T) {
 			ListingService: lister,
 		})
 
-		payload := []byte(`{this is not valid JSON at all}`)
-
-		body := bytes.NewReader(payload)
-		req := httptest.NewRequest("POST", "/comments/query", body)
+		query := "{thisisnotvalidJSONatall}"
+		req := httptest.NewRequest("GET", "/comments?query="+query, nil)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -169,7 +156,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Status code")
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
-		expectedJSON := `{"error":"could not decode JSON from request: invalid character 't' looking for beginning of object key string"}`
+		expectedJSON := `{"error":"could not decode JSON query from request: invalid character 't' looking for beginning of object key string"}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 
@@ -184,14 +171,13 @@ func TestQueryCommentsHandler(t *testing.T) {
 			ListingService: lister,
 		})
 
-		payload := []byte(`{
+		query := url.QueryEscape(`{
 			"selector":{"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"},
 			"sort":[{"created_at":"desc"}],
 			"fields":["created_at","created_by","text","uuid","read_by"]
 		}`)
 
-		body := bytes.NewReader(payload)
-		req := httptest.NewRequest("POST", "/comments/query", body)
+		req := httptest.NewRequest("GET", "/comments?query="+query, nil)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -221,14 +207,13 @@ func TestQueryCommentsHandler(t *testing.T) {
 			ListingService: lister,
 		})
 
-		payload := []byte(`{
+		query := url.QueryEscape(`{
 			"selector":{"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"},
 			"sort":[{"created_at":"desc"}],
 			"fields":["created_at","created_by","text","uuid","read_by"]
 		}`)
 
-		body := bytes.NewReader(payload)
-		req := httptest.NewRequest("POST", "/comments/query", body)
+		req := httptest.NewRequest("GET", "/comments?query="+query, nil)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)

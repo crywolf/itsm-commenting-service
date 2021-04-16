@@ -198,6 +198,7 @@ func (s *DBStorage) QueryComments(query map[string]interface{}) (listing.QueryRe
 	ctx := context.TODO()
 
 	var docs []map[string]interface{}
+	docs = make([]map[string]interface{}, 0)
 
 	db := s.client.DB(ctx, dbComments)
 
