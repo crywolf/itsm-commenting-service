@@ -75,9 +75,13 @@ func TestGetCommentDBMock(t *testing.T) {
 	couchMock.ExpectDB().WithName("comments").WillReturn(db)
 
 	dbDoc := comment.Comment{
-		UUID:      "38316161-3035-4864-ad30-6231392d3433",
-		Text:      "Test comment 1",
-		Entity:    entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
+		UUID:   "38316161-3035-4864-ad30-6231392d3433",
+		Text:   "Test comment 1",
+		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
+		CreatedBy: &comment.CreatedBy{
+			UUID: "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
+			Name: "Some user 1",
+		},
 		CreatedAt: "2021-04-01T12:34:56+02:00",
 	}
 
@@ -87,8 +91,8 @@ func TestGetCommentDBMock(t *testing.T) {
 	db.ExpectGet().WithDocID("38316161-3035-4864-ad30-6231392d3433").WillReturn(doc)
 
 	c1 := comment.Comment{
-		Text:   "Test comment 1",
-		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
+		//Text:   "Test comment 1",
+		//Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 	}
 
 	uuid, err := s.AddComment(c1)
@@ -121,6 +125,10 @@ func TestGetCommentDBMock(t *testing.T) {
 		"uuid":"38316161-3035-4864-ad30-6231392d3433",
 		"text":"Test comment 1",
 		"entity":"incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444",
+		"created_by":{
+			"uuid":"8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
+			"name":"Some user 1"
+		},
 		"created_at":"2021-04-01T12:34:56+02:00"
 	}`
 	require.JSONEq(t, expectedJSON, string(b), "response does not match")

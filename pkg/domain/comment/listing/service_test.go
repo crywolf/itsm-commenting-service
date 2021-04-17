@@ -16,6 +16,9 @@ func TestGetCommentService(t *testing.T) {
 	c1 := comment.Comment{
 		Text:   "Test 1",
 		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
+		CreatedBy: &comment.CreatedBy{
+			UUID: "8540d943-8ccd-4ff1-8a08-0c3aa338c58e", Name: "Some user 1",
+		},
 	}
 
 	c2 := comment.Comment{
@@ -40,12 +43,14 @@ func TestGetCommentService(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, c1.Text, com1.Text)
 	assert.Equal(t, c1.Entity, com1.Entity)
+	assert.Equal(t, c1.CreatedBy, com1.CreatedBy)
 	assert.Equal(t, clock.NowFormatted(), com1.CreatedAt)
 
 	com2, err := lister.GetComment(id2)
 	require.NoError(t, err)
 	assert.Equal(t, c2.Text, com2.Text)
 	assert.Equal(t, c2.Entity, com2.Entity)
+	assert.Nil(t, c2.CreatedBy) // createdBy was not filled in
 	assert.Equal(t, clock.NowFormatted(), com2.CreatedAt)
 
 	com3, err := lister.GetComment("NonexistentID")

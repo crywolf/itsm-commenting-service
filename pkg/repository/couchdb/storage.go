@@ -129,10 +129,17 @@ func (s *DBStorage) AddComment(c comment.Comment) (string, error) {
 		return "", err
 	}
 
+	createdBy := &CreatedBy{}
+	if c.CreatedBy != nil {
+		createdBy.UUID = c.CreatedBy.UUID
+		createdBy.Name = c.CreatedBy.Name
+	}
+
 	newC := Comment{
 		UUID:      uuid,
 		Entity:    c.Entity,
 		Text:      c.Text,
+		CreatedBy: createdBy,
 		CreatedAt: time.Now().Format(time.RFC3339),
 	}
 
@@ -188,7 +195,7 @@ func (s *DBStorage) GetComment(id string) (comment.Comment, error) {
 		return c, err
 	}
 
-	s.logger.Info(fmt.Sprintf("Comment fetched %s", c))
+	s.logger.Info(fmt.Sprintf("Comment fetched %v", c))
 
 	return c, nil
 }

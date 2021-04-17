@@ -12,5 +12,11 @@ type Comment struct {
 	ExternalID string
 	// ReadBy
 	CreatedAt string
-	//	CreatedBy   string
+	CreatedBy CreatedBy
+}
+
+// CreatedBy represents user that created this comment
+type CreatedBy struct {
+	UUID string
+	Name string
 }

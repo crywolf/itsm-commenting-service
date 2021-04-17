@@ -30,10 +30,17 @@ func (m *Storage) AddComment(c comment.Comment) (string, error) {
 		log.Fatal(err)
 	}
 
+	createdBy := CreatedBy{}
+	if c.CreatedBy != nil {
+		createdBy.UUID = c.CreatedBy.UUID
+		createdBy.Name = c.CreatedBy.Name
+	}
+
 	newC := Comment{
 		ID:        id,
 		Entity:    c.Entity,
 		Text:      c.Text,
+		CreatedBy: createdBy,
 		CreatedAt: m.Clock.Now().Format(time.RFC3339),
 	}
 	m.comments = append(m.comments, newC)
@@ -48,11 +55,22 @@ func (m *Storage) GetComment(id string) (comment.Comment, error) {
 	for i := range m.comments {
 
 		if m.comments[i].ID == id {
-			c.UUID = m.comments[i].ID
-			c.Entity = m.comments[i].Entity
-			c.Text = m.comments[i].Text
-			c.ExternalID = m.comments[i].ExternalID
-			c.CreatedAt = m.comments[i].CreatedAt
+			sc := m.comments[i]
+			c.UUID = sc.ID
+			c.Entity = sc.Entity
+			c.Text = sc.Text
+			c.ExternalID = sc.ExternalID
+			c.CreatedAt = sc.CreatedAt
+			if sc.CreatedBy.UUID != "" {
+				createdBy := &comment.CreatedBy{
+					UUID: sc.CreatedBy.UUID,
+					Name: sc.CreatedBy.Name,
+				}
+				c.CreatedBy = createdBy
+			}
+			//createdBy :=
+			//c.CreatedBy.UUID = m.comments[i].CreatedBy.UUID
+			//c.CreatedBy.Name = m.comments[i].CreatedBy.Name
 
 			return c, nil
 		}

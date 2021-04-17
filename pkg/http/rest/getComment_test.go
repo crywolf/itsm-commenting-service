@@ -22,9 +22,13 @@ func TestGetCommentHandler(t *testing.T) {
 	t.Run("when comment exists", func(t *testing.T) {
 		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
 		retC := comment.Comment{
-			Text:      "Test comment 1",
-			Entity:    entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
-			UUID:      uuid,
+			Text:   "Test comment 1",
+			Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
+			UUID:   uuid,
+			CreatedBy: &comment.CreatedBy{
+				UUID: "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
+				Name: "Some user 1",
+			},
 			CreatedAt: "2021-04-01T12:34:56+02:00",
 		}
 
@@ -58,6 +62,10 @@ func TestGetCommentHandler(t *testing.T) {
 			"uuid":"cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0",
 			"text":"Test comment 1",
 			"entity":"incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444",
+			"created_by":{
+				"uuid":"8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
+				"name":"Some user 1"
+			},
 			"created_at":"2021-04-01T12:34:56+02:00"
 		}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
