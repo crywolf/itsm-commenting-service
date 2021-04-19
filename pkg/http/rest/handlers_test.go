@@ -12,6 +12,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/memory"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
 	"github.com/go-kivik/kivikmock/v3"
@@ -40,6 +41,7 @@ func TestAddCommentDBMock(t *testing.T) {
 
 	server := NewServer(Config{
 		Addr:          "service.url",
+		UserService:   user.NewService(),
 		Logger:        logger,
 		AddingService: adder,
 	})
@@ -151,6 +153,7 @@ func TestAddCommentAdderStub(t *testing.T) {
 
 	server := NewServer(Config{
 		Addr:          "service.url",
+		UserService:   user.NewService(),
 		Logger:        logger,
 		AddingService: adder,
 	})
@@ -187,6 +190,7 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 
 	server := NewServer(Config{
 		Addr:          "service.url",
+		UserService:   user.NewService(),
 		Logger:        logger,
 		AddingService: adder,
 	})

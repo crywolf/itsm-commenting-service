@@ -6,6 +6,7 @@ import (
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 )
@@ -16,14 +17,16 @@ type Server struct {
 	router *httprouter.Router
 	logger *zap.Logger
 
-	adder  adding.Service
-	lister listing.Service
+	userService user.Service
+	adder       adding.Service
+	lister      listing.Service
 }
 
 // Config contains server configuration and dependencies
 type Config struct {
 	Addr           string
 	Logger         *zap.Logger
+	UserService    user.Service
 	AddingService  adding.Service
 	ListingService listing.Service
 }
@@ -33,11 +36,13 @@ func NewServer(cfg Config) *Server {
 	r := httprouter.New()
 
 	s := &Server{
-		Addr:   cfg.Addr,
-		router: r,
-		logger: cfg.Logger,
-		adder:  cfg.AddingService,
-		lister: cfg.ListingService}
+		Addr:        cfg.Addr,
+		router:      r,
+		logger:      cfg.Logger,
+		userService: cfg.UserService,
+		adder:       cfg.AddingService,
+		lister:      cfg.ListingService,
+	}
 	s.routes()
 
 	return s

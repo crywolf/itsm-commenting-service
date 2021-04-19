@@ -1,13 +1,16 @@
 package rest
 
-import "net/http"
+import (
+	"net/http"
+)
 
 func (s *Server) routes() {
 	router := s.router
 
 	router.GET("/comments/:id", s.GetComment())
 	router.GET("/comments", s.QueryComments())
-	router.POST("/comments", s.AddComment())
+
+	router.POST("/comments", AddUserData(s.AddComment(), s.userService))
 
 	//router.GET("/worknotes/:id", s.GetWorknote())
 	//router.POST("/worknotes", s.AddWorknote())

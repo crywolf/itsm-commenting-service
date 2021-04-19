@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
@@ -19,13 +20,14 @@ func TestAddCommentHandler(t *testing.T) {
 	logger := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
-	t.Run("when comment exists", func(t *testing.T) {
+	t.Run("when comment was not stored yet", func(t *testing.T) {
 		adder := new(mocks.AddingMock)
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment")).
 			Return("38316161-3035-4864-ad30-6231392d3433", nil)
 
 		server := NewServer(Config{
 			Addr:          "service.url",
+			UserService:   user.NewService(),
 			Logger:        logger,
 			AddingService: adder,
 		})
@@ -54,6 +56,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 		server := NewServer(Config{
 			Addr:          "service.url",
+			UserService:   user.NewService(),
 			Logger:        logger,
 			AddingService: adder,
 		})
@@ -90,6 +93,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 		server := NewServer(Config{
 			Addr:          "service.url",
+			UserService:   user.NewService(),
 			Logger:        logger,
 			AddingService: adder,
 		})

@@ -2,7 +2,7 @@ package adding
 
 import "github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 
-// Service provides beer adding operations
+// Service provides comment adding operations
 type Service interface {
 	AddComment(c comment.Comment) (id string, err error)
 }

@@ -28,6 +28,20 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 			return
 		}
 
+		user, ok := UserFromContext(r.Context())
+		if !ok {
+			eMsg := "could not get invoking user from context"
+			s.logger.Error(eMsg)
+			s.JSONError(w, eMsg, http.StatusInternalServerError)
+			return
+		}
+
+		createdBy := &comment.CreatedBy{
+			UUID: user.UUID,
+			Name: user.Name,
+		}
+		newComment.CreatedBy = createdBy
+
 		id, err := s.adder.AddComment(newComment)
 		if err != nil {
 			var httpError *repository.Error
