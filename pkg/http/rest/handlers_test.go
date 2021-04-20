@@ -13,10 +13,12 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
+	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/memory"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
 	"github.com/go-kivik/kivikmock/v3"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,11 +39,19 @@ func TestAddCommentDBMock(t *testing.T) {
 	couchMock.ExpectDB().WithName("comments").WillReturn(db)
 	db.ExpectPut()
 
+	us := new(mocks.UserServiceMock)
+	mockUserData := user.InvokingUserData{
+		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
+		Name: "Some test user 1",
+	}
+	us.On("UserData", mock.AnythingOfType("*http.Request")).
+		Return(mockUserData, nil)
+
 	adder := adding.NewService(s)
 
 	server := NewServer(Config{
 		Addr:          "service.url",
-		UserService:   user.NewService(),
+		UserService:   us,
 		Logger:        logger,
 		AddingService: adder,
 	})
@@ -151,9 +161,17 @@ func TestAddCommentAdderStub(t *testing.T) {
 
 	adder := &AdderStub{}
 
+	us := new(mocks.UserServiceMock)
+	mockUserData := user.InvokingUserData{
+		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
+		Name: "Some test user 1",
+	}
+	us.On("UserData", mock.AnythingOfType("*http.Request")).
+		Return(mockUserData, nil)
+
 	server := NewServer(Config{
 		Addr:          "service.url",
-		UserService:   user.NewService(),
+		UserService:   us,
 		Logger:        logger,
 		AddingService: adder,
 	})
@@ -188,9 +206,17 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 	}
 	adder := adding.NewService(s)
 
+	us := new(mocks.UserServiceMock)
+	mockUserData := user.InvokingUserData{
+		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
+		Name: "Some test user 1",
+	}
+	us.On("UserData", mock.AnythingOfType("*http.Request")).
+		Return(mockUserData, nil)
+
 	server := NewServer(Config{
 		Addr:          "service.url",
-		UserService:   user.NewService(),
+		UserService:   us,
 		Logger:        logger,
 		AddingService: adder,
 	})

@@ -21,8 +21,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 	logger := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
-	// TODO add tests to test that query or JSON query in URL params are correctly parsed
-	// and the service is called with correct queries
+	// TODO add tests that the service is called with correct queries
 
 	t.Run("when some comments were found according to query", func(t *testing.T) {
 		result := []map[string]interface{}{

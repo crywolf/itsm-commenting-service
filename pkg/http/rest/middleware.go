@@ -2,10 +2,12 @@ package rest
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/julienschmidt/httprouter"
+	"go.uber.org/zap"
 )
 
 type userKeyType int
@@ -13,11 +15,19 @@ type userKeyType int
 var userKey userKeyType
 
 // AddUserData is a middleware that stores info about invoking user in request context
-func AddUserData(next httprouter.Handle, us user.Service) httprouter.Handle {
+func (s Server) AddUserData(next httprouter.Handle, us user.Service) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		userData, err := us.UserData(r)
 		if err != nil {
-			// TODO - err service unavailable? + log
+			s.logger.Error("AddUserData middleware: UserData service failed:", zap.Error(err))
+			s.JSONError(w, "could not retrieve correct user info from user service", http.StatusInternalServerError)
+			return
+		}
+
+		if userData.UUID == "" {
+			s.logger.Error(fmt.Sprintf("AddUserData middleware: UserData service returned invalid data: %v", userData))
+			s.JSONError(w, "could not retrieve correct user info from user service", http.StatusInternalServerError)
+			return
 		}
 
 		ctx := context.WithValue(r.Context(), userKey, &userData)

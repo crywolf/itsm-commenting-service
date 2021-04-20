@@ -17,7 +17,7 @@ func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ htt
 
 		id := params.ByName("id")
 		if id == "" {
-			eMsg := "malformed URL"
+			eMsg := "malformed URL: missing resource ID param"
 			s.logger.Warn("GetComment handler failed", zap.String("error", eMsg))
 			s.JSONError(w, eMsg, http.StatusBadRequest)
 			return
@@ -40,8 +40,9 @@ func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ htt
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(asset)
 		if err != nil {
-			s.logger.Error("could not encode JSON response", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusInternalServerError)
+			eMsg := "could not encode JSON response"
+			s.logger.Warn(eMsg, zap.Error(err))
+			s.JSONError(w, eMsg, http.StatusInternalServerError)
 			return
 		}
 	}

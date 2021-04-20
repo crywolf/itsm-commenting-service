@@ -4,6 +4,8 @@ import (
 	"net/http"
 )
 
+// TODO move this service to rest package
+
 // Service provides basic info about user
 type Service interface {
 	UserData(r *http.Request) (InvokingUserData, error)

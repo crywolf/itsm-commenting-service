@@ -42,11 +42,14 @@ func (s *Server) QueryComments() func(w http.ResponseWriter, r *http.Request, _ 
 			}
 		}
 
+		// no query param => we create our query
 		if len(query) == 0 {
 			entity := queryValues.Get("entity")
 			if entity != "" {
+				// list all comments that belongs to one entity
 				query["selector"] = map[string]string{"entity": entity}
 			} else {
+				// list all comments
 				query["selector"] = map[string]interface{}{"_id": map[string]interface{}{"$gt": nil}}
 			}
 			limit := queryValues.Get("limit")

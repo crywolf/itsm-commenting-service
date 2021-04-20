@@ -1,8 +1,11 @@
 package mocks
 
 import (
+	"net/http"
+
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -32,4 +35,15 @@ type AddingMock struct {
 func (a *AddingMock) AddComment(c comment.Comment) (string, error) {
 	args := a.Called(c)
 	return args.String(0), args.Error(1)
+}
+
+// UserServiceMock is a mock of user service
+type UserServiceMock struct {
+	mock.Mock
+}
+
+// UserData returns info about user who initiated the request
+func (s *UserServiceMock) UserData(r *http.Request) (user.InvokingUserData, error) {
+	args := s.Called(r)
+	return args.Get(0).(user.InvokingUserData), args.Error(1)
 }

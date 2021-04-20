@@ -10,7 +10,7 @@ func (s *Server) routes() {
 	router.GET("/comments/:id", s.GetComment())
 	router.GET("/comments", s.QueryComments())
 
-	router.POST("/comments", AddUserData(s.AddComment(), s.userService))
+	router.POST("/comments", s.AddUserData(s.AddComment(), s.userService))
 
 	//router.GET("/worknotes/:id", s.GetWorknote())
 	//router.POST("/worknotes", s.AddWorknote())
