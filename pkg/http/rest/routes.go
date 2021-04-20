@@ -10,10 +10,11 @@ func (s *Server) routes() {
 	router.GET("/comments/:id", s.GetComment())
 	router.GET("/comments", s.QueryComments())
 
-	router.POST("/comments", s.AddUserData(s.AddComment(), s.userService))
+	router.POST("/comments", s.AddUserInfo(s.AddComment(), s.userService))
 
-	//router.GET("/worknotes/:id", s.GetWorknote())
-	//router.POST("/worknotes", s.AddWorknote())
+	// TODO add routes for worknotes
+	//router.GET("/worknotes/:id", s.GetComment("worknote"))
+	//router.GET("/worknotes", s.QueryComments("worknote"))
 
 	router.NotFound = http.HandlerFunc(s.JSONNotFoundError)
 }

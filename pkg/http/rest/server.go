@@ -6,7 +6,6 @@ import (
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
-	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 )
@@ -17,7 +16,7 @@ type Server struct {
 	router *httprouter.Router
 	logger *zap.Logger
 
-	userService user.Service
+	userService UserService
 	adder       adding.Service
 	lister      listing.Service
 }
@@ -26,7 +25,7 @@ type Server struct {
 type Config struct {
 	Addr           string
 	Logger         *zap.Logger
-	UserService    user.Service
+	UserService    UserService
 	AddingService  adding.Service
 	ListingService listing.Service
 }

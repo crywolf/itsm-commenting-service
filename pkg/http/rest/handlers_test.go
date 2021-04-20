@@ -40,11 +40,11 @@ func TestAddCommentDBMock(t *testing.T) {
 	db.ExpectPut()
 
 	us := new(mocks.UserServiceMock)
-	mockUserData := user.InvokingUserData{
+	mockUserData := user.BasicInfo{
 		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
 		Name: "Some test user 1",
 	}
-	us.On("UserData", mock.AnythingOfType("*http.Request")).
+	us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 		Return(mockUserData, nil)
 
 	adder := adding.NewService(s)
@@ -162,11 +162,11 @@ func TestAddCommentAdderStub(t *testing.T) {
 	adder := &AdderStub{}
 
 	us := new(mocks.UserServiceMock)
-	mockUserData := user.InvokingUserData{
+	mockUserData := user.BasicInfo{
 		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
 		Name: "Some test user 1",
 	}
-	us.On("UserData", mock.AnythingOfType("*http.Request")).
+	us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 		Return(mockUserData, nil)
 
 	server := NewServer(Config{
@@ -207,11 +207,11 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 	adder := adding.NewService(s)
 
 	us := new(mocks.UserServiceMock)
-	mockUserData := user.InvokingUserData{
+	mockUserData := user.BasicInfo{
 		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
 		Name: "Some test user 1",
 	}
-	us.On("UserData", mock.AnythingOfType("*http.Request")).
+	us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 		Return(mockUserData, nil)
 
 	server := NewServer(Config{

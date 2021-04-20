@@ -42,8 +42,8 @@ type UserServiceMock struct {
 	mock.Mock
 }
 
-// UserData returns info about user who initiated the request
-func (s *UserServiceMock) UserData(r *http.Request) (user.InvokingUserData, error) {
+// UserBasicInfo returns info about user who initiated the request
+func (s *UserServiceMock) UserBasicInfo(r *http.Request) (user.BasicInfo, error) {
 	args := s.Called(r)
-	return args.Get(0).(user.InvokingUserData), args.Error(1)
+	return args.Get(0).(user.BasicInfo), args.Error(1)
 }

@@ -14,18 +14,18 @@ type userKeyType int
 
 var userKey userKeyType
 
-// AddUserData is a middleware that stores info about invoking user in request context
-func (s Server) AddUserData(next httprouter.Handle, us user.Service) httprouter.Handle {
+// AddUserInfo is a middleware that stores info about invoking user in request context
+func (s Server) AddUserInfo(next httprouter.Handle, us UserService) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		userData, err := us.UserData(r)
+		userData, err := us.UserBasicInfo(r)
 		if err != nil {
-			s.logger.Error("AddUserData middleware: UserData service failed:", zap.Error(err))
+			s.logger.Error("AddUserInfo middleware: UserBasicInfo service failed:", zap.Error(err))
 			s.JSONError(w, "could not retrieve correct user info from user service", http.StatusInternalServerError)
 			return
 		}
 
 		if userData.UUID == "" {
-			s.logger.Error(fmt.Sprintf("AddUserData middleware: UserData service returned invalid data: %v", userData))
+			s.logger.Error(fmt.Sprintf("AddUserInfo middleware: UserBasicInfo service returned invalid data: %v", userData))
 			s.JSONError(w, "could not retrieve correct user info from user service", http.StatusInternalServerError)
 			return
 		}
@@ -36,8 +36,37 @@ func (s Server) AddUserData(next httprouter.Handle, us user.Service) httprouter.
 	}
 }
 
-// UserFromContext returns the InvokingUserData value stored in ctx, if any.
-func UserFromContext(ctx context.Context) (*user.InvokingUserData, bool) {
-	u, ok := ctx.Value(userKey).(*user.InvokingUserData)
+// UserFromContext returns the BasicInfo value stored in ctx, if any.
+func UserFromContext(ctx context.Context) (*user.BasicInfo, bool) {
+	u, ok := ctx.Value(userKey).(*user.BasicInfo)
 	return u, ok
+}
+
+// UserService provides basic info about user
+type UserService interface {
+	UserBasicInfo(r *http.Request) (user.BasicInfo, error)
+}
+
+// NewUserService creates user service
+func NewUserService() UserService {
+	return &userService{}
+}
+
+// userService calls external user service that provides basic info about user
+type userService struct {
+	//client
+}
+
+// UserBasicInfo returns basic info about user who initiated the request
+func (s userService) UserBasicInfo(r *http.Request) (user.BasicInfo, error) {
+	//authHeader := r.Header.Get("authorization")
+	//fmt.Println(authHeader)
+
+	// TODO fetch real user from some user service
+	userData := user.BasicInfo{
+		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
+		Name: "Some test user 1",
+	}
+
+	return userData, nil
 }

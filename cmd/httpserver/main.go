@@ -6,7 +6,6 @@ import (
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
-	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"go.uber.org/zap"
@@ -30,7 +29,7 @@ func main() {
 		Passwd:   "admin",
 	})
 
-	userService := user.NewService()
+	userService := rest.NewUserService()
 	adder := adding.NewService(s)
 	lister := listing.NewService(s)
 

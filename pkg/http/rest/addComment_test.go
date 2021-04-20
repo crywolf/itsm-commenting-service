@@ -20,14 +20,14 @@ func TestAddCommentHandler(t *testing.T) {
 	logger := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
-	mockUserData := user.InvokingUserData{
+	mockUserData := user.BasicInfo{
 		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
 		Name: "Some test user 1",
 	}
 
 	t.Run("when request is not valid", func(t *testing.T) {
 		us := new(mocks.UserServiceMock)
-		us.On("UserData", mock.AnythingOfType("*http.Request")).
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
 		server := NewServer(Config{
@@ -60,7 +60,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 	t.Run("when comment was not stored yet", func(t *testing.T) {
 		us := new(mocks.UserServiceMock)
-		us.On("UserData", mock.AnythingOfType("*http.Request")).
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
@@ -93,7 +93,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 	t.Run("when repository returns conflict error (ie. trying to add already stored comment)", func(t *testing.T) {
 		us := new(mocks.UserServiceMock)
-		us.On("UserData", mock.AnythingOfType("*http.Request")).
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
@@ -134,7 +134,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 	t.Run("when repository returns some other general error", func(t *testing.T) {
 		us := new(mocks.UserServiceMock)
-		us.On("UserData", mock.AnythingOfType("*http.Request")).
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
@@ -175,8 +175,8 @@ func TestAddCommentHandler(t *testing.T) {
 
 	t.Run("when user service failed to retrieve user info and put it in the request context", func(t *testing.T) {
 		us := new(mocks.UserServiceMock)
-		us.On("UserData", mock.AnythingOfType("*http.Request")).
-			Return(user.InvokingUserData{}, errors.New("some user service error"))
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
+			Return(user.BasicInfo{}, errors.New("some user service error"))
 
 		server := NewServer(Config{
 			Addr:        "service.url",
