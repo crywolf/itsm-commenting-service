@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// GetComment returns a handler for GET /comments requests
+// GetComment returns handler for GET /comments/:id requests
 func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		s.logger.Info("GetComment handler called")

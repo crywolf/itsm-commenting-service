@@ -6,6 +6,7 @@ import (
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/updating"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"go.uber.org/zap"
@@ -32,6 +33,7 @@ func main() {
 	userService := rest.NewUserService()
 	adder := adding.NewService(s)
 	lister := listing.NewService(s)
+	updater := updating.NewService(s)
 
 	server := rest.NewServer(rest.Config{
 		Addr:           bindAddress,
@@ -39,6 +41,7 @@ func main() {
 		UserService:    userService,
 		AddingService:  adder,
 		ListingService: lister,
+		UpdatingService: updater,
 	})
 
 	logger.Info("starting server...")

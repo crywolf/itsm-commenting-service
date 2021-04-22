@@ -17,7 +17,7 @@ func TestGetCommentService(t *testing.T) {
 		Text:   "Test 1",
 		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 		CreatedBy: &comment.CreatedBy{
-			UUID: "8540d943-8ccd-4ff1-8a08-0c3aa338c58e", Name: "Some user 1",
+			UUID: "8540d943-8ccd-4ff1-8a08-0c3aa338c58e", Name: "Bob", Surname: "Martin",
 		},
 	}
 

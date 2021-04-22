@@ -64,8 +64,11 @@ func (s userService) UserBasicInfo(r *http.Request) (user.BasicInfo, error) {
 
 	// TODO fetch real user from some user service
 	userData := user.BasicInfo{
-		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
-		Name: "Some test user 1",
+		UUID:           "2af4f493-0bd5-4513-b440-6cbb465feadb",
+		Name:           "Alice",
+		Surname:        "Cooper",
+		OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+		OrgDisplayName: "Kompitech",
 	}
 
 	return userData, nil

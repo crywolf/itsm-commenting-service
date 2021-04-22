@@ -10,13 +10,32 @@ type Comment struct {
 	Entity     entity.Entity
 	Text       string
 	ExternalID string
-	// ReadBy
-	CreatedAt string
-	CreatedBy CreatedBy
+	ReadBy     ReadByList
+	CreatedAt  string
+	CreatedBy  CreatedBy
 }
 
-// CreatedBy represents user that created this comment
+// ReadByList is the list of users who read this comment
+type ReadByList []ReadBy
+
+// ReadBy stores info when some user read this comment
+type ReadBy struct {
+	Time string
+	User UserInfo
+}
+
+// UserInfo represents basic info about user
+type UserInfo struct {
+	UUID           string
+	Name           string
+	Surname        string
+	OrgDisplayName string
+	OrgName        string
+}
+
+// CreatedBy represents minimalistic info user that created this comment
 type CreatedBy struct {
-	UUID string
-	Name string
+	UUID    string
+	Name    string
+	Surname string
 }

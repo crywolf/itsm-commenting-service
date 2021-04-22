@@ -26,8 +26,9 @@ func TestGetCommentHandler(t *testing.T) {
 			Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 			UUID:   uuid,
 			CreatedBy: &comment.CreatedBy{
-				UUID: "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
-				Name: "Some user 1",
+				UUID:    "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
+				Name:    "Alice",
+				Surname: "Cooper",
 			},
 			CreatedAt: "2021-04-01T12:34:56+02:00",
 		}
@@ -64,7 +65,8 @@ func TestGetCommentHandler(t *testing.T) {
 			"entity":"incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444",
 			"created_by":{
 				"uuid":"8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
-				"name":"Some user 1"
+				"name":"Alice",
+				"surname":"Cooper"
 			},
 			"created_at":"2021-04-01T12:34:56+02:00"
 		}`

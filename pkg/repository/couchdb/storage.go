@@ -257,3 +257,74 @@ func (s *DBStorage) QueryComments(query map[string]interface{}) (listing.QueryRe
 
 	return result, err
 }
+
+// MarkAsReadByUser adds user info to read_by array in the comment with specified ID.
+// It returns true if comment was already marked before to notify that resource was not changed.
+func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy) (bool, error) {
+	ctx := context.TODO()
+
+	var c comment.Comment
+
+	db := s.client.DB(ctx, dbComments)
+
+	row := db.Get(ctx, id)
+	err := row.ScanDoc(&c)
+	if err != nil {
+		s.logger.Warn("CouchDB GET failed", zap.Error(err))
+
+		var httpError *chttp.HTTPError
+		if errors.As(err, &httpError) {
+			reason := httpError.Reason
+
+			if httpError.StatusCode() == http.StatusNotFound {
+				reason = fmt.Sprintf("Comment with uuid='%s' does not exist", id)
+			}
+
+			return false, ErrorNorFound(reason)
+		}
+
+		return false, err
+	}
+
+	currentUserID := readBy.User.UUID
+
+	for _, rb := range c.ReadBy {
+		if rb.User.UUID == currentUserID {
+			// comment was already read by user in the past
+			return true, nil
+		}
+	}
+
+	c.ReadBy = append(c.ReadBy, readBy)
+
+	// updated comment with revision ID
+	var uc struct {
+		Rev string `json:"_rev"`
+		comment.Comment
+	}
+
+	uc.Comment = c
+	uc.Rev = row.Rev
+
+	_, err = db.Put(ctx, uc.UUID, uc)
+	if err != nil {
+		s.logger.Warn("CouchDB PUT failed", zap.Error(err))
+
+		var httpError *chttp.HTTPError
+		if errors.As(err, &httpError) {
+			reason := httpError.Reason
+
+			if httpError.StatusCode() == http.StatusConflict {
+				reason = "Comment could not be mark as read"
+			}
+
+			return false, ErrorConflict(reason)
+		}
+
+		return false, err
+	}
+
+	s.logger.Info(fmt.Sprintf("Comment updated %#v", c))
+
+	return false, nil
+}

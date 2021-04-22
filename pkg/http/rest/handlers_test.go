@@ -41,8 +41,9 @@ func TestAddCommentDBMock(t *testing.T) {
 
 	us := new(mocks.UserServiceMock)
 	mockUserData := user.BasicInfo{
-		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
-		Name: "Some test user 1",
+		UUID:    "2af4f493-0bd5-4513-b440-6cbb465feadb",
+		Name:    "Alice",
+		Surname: "Cooper",
 	}
 	us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 		Return(mockUserData, nil)
@@ -91,8 +92,9 @@ func TestGetCommentDBMock(t *testing.T) {
 		Text:   "Test comment 1",
 		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 		CreatedBy: &comment.CreatedBy{
-			UUID: "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
-			Name: "Some user 1",
+			UUID:    "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
+			Name:    "Bob",
+			Surname: "Martin",
 		},
 		CreatedAt: "2021-04-01T12:34:56+02:00",
 	}
@@ -139,7 +141,8 @@ func TestGetCommentDBMock(t *testing.T) {
 		"entity":"incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444",
 		"created_by":{
 			"uuid":"8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
-			"name":"Some user 1"
+			"name":"Bob",
+			"surname": "Martin"
 		},
 		"created_at":"2021-04-01T12:34:56+02:00"
 	}`

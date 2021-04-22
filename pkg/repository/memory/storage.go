@@ -34,6 +34,7 @@ func (m *Storage) AddComment(c comment.Comment) (string, error) {
 	if c.CreatedBy != nil {
 		createdBy.UUID = c.CreatedBy.UUID
 		createdBy.Name = c.CreatedBy.Name
+		createdBy.Surname = c.CreatedBy.Surname
 	}
 
 	newC := Comment{
@@ -55,22 +56,36 @@ func (m *Storage) GetComment(id string) (comment.Comment, error) {
 	for i := range m.comments {
 
 		if m.comments[i].ID == id {
-			sc := m.comments[i]
+			sc := m.comments[i] // stored comment
 			c.UUID = sc.ID
 			c.Entity = sc.Entity
 			c.Text = sc.Text
 			c.ExternalID = sc.ExternalID
+
+			if len(sc.ReadBy) > 0 {
+				for _, rb := range sc.ReadBy {
+					c.ReadBy = append(c.ReadBy, comment.ReadBy{
+						Time: rb.Time,
+						User: comment.UserInfo{
+							UUID:           rb.User.UUID,
+							Name:           rb.User.Name,
+							Surname:        rb.User.Surname,
+							OrgDisplayName: rb.User.OrgDisplayName,
+							OrgName:        rb.User.OrgName,
+						},
+					})
+				}
+			}
+
 			c.CreatedAt = sc.CreatedAt
 			if sc.CreatedBy.UUID != "" {
 				createdBy := &comment.CreatedBy{
-					UUID: sc.CreatedBy.UUID,
-					Name: sc.CreatedBy.Name,
+					UUID:    sc.CreatedBy.UUID,
+					Name:    sc.CreatedBy.Name,
+					Surname: sc.CreatedBy.Surname,
 				}
 				c.CreatedBy = createdBy
 			}
-			//createdBy :=
-			//c.CreatedBy.UUID = m.comments[i].CreatedBy.UUID
-			//c.CreatedBy.Name = m.comments[i].CreatedBy.Name
 
 			return c, nil
 		}
@@ -96,6 +111,39 @@ func (m *Storage) GetAllComments() []comment.Comment {
 	}
 
 	return comments
+}
+
+// MarkAsReadByUser adds user info to read_by array to comment with specified ID
+func (m *Storage) MarkAsReadByUser(id string, readBy comment.ReadBy) (bool, error) {
+	for i := range m.comments {
+		if m.comments[i].ID == id {
+			sc := m.comments[i] // stored comment
+			if sc.ReadBy == nil {
+				sc.ReadBy = make(ReadByList, 0)
+			}
+
+			for _, rb := range sc.ReadBy {
+				if rb.User.UUID == readBy.User.UUID {
+					return true, nil
+				}
+			}
+
+			sc.ReadBy = append(sc.ReadBy, ReadBy{
+				Time: readBy.Time,
+				User: UserInfo{
+					UUID:           readBy.User.UUID,
+					Name:           readBy.User.Name,
+					Surname:        readBy.User.Surname,
+					OrgDisplayName: readBy.User.OrgDisplayName,
+					OrgName:        readBy.User.OrgName,
+				},
+			})
+
+			m.comments[i] = sc
+		}
+	}
+
+	return false, nil
 }
 
 // QueryComments is not implemented

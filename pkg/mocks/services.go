@@ -37,6 +37,17 @@ func (a *AddingMock) AddComment(c comment.Comment) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
+// UpdatingMock is a mock of adding service
+type UpdatingMock struct {
+	mock.Mock
+}
+
+// MarkAsReadByUser adds user info to read_by array in the comment in the storage
+func (u *UpdatingMock) MarkAsReadByUser(id string, readBy comment.ReadBy) (bool, error) {
+	args := u.Called(id, readBy)
+	return args.Bool(0), args.Error(1)
+}
+
 // UserServiceMock is a mock of user service
 type UserServiceMock struct {
 	mock.Mock

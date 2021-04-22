@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// AddComment returns a handler for POST /comments requests
+// AddComment returns handler for POST /comments requests
 func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("AddComment handler called")
@@ -37,8 +37,9 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 		}
 
 		createdBy := &comment.CreatedBy{
-			UUID: user.UUID,
-			Name: user.Name,
+			UUID:    user.UUID,
+			Name:    user.Name,
+			Surname: user.Surname,
 		}
 		newComment.CreatedBy = createdBy
 

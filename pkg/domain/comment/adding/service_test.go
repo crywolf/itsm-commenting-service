@@ -17,7 +17,7 @@ func TestAddCommentService(t *testing.T) {
 		Text:   "Test 1",
 		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 		CreatedBy: &comment.CreatedBy{
-			UUID: "8540d943-8ccd-4ff1-8a08-0c3aa338c58e", Name: "Some user 1",
+			UUID: "8540d943-8ccd-4ff1-8a08-0c3aa338c58e", Name: "Bob", Surname: "Martin",
 		},
 	}
 
@@ -25,7 +25,7 @@ func TestAddCommentService(t *testing.T) {
 		Text:   "Test 2",
 		Entity: entity.NewEntity("incident", "7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"),
 		CreatedBy: &comment.CreatedBy{
-			UUID: "12a0c65d-6efc-4346-b39b-a84cc0384c28", Name: "Some user 2",
+			UUID: "12a0c65d-6efc-4346-b39b-a84cc0384c28", Name: "Alice", Surname: "Cooper",
 		},
 	}
 
