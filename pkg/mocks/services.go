@@ -15,14 +15,14 @@ type ListingMock struct {
 }
 
 // GetComment returns the comment with given ID
-func (l *ListingMock) GetComment(id string) (comment.Comment, error) {
-	args := l.Called(id)
+func (l *ListingMock) GetComment(id, channelID string) (comment.Comment, error) {
+	args := l.Called(id, channelID)
 	return args.Get(0).(comment.Comment), args.Error(1)
 }
 
 // QueryComments finds documents using a declarative JSON querying syntax
-func (l *ListingMock) QueryComments(query map[string]interface{}) (listing.QueryResult, error) {
-	args := l.Called(query)
+func (l *ListingMock) QueryComments(query map[string]interface{}, channelID string) (listing.QueryResult, error) {
+	args := l.Called(query, channelID)
 	return args.Get(0).(listing.QueryResult), args.Error(1)
 }
 
@@ -32,8 +32,8 @@ type AddingMock struct {
 }
 
 // AddComment saves a given comment to the repository
-func (a *AddingMock) AddComment(c comment.Comment) (string, error) {
-	args := a.Called(c)
+func (a *AddingMock) AddComment(c comment.Comment, channelID string) (string, error) {
+	args := a.Called(c, channelID)
 	return args.String(0), args.Error(1)
 }
 
@@ -43,8 +43,8 @@ type UpdatingMock struct {
 }
 
 // MarkAsReadByUser adds user info to read_by array in the comment in the storage
-func (u *UpdatingMock) MarkAsReadByUser(id string, readBy comment.ReadBy) (bool, error) {
-	args := u.Called(id, readBy)
+func (u *UpdatingMock) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID string) (bool, error) {
+	args := u.Called(id, readBy, channelID)
 	return args.Bool(0), args.Error(1)
 }
 

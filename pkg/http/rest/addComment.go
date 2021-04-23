@@ -28,7 +28,12 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 			return
 		}
 
-		user, ok := UserFromContext(r.Context())
+		channelID, err := s.assertChannelID(w, r)
+		if err != nil {
+			return
+		}
+
+		user, ok := s.UserInfoFromContext(r.Context())
 		if !ok {
 			eMsg := "could not get invoking user from context"
 			s.logger.Error(eMsg)
@@ -43,7 +48,7 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 		}
 		newComment.CreatedBy = createdBy
 
-		id, err := s.adder.AddComment(newComment)
+		id, err := s.adder.AddComment(newComment, channelID)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {

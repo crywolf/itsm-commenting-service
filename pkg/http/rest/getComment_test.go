@@ -19,6 +19,35 @@ func TestGetCommentHandler(t *testing.T) {
 	logger := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
+	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
+		server := NewServer(Config{
+			Addr:   "service.url",
+			Logger: logger,
+		})
+
+		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
+		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"error":"'grpc-metadata-space' header missing or invalid"}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
+
 	t.Run("when comment exists", func(t *testing.T) {
 		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
 		retC := comment.Comment{
@@ -34,7 +63,7 @@ func TestGetCommentHandler(t *testing.T) {
 		}
 
 		lister := new(mocks.ListingMock)
-		lister.On("GetComment", uuid).
+		lister.On("GetComment", uuid, channelID).
 			Return(retC, nil)
 
 		server := NewServer(Config{
@@ -44,6 +73,7 @@ func TestGetCommentHandler(t *testing.T) {
 		})
 
 		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -77,7 +107,7 @@ func TestGetCommentHandler(t *testing.T) {
 		uuid := "someNonexistentUUID"
 
 		lister := new(mocks.ListingMock)
-		lister.On("GetComment", uuid).
+		lister.On("GetComment", uuid, channelID).
 			Return(comment.Comment{}, couchdb.ErrorNorFound("comment not found"))
 
 		server := NewServer(Config{
@@ -87,6 +117,7 @@ func TestGetCommentHandler(t *testing.T) {
 		})
 
 		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -110,7 +141,7 @@ func TestGetCommentHandler(t *testing.T) {
 		uuid := "someNonexistentUUID"
 
 		lister := new(mocks.ListingMock)
-		lister.On("GetComment", uuid).
+		lister.On("GetComment", uuid, channelID).
 			Return(comment.Comment{}, errors.New("some error occurred"))
 
 		server := NewServer(Config{
@@ -120,6 +151,7 @@ func TestGetCommentHandler(t *testing.T) {
 		})
 
 		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)

@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -51,9 +53,41 @@ func NewServer(cfg Config) *Server {
 	return s
 }
 
+type channelIDType int
+
+var channelIDKey channelIDType
+
+// channelIDFromContext returns channelIDe stored in ctx, if any.
+func channelIDFromContext(ctx context.Context) (string, bool) {
+	ch, ok := ctx.Value(channelIDKey).(string)
+	return ch, ok
+}
+
+func (s Server) assertChannelID(w http.ResponseWriter, r *http.Request) (string, error) {
+	channelID, ok := channelIDFromContext(r.Context())
+	if !ok {
+		eMsg := "could not get channel ID from context"
+		s.logger.Error(eMsg)
+		s.JSONError(w, eMsg, http.StatusInternalServerError)
+		return "", errors.New(eMsg)
+	}
+
+	if channelID == "" {
+		eMsg := "empty channel ID in context"
+		s.logger.Error(eMsg)
+		s.JSONError(w, "'grpc-metadata-space' header missing or invalid", http.StatusUnauthorized)
+		return "", errors.New(eMsg)
+	}
+
+	return channelID, nil
+}
+
 // ServeHTTP makes the server implement the http.Handler interface
 func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.router.ServeHTTP(w, r)
+	channelID := r.Header.Get("grpc-metadata-space")
+	ctx := context.WithValue(r.Context(), channelIDKey, channelID)
+
+	s.router.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // JSONError replies to the request with the specified error message and HTTP code.

@@ -36,8 +36,8 @@ func (s Server) AddUserInfo(next httprouter.Handle, us UserService) httprouter.H
 	}
 }
 
-// UserFromContext returns the BasicInfo value stored in ctx, if any.
-func UserFromContext(ctx context.Context) (*user.BasicInfo, bool) {
+// UserInfoFromContext returns the BasicInfo value stored in ctx, if any.
+func (s Server) UserInfoFromContext(ctx context.Context) (*user.BasicInfo, bool) {
 	u, ok := ctx.Value(userKey).(*user.BasicInfo)
 	return u, ok
 }

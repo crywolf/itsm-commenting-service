@@ -13,6 +13,8 @@ import (
 )
 
 func TestGetCommentService(t *testing.T) {
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
 	c1 := comment.Comment{
 		Text:   "Test 1",
 		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
@@ -33,27 +35,27 @@ func TestGetCommentService(t *testing.T) {
 
 	lister := listing.NewService(mockStorage)
 
-	id1, err := mockStorage.AddComment(c1)
+	id1, err := mockStorage.AddComment(c1, channelID)
 	require.NoError(t, err)
 
-	id2, err := mockStorage.AddComment(c2)
+	id2, err := mockStorage.AddComment(c2, channelID)
 	require.NoError(t, err)
 
-	com1, err := lister.GetComment(id1)
+	com1, err := lister.GetComment(id1, channelID)
 	require.NoError(t, err)
 	assert.Equal(t, c1.Text, com1.Text)
 	assert.Equal(t, c1.Entity, com1.Entity)
 	assert.Equal(t, c1.CreatedBy, com1.CreatedBy)
 	assert.Equal(t, clock.NowFormatted(), com1.CreatedAt)
 
-	com2, err := lister.GetComment(id2)
+	com2, err := lister.GetComment(id2, channelID)
 	require.NoError(t, err)
 	assert.Equal(t, c2.Text, com2.Text)
 	assert.Equal(t, c2.Entity, com2.Entity)
 	assert.Nil(t, c2.CreatedBy) // createdBy was not filled in
 	assert.Equal(t, clock.NowFormatted(), com2.CreatedAt)
 
-	com3, err := lister.GetComment("NonexistentID")
+	com3, err := lister.GetComment("NonexistentID", channelID)
 	require.EqualError(t, err, "record was not found")
 	assert.Empty(t, com3)
 }

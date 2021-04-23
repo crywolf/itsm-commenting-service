@@ -25,6 +25,44 @@ func TestAddCommentHandler(t *testing.T) {
 		Name: "Some test user 1",
 	}
 
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
+	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
+		us := new(mocks.UserServiceMock)
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
+			Return(mockUserData, nil)
+
+		server := NewServer(Config{
+			Addr:        "service.url",
+			UserService: us,
+			Logger:      logger,
+		})
+
+		payload := []byte(`{
+			"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
+			"text": "test with entity 1"
+		}`)
+
+		body := bytes.NewReader(payload)
+		req := httptest.NewRequest("POST", "/comments", body)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"error":"'grpc-metadata-space' header missing or invalid"}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
+
 	t.Run("when request is not valid", func(t *testing.T) {
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
@@ -64,7 +102,7 @@ func TestAddCommentHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
-		adder.On("AddComment", mock.AnythingOfType("comment.Comment")).
+		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID).
 			Return("38316161-3035-4864-ad30-6231392d3433", nil)
 
 		server := NewServer(Config{
@@ -81,6 +119,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/comments", body)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -97,7 +136,7 @@ func TestAddCommentHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
-		adder.On("AddComment", mock.AnythingOfType("comment.Comment")).
+		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID).
 			Return("", couchdb.ErrorConflict("Comment already exists"))
 
 		server := NewServer(Config{
@@ -114,6 +153,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/comments", body)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -138,7 +178,7 @@ func TestAddCommentHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
-		adder.On("AddComment", mock.AnythingOfType("comment.Comment")).
+		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID).
 			Return("", errors.New("some error occurred"))
 
 		server := NewServer(Config{
@@ -155,6 +195,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/comments", body)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)

@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,6 +22,39 @@ func TestMarkAsReadByHandler(t *testing.T) {
 		Name: "Some test user 1",
 	}
 
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
+	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
+		us := new(mocks.UserServiceMock)
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
+			Return(mockUserData, nil)
+
+		server := NewServer(Config{
+			Addr:        "service.url",
+			UserService: us,
+			Logger:      logger,
+		})
+
+		req := httptest.NewRequest("POST", "/comments/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"error":"'grpc-metadata-space' header missing or invalid"}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
+
 	t.Run("when comment is being marked as read", func(t *testing.T) {
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
@@ -30,7 +64,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 		updater.On(
 			"MarkAsReadByUser",
 			"7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
-			mock.AnythingOfType("comment.ReadBy")).
+			mock.AnythingOfType("comment.ReadBy"), channelID).
 			Return(false, nil)
 
 		server := NewServer(Config{
@@ -41,6 +75,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 		})
 
 		req := httptest.NewRequest("POST", "/comments/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -60,7 +95,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 		updater.On(
 			"MarkAsReadByUser",
 			"7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
-			mock.AnythingOfType("comment.ReadBy")).
+			mock.AnythingOfType("comment.ReadBy"), channelID).
 			Return(true, nil)
 
 		server := NewServer(Config{
@@ -71,6 +106,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 		})
 
 		req := httptest.NewRequest("POST", "/comments/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)

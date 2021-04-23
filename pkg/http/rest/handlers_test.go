@@ -62,8 +62,11 @@ func TestAddCommentDBMock(t *testing.T) {
 		"text": "test with entity 1"
 	}`)
 
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
 	body := bytes.NewReader(payload)
 	req := httptest.NewRequest("POST", "/comments", body)
+	req.Header.Set("grpc-metadata-space", channelID)
 
 	w := httptest.NewRecorder()
 	server.ServeHTTP(w, req)
@@ -109,7 +112,9 @@ func TestGetCommentDBMock(t *testing.T) {
 		//Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 	}
 
-	uuid, err := s.AddComment(c1)
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
+	uuid, err := s.AddComment(c1, channelID)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)
@@ -121,6 +126,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	})
 
 	req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+	req.Header.Set("grpc-metadata-space", channelID)
 
 	w := httptest.NewRecorder()
 	server.ServeHTTP(w, req)
@@ -153,7 +159,7 @@ func TestGetCommentDBMock(t *testing.T) {
 
 type AdderStub struct{}
 
-func (a AdderStub) AddComment(_ comment.Comment) (id string, err error) {
+func (a AdderStub) AddComment(_ comment.Comment, _ string) (id string, err error) {
 	id = "38316161-3035-4864-ad30-6231392d3433"
 	return id, err
 }
@@ -184,8 +190,11 @@ func TestAddCommentAdderStub(t *testing.T) {
 		"text": "test with entity 1"
 	}`)
 
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
 	body := bytes.NewReader(payload)
 	req := httptest.NewRequest("POST", "/comments", body)
+	req.Header.Set("grpc-metadata-space", channelID)
 
 	w := httptest.NewRecorder()
 	server.ServeHTTP(w, req)
@@ -224,10 +233,13 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 		AddingService: adder,
 	})
 
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
 	payload := []byte(`{"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", "text": "test with entity 1"}`)
 
 	body := bytes.NewReader(payload)
 	req := httptest.NewRequest("POST", "/comments", body)
+	req.Header.Set("grpc-metadata-space", channelID)
 
 	w := httptest.NewRecorder()
 	server.ServeHTTP(w, req)
@@ -253,7 +265,9 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 	}
 
-	uuid, err := s.AddComment(c1)
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
+	uuid, err := s.AddComment(c1, channelID)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)
@@ -265,6 +279,7 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 	})
 
 	req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+	req.Header.Set("grpc-metadata-space", channelID)
 
 	w := httptest.NewRecorder()
 	server.ServeHTTP(w, req)

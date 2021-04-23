@@ -25,9 +25,14 @@ func (s *Server) MarkAsReadBy() func(w http.ResponseWriter, r *http.Request, _ h
 			return
 		}
 
-		user, ok := UserFromContext(r.Context())
+		channelID, err := s.assertChannelID(w, r)
+		if err != nil {
+			return
+		}
+
+		user, ok := s.UserInfoFromContext(r.Context())
 		if !ok {
-			eMsg := "could not get invoking user from context"
+			eMsg := "could not get invoking user info from context"
 			s.logger.Error(eMsg)
 			s.JSONError(w, eMsg, http.StatusInternalServerError)
 			return
@@ -44,7 +49,7 @@ func (s *Server) MarkAsReadBy() func(w http.ResponseWriter, r *http.Request, _ h
 			},
 		}
 
-		alreadyMarked, err := s.updater.MarkAsReadByUser(id, readBy)
+		alreadyMarked, err := s.updater.MarkAsReadByUser(id, readBy, channelID)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {

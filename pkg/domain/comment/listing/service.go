@@ -5,10 +5,10 @@ import "github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 // Service provides comment listing operations
 type Service interface {
 	// GetComment returns the comment with given ID
-	GetComment(id string) (comment.Comment, error)
+	GetComment(id, channelID string) (comment.Comment, error)
 
 	// QueryComments finds documents using a declarative JSON querying syntax
-	QueryComments(query map[string]interface{}) (QueryResult, error)
+	QueryComments(query map[string]interface{}, channelID string) (QueryResult, error)
 }
 
 // QueryResult wraps the result returned by querying comments
@@ -20,10 +20,10 @@ type QueryResult struct {
 // Repository provides access to the comment storage.
 type Repository interface {
 	// GetComment returns the comment with given ID
-	GetComment(id string) (comment.Comment, error)
+	GetComment(id, channelID string) (comment.Comment, error)
 
 	// QueryComments finds documents using a declarative JSON querying syntax
-	QueryComments(query map[string]interface{}) (QueryResult, error)
+	QueryComments(query map[string]interface{}, channelID string) (QueryResult, error)
 }
 
 // NewService creates a listing service
@@ -36,10 +36,10 @@ type service struct {
 }
 
 // GetComment returns the comment with given ID
-func (s *service) GetComment(id string) (comment.Comment, error) {
-	return s.r.GetComment(id)
+func (s *service) GetComment(id, channelID string) (comment.Comment, error) {
+	return s.r.GetComment(id, channelID)
 }
 
-func (s *service) QueryComments(query map[string]interface{}) (QueryResult, error) {
-	return s.r.QueryComments(query)
+func (s *service) QueryComments(query map[string]interface{}, channelID string) (QueryResult, error) {
+	return s.r.QueryComments(query, channelID)
 }

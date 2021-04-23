@@ -21,7 +21,34 @@ func TestQueryCommentsHandler(t *testing.T) {
 	logger := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
 	// TODO add tests that the service is called with correct queries
+
+	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
+		server := NewServer(Config{
+			Addr:   "service.url",
+			Logger: logger,
+		})
+
+		req := httptest.NewRequest("GET", "/comments?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", nil)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"error":"'grpc-metadata-space' header missing or invalid"}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
 
 	t.Run("when some comments were found according to query", func(t *testing.T) {
 		result := []map[string]interface{}{
@@ -43,7 +70,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 		}
 
 		lister := new(mocks.ListingMock)
-		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}")).
+		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID).
 			Return(listing.QueryResult{Result: result}, nil)
 
 		server := NewServer(Config{
@@ -53,6 +80,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 		})
 
 		req := httptest.NewRequest("GET", "/comments?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", nil)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -97,7 +125,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		lister := new(mocks.ListingMock)
 		bookmark := "g1AAAAC2eJw1zjsOwjAQBNBVKKCi4hqL4vUncVpEGWioaJDttUVCCBKk4fY4CLrRSPM0AwAU14Jh_Zrcc7rF94UfoeN77rewO7bt_nACTkonXWk0IVhU1iu0ITB652vrapO0DzArq78y5P1iRpY_Y87YjZmO49TERCSjYZTGiwwyo0vCIguqtGJpKX4vbKgkgaVEUidhGkmNKs99_wEUVC69"
-		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}")).
+		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID).
 			Return(listing.QueryResult{
 				Result:   result,
 				Bookmark: bookmark,
@@ -110,6 +138,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 		})
 
 		req := httptest.NewRequest("GET", "/comments", nil)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -161,7 +190,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 	t.Run("when repository returns Bad Request error", func(t *testing.T) {
 		lister := new(mocks.ListingMock)
-		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}")).
+		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID).
 			Return(listing.QueryResult{}, couchdb.ErrorBadRequest("index does not exist"))
 
 		server := NewServer(Config{
@@ -177,6 +206,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 		}`)
 
 		req := httptest.NewRequest("GET", "/comments?query="+query, nil)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -197,7 +227,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 	t.Run("when repository returns some other error", func(t *testing.T) {
 		lister := new(mocks.ListingMock)
-		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}")).
+		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID).
 			Return(listing.QueryResult{}, errors.New("some error occurred"))
 
 		server := NewServer(Config{
@@ -213,6 +243,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 		}`)
 
 		req := httptest.NewRequest("GET", "/comments?query="+query, nil)
+		req.Header.Set("grpc-metadata-space", channelID)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)

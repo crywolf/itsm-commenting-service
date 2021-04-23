@@ -23,7 +23,12 @@ func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ htt
 			return
 		}
 
-		asset, err := s.lister.GetComment(id)
+		channelID, err := s.assertChannelID(w, r)
+		if err != nil {
+			return
+		}
+
+		asset, err := s.lister.GetComment(id, channelID)
 		if err != nil {
 			s.logger.Warn("GetComment handler failed", zap.Error(err))
 			var httpError *repository.Error

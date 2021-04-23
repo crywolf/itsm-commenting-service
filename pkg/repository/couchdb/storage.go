@@ -118,7 +118,7 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 }
 
 // AddComment saves the given comment to the database and returns it's ID
-func (s *DBStorage) AddComment(c comment.Comment) (string, error) {
+func (s *DBStorage) AddComment(c comment.Comment, channelID string) (string, error) {
 	dbName := dbComments
 	ctx := context.TODO()
 
@@ -168,8 +168,9 @@ func (s *DBStorage) AddComment(c comment.Comment) (string, error) {
 }
 
 // GetComment returns comment with the specified ID
-func (s *DBStorage) GetComment(id string) (comment.Comment, error) {
+func (s *DBStorage) GetComment(id, channelID string) (comment.Comment, error) {
 	ctx := context.TODO()
+	fmt.Println("channelID", channelID)
 
 	var c comment.Comment
 
@@ -201,7 +202,7 @@ func (s *DBStorage) GetComment(id string) (comment.Comment, error) {
 }
 
 // QueryComments finds documents using a declarative JSON querying syntax
-func (s *DBStorage) QueryComments(query map[string]interface{}) (listing.QueryResult, error) {
+func (s *DBStorage) QueryComments(query map[string]interface{}, channelID string) (listing.QueryResult, error) {
 	ctx := context.TODO()
 
 	var docs []map[string]interface{}
@@ -260,7 +261,7 @@ func (s *DBStorage) QueryComments(query map[string]interface{}) (listing.QueryRe
 
 // MarkAsReadByUser adds user info to read_by array in the comment with specified ID.
 // It returns true if comment was already marked before to notify that resource was not changed.
-func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy) (bool, error) {
+func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID string) (bool, error) {
 	ctx := context.TODO()
 
 	var c comment.Comment

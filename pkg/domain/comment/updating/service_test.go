@@ -15,6 +15,8 @@ import (
 )
 
 func TestMarkAsReadByUserService(t *testing.T) {
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
 	c1 := comment.Comment{
 		Text:   "Test 1",
 		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
@@ -38,10 +40,10 @@ func TestMarkAsReadByUserService(t *testing.T) {
 
 	adder := adding.NewService(mockStorage)
 
-	com1ID, err := adder.AddComment(c1)
+	com1ID, err := adder.AddComment(c1, channelID)
 	require.NoError(t, err)
 
-	com2ID, err := adder.AddComment(c2)
+	com2ID, err := adder.AddComment(c2, channelID)
 	require.NoError(t, err)
 
 	updater := updating.NewService(mockStorage)
@@ -56,11 +58,11 @@ func TestMarkAsReadByUserService(t *testing.T) {
 			OrgDisplayName: "Kompitech",
 		},
 	}
-	alreadyRead, err := updater.MarkAsReadByUser(com1ID, readBy)
+	alreadyRead, err := updater.MarkAsReadByUser(com1ID, readBy, channelID)
 	require.NoError(t, err)
 	assert.False(t, alreadyRead)
 
-	alreadyRead, err = updater.MarkAsReadByUser(com1ID, readBy)
+	alreadyRead, err = updater.MarkAsReadByUser(com1ID, readBy, channelID)
 	require.NoError(t, err)
 	assert.True(t, alreadyRead)
 
@@ -74,19 +76,19 @@ func TestMarkAsReadByUserService(t *testing.T) {
 			OrgDisplayName: "Kompitech",
 		},
 	}
-	alreadyRead, err = updater.MarkAsReadByUser(com1ID, readBy2)
+	alreadyRead, err = updater.MarkAsReadByUser(com1ID, readBy2, channelID)
 	require.NoError(t, err)
 	assert.False(t, alreadyRead)
 
 	lister := listing.NewService(mockStorage)
 
-	com1, err := lister.GetComment(com1ID)
+	com1, err := lister.GetComment(com1ID, channelID)
 	require.NoError(t, err)
 	assert.NotNil(t, com1.ReadBy)
 	assert.Len(t, com1.ReadBy, 2)
 	assert.Equal(t, comment.ReadByList{readBy, readBy2}, com1.ReadBy)
 
-	com2, err := lister.GetComment(com2ID)
+	com2, err := lister.GetComment(com2ID, channelID)
 	require.NoError(t, err)
 	assert.Nil(t, com2.ReadBy)
 }
