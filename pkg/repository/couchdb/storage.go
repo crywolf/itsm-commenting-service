@@ -19,7 +19,8 @@ import (
 )
 
 const (
-	// database names
+	// base part of database names
+	// TODO remove
 	dbComments  = "comments"
 	dbWorknotes = "worknotes"
 
@@ -47,7 +48,6 @@ type Config struct {
 }
 
 // NewStorage creates new couchdb storage with initialized client
-// Also creates nonexistent databases
 func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 	var client *kivik.Client
 	var err error
@@ -64,52 +64,6 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 		client = cfg.Client
 	}
 
-	ctx := context.TODO()
-
-	commExists, err := client.DBExists(ctx, dbComments)
-	if err != nil {
-		logger.Fatal("couchdb connection failed", zap.Error(err))
-	}
-
-	if !commExists {
-		err := client.CreateDB(ctx, dbComments)
-		if err != nil {
-			logger.Fatal("couchdb database creation failed", zap.Error(err))
-		}
-
-		db := client.DB(ctx, dbComments)
-
-		index := map[string]interface{}{
-			"fields": []string{"created_at"},
-		}
-		err = db.CreateIndex(ctx, "", "", index)
-		if err != nil {
-			logger.Fatal("couchdb database index creation failed", zap.Error(err))
-		}
-	}
-
-	wnExists, err := client.DBExists(ctx, dbWorknotes)
-	if err != nil {
-		logger.Fatal("couchdb connection failed", zap.Error(err))
-	}
-
-	if !wnExists {
-		err := client.CreateDB(ctx, dbWorknotes)
-		if err != nil {
-			logger.Fatal("couchdb database creation failed", zap.Error(err))
-		}
-
-		db := client.DB(ctx, dbWorknotes)
-
-		index := map[string]interface{}{
-			"fields": []string{"created_at"},
-		}
-		err = db.CreateIndex(ctx, "", "", index)
-		if err != nil {
-			logger.Fatal("couchdb database index creation failed", zap.Error(err))
-		}
-	}
-
 	return &DBStorage{
 		client: client,
 		logger: logger,
@@ -119,7 +73,7 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 
 // AddComment saves the given comment to the database and returns it's ID
 func (s *DBStorage) AddComment(c comment.Comment, channelID string) (string, error) {
-	dbName := dbComments
+	dbName := databaseName(channelID, dbComments)
 	ctx := context.TODO()
 
 	db := s.client.DB(ctx, dbName)
@@ -133,6 +87,7 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID string) (string, err
 	if c.CreatedBy != nil {
 		createdBy.UUID = c.CreatedBy.UUID
 		createdBy.Name = c.CreatedBy.Name
+		createdBy.Surname = c.CreatedBy.Surname
 	}
 
 	newC := Comment{
@@ -169,12 +124,12 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID string) (string, err
 
 // GetComment returns comment with the specified ID
 func (s *DBStorage) GetComment(id, channelID string) (comment.Comment, error) {
+	dbName := databaseName(channelID, dbComments)
 	ctx := context.TODO()
-	fmt.Println("channelID", channelID)
 
 	var c comment.Comment
 
-	db := s.client.DB(ctx, dbComments)
+	db := s.client.DB(ctx, dbName)
 
 	row := db.Get(ctx, id)
 	err := row.ScanDoc(&c)
@@ -203,12 +158,13 @@ func (s *DBStorage) GetComment(id, channelID string) (comment.Comment, error) {
 
 // QueryComments finds documents using a declarative JSON querying syntax
 func (s *DBStorage) QueryComments(query map[string]interface{}, channelID string) (listing.QueryResult, error) {
+	dbName := databaseName(channelID, dbComments)
 	ctx := context.TODO()
 
 	var docs []map[string]interface{}
 	docs = make([]map[string]interface{}, 0)
 
-	db := s.client.DB(ctx, dbComments)
+	db := s.client.DB(ctx, dbName)
 
 	rows, err := db.Find(ctx, query)
 	if err != nil {
@@ -262,11 +218,12 @@ func (s *DBStorage) QueryComments(query map[string]interface{}, channelID string
 // MarkAsReadByUser adds user info to read_by array in the comment with specified ID.
 // It returns true if comment was already marked before to notify that resource was not changed.
 func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID string) (bool, error) {
+	dbName := databaseName(channelID, dbComments)
 	ctx := context.TODO()
 
 	var c comment.Comment
 
-	db := s.client.DB(ctx, dbComments)
+	db := s.client.DB(ctx, dbName)
 
 	row := db.Get(ctx, id)
 	err := row.ScanDoc(&c)
@@ -328,4 +285,43 @@ func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID
 	s.logger.Info(fmt.Sprintf("Comment updated %#v", c))
 
 	return false, nil
+}
+
+// CreateDatabase creates new DB if it does not exist
+func (s *DBStorage) CreateDatabase(channelID, assetType string) (bool, error) {
+	dbName := databaseName(channelID, assetType)
+	ctx := context.TODO()
+
+	dbExists, err := s.client.DBExists(ctx, dbName)
+	if err != nil {
+		s.logger.Fatal("couchdb connection failed", zap.Error(err))
+		return false, err
+	}
+
+	if dbExists {
+		return true, nil
+	}
+
+	err = s.client.CreateDB(ctx, dbName)
+	if err != nil {
+		s.logger.Fatal("couchdb database creation failed", zap.Error(err))
+		return false, err
+	}
+
+	db := s.client.DB(ctx, dbName)
+
+	index := map[string]interface{}{
+		"fields": []string{"created_at"},
+	}
+	err = db.CreateIndex(ctx, "", "", index)
+	if err != nil {
+		s.logger.Fatal("couchdb database index creation failed", zap.Error(err))
+		return false, err
+	}
+
+	return false, nil
+}
+
+func databaseName(channelID, kind string) string {
+	return fmt.Sprintf("%s_%s", channelID, kind)
 }

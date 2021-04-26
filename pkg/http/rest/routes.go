@@ -14,6 +14,8 @@ func (s *Server) routes() {
 
 	router.POST("/comments/:id/read_by", s.AddUserInfo(s.MarkAsReadBy(), s.userService))
 
+	router.POST("/databases", s.CreateDatabases())
+
 	// TODO add routes for worknotes
 	//router.GET("/worknotes/:id", s.GetComment("worknote"))
 	//router.GET("/worknotes", s.QueryComments("worknote"))

@@ -42,6 +42,7 @@ func main() {
 		AddingService:  adder,
 		ListingService: lister,
 		UpdatingService: updater,
+		RepositoryService: s,
 	})
 
 	logger.Info("starting server...")

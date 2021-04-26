@@ -8,14 +8,12 @@ import (
 	"go.uber.org/zap"
 )
 
+// NewCouchDBMock creates new CouchDB mock
 func NewCouchDBMock(logger *zap.Logger) (*kivikmock.Client, *couchdb.DBStorage) {
 	client, mock, err := kivikmock.New()
 	if err != nil {
 		panic(err)
 	}
-
-	mock.ExpectDBExists().WithName("comments").WillReturn(true)
-	mock.ExpectDBExists().WithName("worknotes").WillReturn(true)
 
 	// rand is used as deterministic UUID generator
 	// repository.GenerateUID(rand) returns always "38316161-3035-4864-ad30-6231392d3433"
@@ -28,4 +26,3 @@ func NewCouchDBMock(logger *zap.Logger) (*kivikmock.Client, *couchdb.DBStorage) 
 
 	return mock, storage
 }
-

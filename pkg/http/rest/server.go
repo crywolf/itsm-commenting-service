@@ -9,6 +9,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/updating"
+	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 )
@@ -23,6 +24,7 @@ type Server struct {
 	adder       adding.Service
 	lister      listing.Service
 	updater     updating.Service
+	repositoryService repository.Service
 }
 
 // Config contains server configuration and dependencies
@@ -33,6 +35,7 @@ type Config struct {
 	AddingService   adding.Service
 	ListingService  listing.Service
 	UpdatingService updating.Service
+	RepositoryService repository.Service
 }
 
 // NewServer creates new server with the necessary dependencies
@@ -47,6 +50,7 @@ func NewServer(cfg Config) *Server {
 		adder:       cfg.AddingService,
 		lister:      cfg.ListingService,
 		updater:     cfg.UpdatingService,
+		repositoryService: cfg.RepositoryService,
 	}
 	s.routes()
 

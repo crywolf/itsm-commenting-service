@@ -1,4 +1,4 @@
-package rest
+package rest_test
 
 import (
 	"bytes"
@@ -13,6 +13,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/memory"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
@@ -33,10 +34,12 @@ func TestAddCommentDBMock(t *testing.T) {
 	logger := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
 	couchMock, s := testutils.NewCouchDBMock(logger)
 
 	db := couchMock.NewDB()
-	couchMock.ExpectDB().WithName("comments").WillReturn(db)
+	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comments")).WillReturn(db)
 	db.ExpectPut()
 
 	us := new(mocks.UserServiceMock)
@@ -50,7 +53,7 @@ func TestAddCommentDBMock(t *testing.T) {
 
 	adder := adding.NewService(s)
 
-	server := NewServer(Config{
+	server := rest.NewServer(rest.Config{
 		Addr:          "service.url",
 		UserService:   us,
 		Logger:        logger,
@@ -61,8 +64,6 @@ func TestAddCommentDBMock(t *testing.T) {
 		"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
 		"text": "test with entity 1"
 	}`)
-
-	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
 	body := bytes.NewReader(payload)
 	req := httptest.NewRequest("POST", "/comments", body)
@@ -81,14 +82,16 @@ func TestGetCommentDBMock(t *testing.T) {
 	logger := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+
 	couchMock, s := testutils.NewCouchDBMock(logger)
 
 	db := couchMock.NewDB()
-	couchMock.ExpectDB().WithName("comments").WillReturn(db)
+	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comments")).WillReturn(db)
 	db.ExpectPut()
 
 	db = couchMock.NewDB()
-	couchMock.ExpectDB().WithName("comments").WillReturn(db)
+	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comments")).WillReturn(db)
 
 	dbDoc := comment.Comment{
 		UUID:   "38316161-3035-4864-ad30-6231392d3433",
@@ -112,14 +115,12 @@ func TestGetCommentDBMock(t *testing.T) {
 		//Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 	}
 
-	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
-
 	uuid, err := s.AddComment(c1, channelID)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)
 
-	server := NewServer(Config{
+	server := rest.NewServer(rest.Config{
 		Addr:           "service.url",
 		Logger:         logger,
 		ListingService: lister,
@@ -178,7 +179,7 @@ func TestAddCommentAdderStub(t *testing.T) {
 	us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 		Return(mockUserData, nil)
 
-	server := NewServer(Config{
+	server := rest.NewServer(rest.Config{
 		Addr:          "service.url",
 		UserService:   us,
 		Logger:        logger,
@@ -226,16 +227,15 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 	us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 		Return(mockUserData, nil)
 
-	server := NewServer(Config{
+	server := rest.NewServer(rest.Config{
 		Addr:          "service.url",
 		UserService:   us,
 		Logger:        logger,
 		AddingService: adder,
 	})
 
-	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
-
 	payload := []byte(`{"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", "text": "test with entity 1"}`)
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
 	body := bytes.NewReader(payload)
 	req := httptest.NewRequest("POST", "/comments", body)
@@ -272,7 +272,7 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 
 	lister := listing.NewService(s)
 
-	server := NewServer(Config{
+	server := rest.NewServer(rest.Config{
 		Addr:           "service.url",
 		Logger:         logger,
 		ListingService: lister,
