@@ -48,8 +48,8 @@ func TestCreateDatabasesHandler(t *testing.T) {
 	t.Run("when databases already exist", func(t *testing.T) {
 		couchMock, s := testutils.NewCouchDBMock(logger)
 
-		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comments")).WillReturn(true)
-		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "worknotes")).WillReturn(true)
+		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(true)
+		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(true)
 
 		server := NewServer(Config{
 			Addr:              "service.url",
@@ -80,16 +80,16 @@ func TestCreateDatabasesHandler(t *testing.T) {
 		couchMock, s := testutils.NewCouchDBMock(logger)
 
 		// comments
-		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comments")).WillReturn(false)
-		couchMock.ExpectCreateDB().WithName(testutils.DatabaseName(channelID, "comments"))
+		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(false)
+		couchMock.ExpectCreateDB().WithName(testutils.DatabaseName(channelID, "comment"))
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comments")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
 		db.ExpectCreateIndex()
 
 		// worknotes
-		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "worknotes")).WillReturn(false)
-		couchMock.ExpectCreateDB().WithName(testutils.DatabaseName(channelID, "worknotes"))
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "worknotes")).WillReturn(db)
+		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(false)
+		couchMock.ExpectCreateDB().WithName(testutils.DatabaseName(channelID, "worknote"))
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(db)
 		db.ExpectCreateIndex()
 
 		server := NewServer(Config{

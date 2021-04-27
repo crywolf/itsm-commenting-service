@@ -38,12 +38,13 @@ func TestMarkAsReadByUserService(t *testing.T) {
 		Clock: clock,
 	}
 
+	assetType := "comment"
 	adder := adding.NewService(mockStorage)
 
-	com1ID, err := adder.AddComment(c1, channelID)
+	com1ID, err := adder.AddComment(c1, channelID, assetType)
 	require.NoError(t, err)
 
-	com2ID, err := adder.AddComment(c2, channelID)
+	com2ID, err := adder.AddComment(c2, channelID, assetType)
 	require.NoError(t, err)
 
 	updater := updating.NewService(mockStorage)
@@ -58,11 +59,11 @@ func TestMarkAsReadByUserService(t *testing.T) {
 			OrgDisplayName: "Kompitech",
 		},
 	}
-	alreadyRead, err := updater.MarkAsReadByUser(com1ID, readBy, channelID)
+	alreadyRead, err := updater.MarkAsReadByUser(com1ID, readBy, channelID, assetType)
 	require.NoError(t, err)
 	assert.False(t, alreadyRead)
 
-	alreadyRead, err = updater.MarkAsReadByUser(com1ID, readBy, channelID)
+	alreadyRead, err = updater.MarkAsReadByUser(com1ID, readBy, channelID, assetType)
 	require.NoError(t, err)
 	assert.True(t, alreadyRead)
 
@@ -76,19 +77,19 @@ func TestMarkAsReadByUserService(t *testing.T) {
 			OrgDisplayName: "Kompitech",
 		},
 	}
-	alreadyRead, err = updater.MarkAsReadByUser(com1ID, readBy2, channelID)
+	alreadyRead, err = updater.MarkAsReadByUser(com1ID, readBy2, channelID, assetType)
 	require.NoError(t, err)
 	assert.False(t, alreadyRead)
 
 	lister := listing.NewService(mockStorage)
 
-	com1, err := lister.GetComment(com1ID, channelID)
+	com1, err := lister.GetComment(com1ID, channelID, assetType)
 	require.NoError(t, err)
 	assert.NotNil(t, com1.ReadBy)
 	assert.Len(t, com1.ReadBy, 2)
 	assert.Equal(t, comment.ReadByList{readBy, readBy2}, com1.ReadBy)
 
-	com2, err := lister.GetComment(com2ID, channelID)
+	com2, err := lister.GetComment(com2ID, channelID, assetType)
 	require.NoError(t, err)
 	assert.Nil(t, com2.ReadBy)
 }

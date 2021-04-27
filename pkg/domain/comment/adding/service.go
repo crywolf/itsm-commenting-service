@@ -4,13 +4,13 @@ import "github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 
 // Service provides comment adding operations
 type Service interface {
-	AddComment(c comment.Comment, channelID string) (id string, err error)
+	AddComment(c comment.Comment, channelID, assetType string) (id string, err error)
 }
 
 // Repository provides access to comments repository
 type Repository interface {
 	// AddComment saves a given comment to the repository
-	AddComment(c comment.Comment, channelID string) (id string, err error)
+	AddComment(c comment.Comment, channelID, assetType string) (id string, err error)
 }
 
 // NewService creates an adding service
@@ -23,6 +23,6 @@ type service struct {
 }
 
 // AddComment persists the given comment to storage
-func (s *service) AddComment(c comment.Comment, channelID string) (string, error) {
-	return s.r.AddComment(c, channelID)
+func (s *service) AddComment(c comment.Comment, channelID, assetType string) (string, error) {
+	return s.r.AddComment(c, channelID, assetType)
 }

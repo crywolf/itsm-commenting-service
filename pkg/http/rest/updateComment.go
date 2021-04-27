@@ -13,7 +13,7 @@ import (
 )
 
 // MarkAsReadBy returns handler for POST /comments/:id/read_by requests
-func (s *Server) MarkAsReadBy() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) MarkAsReadBy(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		s.logger.Info("MarkAsReadBy handler called")
 
@@ -49,7 +49,7 @@ func (s *Server) MarkAsReadBy() func(w http.ResponseWriter, r *http.Request, _ h
 			},
 		}
 
-		alreadyMarked, err := s.updater.MarkAsReadByUser(id, readBy, channelID)
+		alreadyMarked, err := s.updater.MarkAsReadByUser(id, readBy, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
@@ -64,7 +64,7 @@ func (s *Server) MarkAsReadBy() func(w http.ResponseWriter, r *http.Request, _ h
 		}
 
 		URIschema := "http://"
-		assetURI := fmt.Sprintf("%s%s/comments/%s", URIschema, s.Addr, id)
+		assetURI := fmt.Sprintf("%s%s/%s/%s", URIschema, s.Addr, pluralize(assetType), id)
 
 		w.Header().Set("Location", assetURI)
 

@@ -70,7 +70,8 @@ func TestQueryCommentsHandler(t *testing.T) {
 		}
 
 		lister := new(mocks.ListingMock)
-		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID).
+		assetType := "comment"
+		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID, assetType).
 			Return(listing.QueryResult{Result: result}, nil)
 
 		server := NewServer(Config{
@@ -124,8 +125,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 		}
 
 		lister := new(mocks.ListingMock)
+		assetType := "comment"
 		bookmark := "g1AAAAC2eJw1zjsOwjAQBNBVKKCi4hqL4vUncVpEGWioaJDttUVCCBKk4fY4CLrRSPM0AwAU14Jh_Zrcc7rF94UfoeN77rewO7bt_nACTkonXWk0IVhU1iu0ITB652vrapO0DzArq78y5P1iRpY_Y87YjZmO49TERCSjYZTGiwwyo0vCIguqtGJpKX4vbKgkgaVEUidhGkmNKs99_wEUVC69"
-		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID).
+		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID, assetType).
 			Return(listing.QueryResult{
 				Result:   result,
 				Bookmark: bookmark,
@@ -190,7 +192,8 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 	t.Run("when repository returns Bad Request error", func(t *testing.T) {
 		lister := new(mocks.ListingMock)
-		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID).
+		assetType := "comment"
+		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID, assetType).
 			Return(listing.QueryResult{}, couchdb.ErrorBadRequest("index does not exist"))
 
 		server := NewServer(Config{
@@ -227,7 +230,8 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 	t.Run("when repository returns some other error", func(t *testing.T) {
 		lister := new(mocks.ListingMock)
-		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID).
+		assetType := "comment"
+		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID, assetType).
 			Return(listing.QueryResult{}, errors.New("some error occurred"))
 
 		server := NewServer(Config{
@@ -259,6 +263,57 @@ func TestQueryCommentsHandler(t *testing.T) {
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
 		expectedJSON := `{"error":"some error occurred"}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
+
+	// worknote
+	t.Run("when some worknotes were found according to query", func(t *testing.T) {
+		result := []map[string]interface{}{
+			{
+				"created_at": "2021-04-12T21:14:51+02:00",
+				"text":       "test worknote 1",
+				"uuid":       "916c984f-e3fe-4638-8683-71f05501491f",
+			},
+			{
+				"created_at": "2021-04-11T00:45:42+02:00",
+				"text":       "test worknote 4",
+				"uuid":       "0ac5ebce-17e7-4edc-9552-fefe16e127fb",
+			},
+		}
+
+		resultJSON, err := json.Marshal(result)
+		if err != nil {
+			t.Fatalf("could not marshall moc result: %v", err)
+		}
+
+		lister := new(mocks.ListingMock)
+		assetType := "worknote"
+		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID, assetType).
+			Return(listing.QueryResult{Result: result}, nil)
+
+		server := NewServer(Config{
+			Addr:           "service.url",
+			Logger:         logger,
+			ListingService: lister,
+		})
+
+		req := httptest.NewRequest("GET", "/worknotes?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", nil)
+		req.Header.Set("grpc-metadata-space", channelID)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"result":` + string(resultJSON) + `}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 }

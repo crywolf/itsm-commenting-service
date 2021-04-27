@@ -19,11 +19,6 @@ import (
 )
 
 const (
-	// base part of database names
-	// TODO remove
-	dbComments  = "comments"
-	dbWorknotes = "worknotes"
-
 	// defaultPageSize is the default couchDB value for 'limit' in 'find' query
 	defaultPageSize = 25
 )
@@ -72,8 +67,8 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 }
 
 // AddComment saves the given comment to the database and returns it's ID
-func (s *DBStorage) AddComment(c comment.Comment, channelID string) (string, error) {
-	dbName := databaseName(channelID, dbComments)
+func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (string, error) {
+	dbName := databaseName(channelID, assetType)
 	ctx := context.TODO()
 
 	db := s.client.DB(ctx, dbName)
@@ -123,8 +118,8 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID string) (string, err
 }
 
 // GetComment returns comment with the specified ID
-func (s *DBStorage) GetComment(id, channelID string) (comment.Comment, error) {
-	dbName := databaseName(channelID, dbComments)
+func (s *DBStorage) GetComment(id, channelID, assetType string) (comment.Comment, error) {
+	dbName := databaseName(channelID, assetType)
 	ctx := context.TODO()
 
 	var c comment.Comment
@@ -157,8 +152,8 @@ func (s *DBStorage) GetComment(id, channelID string) (comment.Comment, error) {
 }
 
 // QueryComments finds documents using a declarative JSON querying syntax
-func (s *DBStorage) QueryComments(query map[string]interface{}, channelID string) (listing.QueryResult, error) {
-	dbName := databaseName(channelID, dbComments)
+func (s *DBStorage) QueryComments(query map[string]interface{}, channelID, assetType string) (listing.QueryResult, error) {
+	dbName := databaseName(channelID, assetType)
 	ctx := context.TODO()
 
 	var docs []map[string]interface{}
@@ -217,8 +212,8 @@ func (s *DBStorage) QueryComments(query map[string]interface{}, channelID string
 
 // MarkAsReadByUser adds user info to read_by array in the comment with specified ID.
 // It returns true if comment was already marked before to notify that resource was not changed.
-func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID string) (bool, error) {
-	dbName := databaseName(channelID, dbComments)
+func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
+	dbName := databaseName(channelID, assetType)
 	ctx := context.TODO()
 
 	var c comment.Comment
@@ -322,6 +317,10 @@ func (s *DBStorage) CreateDatabase(channelID, assetType string) (bool, error) {
 	return false, nil
 }
 
-func databaseName(channelID, kind string) string {
-	return fmt.Sprintf("%s_%s", channelID, kind)
+func databaseName(channelID, assetType string) string {
+	return fmt.Sprintf("%s_%s", channelID, pluralize(assetType))
+}
+
+func pluralize(assetType string) string {
+	return fmt.Sprintf("%ss", assetType)
 }

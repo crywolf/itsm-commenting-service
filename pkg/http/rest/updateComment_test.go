@@ -61,10 +61,11 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		updater := new(mocks.UpdatingMock)
+		assetType := "comment"
 		updater.On(
 			"MarkAsReadByUser",
 			"7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
-			mock.AnythingOfType("comment.ReadBy"), channelID).
+			mock.AnythingOfType("comment.ReadBy"), channelID, assetType).
 			Return(false, nil)
 
 		server := NewServer(Config{
@@ -92,10 +93,11 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		updater := new(mocks.UpdatingMock)
+		assetType := "comment"
 		updater.On(
 			"MarkAsReadByUser",
 			"7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
-			mock.AnythingOfType("comment.ReadBy"), channelID).
+			mock.AnythingOfType("comment.ReadBy"), channelID, assetType).
 			Return(true, nil)
 
 		server := NewServer(Config{
@@ -114,6 +116,39 @@ func TestMarkAsReadByHandler(t *testing.T) {
 
 		assert.Equal(t, http.StatusNoContent, resp.StatusCode, "Status code")
 		expectedLocation := "http://service.url/comments/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"
+		assert.Equal(t, expectedLocation, resp.Header.Get("Location"), "Location header")
+	})
+
+	// worknote
+	t.Run("when worknote is being marked as read", func(t *testing.T) {
+		us := new(mocks.UserServiceMock)
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
+			Return(mockUserData, nil)
+
+		updater := new(mocks.UpdatingMock)
+		assetType := "worknote"
+		updater.On(
+			"MarkAsReadByUser",
+			"7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
+			mock.AnythingOfType("comment.ReadBy"), channelID, assetType).
+			Return(false, nil)
+
+		server := NewServer(Config{
+			Addr:            "service.url",
+			UserService:     us,
+			Logger:          logger,
+			UpdatingService: updater,
+		})
+
+		req := httptest.NewRequest("POST", "/worknotes/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
+		req.Header.Set("grpc-metadata-space", channelID)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		assert.Equal(t, http.StatusCreated, resp.StatusCode, "Status code")
+		expectedLocation := "http://service.url/worknotes/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"
 		assert.Equal(t, expectedLocation, resp.Header.Get("Location"), "Location header")
 	})
 }

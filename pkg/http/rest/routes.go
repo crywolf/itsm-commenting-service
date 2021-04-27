@@ -4,22 +4,32 @@ import (
 	"net/http"
 )
 
+const (
+	assetTypeComment  = "comment"
+	assetTypeWorknote = "worknote"
+)
+
 func (s *Server) routes() {
 	router := s.router
 
-	router.GET("/comments/:id", s.GetComment())
-	router.GET("/comments", s.QueryComments())
+	// comments
+	router.GET("/comments/:id", s.GetComment(assetTypeComment))
+	router.GET("/comments", s.QueryComments(assetTypeComment))
 
-	router.POST("/comments", s.AddUserInfo(s.AddComment(), s.userService))
+	router.POST("/comments", s.AddUserInfo(s.AddComment(assetTypeComment), s.userService))
+	router.POST("/comments/:id/read_by", s.AddUserInfo(s.MarkAsReadBy(assetTypeComment), s.userService))
 
-	router.POST("/comments/:id/read_by", s.AddUserInfo(s.MarkAsReadBy(), s.userService))
+	// worknotes
+	router.GET("/worknotes/:id", s.GetComment(assetTypeWorknote))
+	router.GET("/worknotes", s.QueryComments(assetTypeWorknote))
 
+	router.POST("/worknotes", s.AddUserInfo(s.AddComment(assetTypeWorknote), s.userService))
+	router.POST("/worknotes/:id/read_by", s.AddUserInfo(s.MarkAsReadBy(assetTypeWorknote), s.userService))
+
+	// databases creation
 	router.POST("/databases", s.CreateDatabases())
 
-	// TODO add routes for worknotes
-	//router.GET("/worknotes/:id", s.GetComment("worknote"))
-	//router.GET("/worknotes", s.QueryComments("worknote"))
-
+	// default Not Found handler
 	router.NotFound = http.HandlerFunc(s.JSONNotFoundError)
 }
 

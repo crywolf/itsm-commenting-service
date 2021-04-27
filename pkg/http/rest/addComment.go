@@ -13,7 +13,7 @@ import (
 )
 
 // AddComment returns handler for POST /comments requests
-func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("AddComment handler called")
 
@@ -48,7 +48,7 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 		}
 		newComment.CreatedBy = createdBy
 
-		id, err := s.adder.AddComment(newComment, channelID)
+		id, err := s.adder.AddComment(newComment, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
@@ -63,9 +63,13 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 		}
 
 		URIschema := "http://"
-		assetURI := fmt.Sprintf("%s%s/comments/%s", URIschema, s.Addr, id)
+		assetURI := fmt.Sprintf("%s%s/%s/%s", URIschema, s.Addr, pluralize(assetType), id)
 
 		w.Header().Set("Location", assetURI)
 		w.WriteHeader(http.StatusCreated)
 	}
+}
+
+func pluralize(assetType string) string {
+	return fmt.Sprintf("%ss", assetType)
 }

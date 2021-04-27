@@ -11,7 +11,7 @@ import (
 )
 
 // GetComment returns handler for GET /comments/:id requests
-func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) GetComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		s.logger.Info("GetComment handler called")
 
@@ -28,7 +28,7 @@ func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ htt
 			return
 		}
 
-		asset, err := s.lister.GetComment(id, channelID)
+		asset, err := s.lister.GetComment(id, channelID, assetType)
 		if err != nil {
 			s.logger.Warn("GetComment handler failed", zap.Error(err))
 			var httpError *repository.Error

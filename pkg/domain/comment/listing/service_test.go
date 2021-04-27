@@ -34,28 +34,29 @@ func TestGetCommentService(t *testing.T) {
 	}
 
 	lister := listing.NewService(mockStorage)
+	assetType := "comment"
 
-	id1, err := mockStorage.AddComment(c1, channelID)
+	id1, err := mockStorage.AddComment(c1, channelID, assetType)
 	require.NoError(t, err)
 
-	id2, err := mockStorage.AddComment(c2, channelID)
+	id2, err := mockStorage.AddComment(c2, channelID, assetType)
 	require.NoError(t, err)
 
-	com1, err := lister.GetComment(id1, channelID)
+	com1, err := lister.GetComment(id1, channelID, assetType)
 	require.NoError(t, err)
 	assert.Equal(t, c1.Text, com1.Text)
 	assert.Equal(t, c1.Entity, com1.Entity)
 	assert.Equal(t, c1.CreatedBy, com1.CreatedBy)
 	assert.Equal(t, clock.NowFormatted(), com1.CreatedAt)
 
-	com2, err := lister.GetComment(id2, channelID)
+	com2, err := lister.GetComment(id2, channelID, assetType)
 	require.NoError(t, err)
 	assert.Equal(t, c2.Text, com2.Text)
 	assert.Equal(t, c2.Entity, com2.Entity)
 	assert.Nil(t, c2.CreatedBy) // createdBy was not filled in
 	assert.Equal(t, clock.NowFormatted(), com2.CreatedAt)
 
-	com3, err := lister.GetComment("NonexistentID", channelID)
+	com3, err := lister.GetComment("NonexistentID", channelID, assetType)
 	require.EqualError(t, err, "record was not found")
 	assert.Empty(t, com3)
 }

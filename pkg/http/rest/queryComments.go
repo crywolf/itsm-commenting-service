@@ -15,7 +15,7 @@ import (
 )
 
 // QueryComments returns handler for POST /comments/query requests
-func (s *Server) QueryComments() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("QueryComments handler called")
 
@@ -71,7 +71,7 @@ func (s *Server) QueryComments() func(w http.ResponseWriter, r *http.Request, _ 
 			return
 		}
 
-		qResult, err := s.lister.QueryComments(query, channelID)
+		qResult, err := s.lister.QueryComments(query, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {

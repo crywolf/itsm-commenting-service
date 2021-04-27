@@ -102,7 +102,8 @@ func TestAddCommentHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
-		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID).
+		assetType := "comment"
+		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
 			Return("38316161-3035-4864-ad30-6231392d3433", nil)
 
 		server := NewServer(Config{
@@ -136,7 +137,8 @@ func TestAddCommentHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
-		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID).
+		assetType := "comment"
+		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
 			Return("", couchdb.ErrorConflict("Comment already exists"))
 
 		server := NewServer(Config{
@@ -178,7 +180,8 @@ func TestAddCommentHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
-		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID).
+		assetType := "comment"
+		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
 			Return("", errors.New("some error occurred"))
 
 		server := NewServer(Config{
@@ -249,4 +252,41 @@ func TestAddCommentHandler(t *testing.T) {
 		expectedJSON := `{"error":"could not retrieve correct user info from user service"}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
+
+	// worknote
+	t.Run("when worknote was not stored yet", func(t *testing.T) {
+		us := new(mocks.UserServiceMock)
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
+			Return(mockUserData, nil)
+
+		adder := new(mocks.AddingMock)
+		assetType := "worknote"
+		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
+			Return("38316161-3035-4864-ad30-6231392d3433", nil)
+
+		server := NewServer(Config{
+			Addr:          "service.url",
+			UserService:   us,
+			Logger:        logger,
+			AddingService: adder,
+		})
+
+		payload := []byte(`{
+			"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
+			"text": "test with worknote for entity 1"
+		}`)
+
+		body := bytes.NewReader(payload)
+		req := httptest.NewRequest("POST", "/worknotes", body)
+		req.Header.Set("grpc-metadata-space", channelID)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		assert.Equal(t, http.StatusCreated, resp.StatusCode, "Status code")
+		expectedLocation := "http://service.url/worknotes/38316161-3035-4864-ad30-6231392d3433"
+		assert.Equal(t, expectedLocation, resp.Header.Get("Location"), "Location header")
+	})
+
 }

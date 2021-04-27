@@ -39,7 +39,7 @@ func TestAddCommentDBMock(t *testing.T) {
 	couchMock, s := testutils.NewCouchDBMock(logger)
 
 	db := couchMock.NewDB()
-	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comments")).WillReturn(db)
+	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
 	db.ExpectPut()
 
 	us := new(mocks.UserServiceMock)
@@ -87,11 +87,11 @@ func TestGetCommentDBMock(t *testing.T) {
 	couchMock, s := testutils.NewCouchDBMock(logger)
 
 	db := couchMock.NewDB()
-	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comments")).WillReturn(db)
+	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
 	db.ExpectPut()
 
 	db = couchMock.NewDB()
-	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comments")).WillReturn(db)
+	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
 
 	dbDoc := comment.Comment{
 		UUID:   "38316161-3035-4864-ad30-6231392d3433",
@@ -115,7 +115,8 @@ func TestGetCommentDBMock(t *testing.T) {
 		//Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 	}
 
-	uuid, err := s.AddComment(c1, channelID)
+	assetType := "comment"
+	uuid, err := s.AddComment(c1, channelID, assetType)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)
@@ -160,7 +161,7 @@ func TestGetCommentDBMock(t *testing.T) {
 
 type AdderStub struct{}
 
-func (a AdderStub) AddComment(_ comment.Comment, _ string) (id string, err error) {
+func (a AdderStub) AddComment(_ comment.Comment, _, _ string) (id string, err error) {
 	id = "38316161-3035-4864-ad30-6231392d3433"
 	return id, err
 }
@@ -267,7 +268,8 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
-	uuid, err := s.AddComment(c1, channelID)
+	assetType := "comment"
+	uuid, err := s.AddComment(c1, channelID, assetType)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)

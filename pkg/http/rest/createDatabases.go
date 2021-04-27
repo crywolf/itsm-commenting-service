@@ -32,7 +32,7 @@ func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, 
 			return
 		}
 
-		assetTypes := [2]string{"comments", "worknotes"}
+		assetTypes := [2]string{"comment", "worknote"}
 
 		bothExisted := true
 
