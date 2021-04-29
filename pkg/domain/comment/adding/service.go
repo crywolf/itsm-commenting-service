@@ -7,7 +7,7 @@ type Service interface {
 	AddComment(c comment.Comment, channelID, assetType string) (id string, err error)
 }
 
-// Repository provides access to comments repository
+// Repository provides access to comments storage
 type Repository interface {
 	// AddComment saves a given comment to the repository
 	AddComment(c comment.Comment, channelID, assetType string) (id string, err error)

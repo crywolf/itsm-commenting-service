@@ -9,7 +9,7 @@ import (
 )
 
 // NewCouchDBMock creates new CouchDB mock
-func NewCouchDBMock(logger *zap.Logger) (*kivikmock.Client, *couchdb.DBStorage) {
+func NewCouchDBMock(logger *zap.Logger, validator couchdb.Validator) (*kivikmock.Client, *couchdb.DBStorage) {
 	client, mock, err := kivikmock.New()
 	if err != nil {
 		panic(err)
@@ -20,8 +20,9 @@ func NewCouchDBMock(logger *zap.Logger) (*kivikmock.Client, *couchdb.DBStorage) 
 	rand := strings.NewReader("81aa058d-0b19-43e9-82ae-a7bca2457f10") // pseudo-random seed
 
 	storage := couchdb.NewStorage(logger, couchdb.Config{
-		Client: client,
-		Rand:   rand,
+		Client:    client,
+		Rand:      rand,
+		Validator: validator,
 	})
 
 	return mock, storage

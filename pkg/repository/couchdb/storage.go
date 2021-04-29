@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
@@ -25,21 +24,23 @@ const (
 
 // DBStorage storage stores data in couchdb
 type DBStorage struct {
-	client   *kivik.Client
-	logger   *zap.Logger
-	rand     io.Reader
-	username string
-	passwd   string
+	client    *kivik.Client
+	logger    *zap.Logger
+	rand      io.Reader
+	validator Validator
+	username  string
+	passwd    string
 }
 
 // Config contains values for the data source
 type Config struct {
-	Client   *kivik.Client
-	Rand     io.Reader
-	Host     string
-	Port     string
-	Username string
-	Passwd   string
+	Client    *kivik.Client
+	Rand      io.Reader
+	Validator Validator
+	Host      string
+	Port      string
+	Username  string
+	Passwd    string
 }
 
 // NewStorage creates new couchdb storage with initialized client
@@ -60,9 +61,10 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 	}
 
 	return &DBStorage{
-		client: client,
-		logger: logger,
-		rand:   cfg.Rand,
+		client:    client,
+		logger:    logger,
+		rand:      cfg.Rand,
+		validator: cfg.Validator,
 	}
 }
 
@@ -78,22 +80,14 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 		return "", err
 	}
 
-	createdBy := &CreatedBy{}
-	if c.CreatedBy != nil {
-		createdBy.UUID = c.CreatedBy.UUID
-		createdBy.Name = c.CreatedBy.Name
-		createdBy.Surname = c.CreatedBy.Surname
+	c.UUID = uuid
+	err = s.validator.Validate(c)
+	if err != nil {
+		s.logger.Error("invalid comment", zap.Error(err))
+		return "", err
 	}
 
-	newC := Comment{
-		UUID:      uuid,
-		Entity:    c.Entity,
-		Text:      c.Text,
-		CreatedBy: createdBy,
-		CreatedAt: time.Now().Format(time.RFC3339),
-	}
-
-	rev, err := db.Put(ctx, uuid, newC)
+	rev, err := db.Put(ctx, uuid, c)
 	if err != nil {
 		s.logger.Warn("CouchDB PUT failed", zap.Error(err))
 

@@ -20,22 +20,22 @@ type ReadByList []ReadBy
 
 // ReadBy stores info when some user read this comment
 type ReadBy struct {
-	Time string   `json:"time"`
-	User UserInfo `json:"user"`
+	Time string   `json:"time,omitempty"`
+	User UserInfo `json:"user,omitempty"`
 }
 
 // UserInfo represents basic info about user
 type UserInfo struct {
-	UUID           string `json:"uuid"`
-	Name           string `json:"name"`
-	Surname        string `json:"surname"`
+	UUID           string `json:"uuid,omitempty"`
+	Name           string `json:"name,omitempty"`
+	Surname        string `json:"surname,omitempty"`
 	OrgDisplayName string `json:"org_display_name"`
 	OrgName        string `json:"org_name"`
 }
 
 // CreatedBy represents minimalistic info user that created this comment
 type CreatedBy struct {
-	UUID    string `json:"uuid"`
-	Name    string `json:"name"`
-	Surname string `json:"surname"`
+	UUID    string `json:"uuid,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Surname string `json:"surname,omitempty"`
 }

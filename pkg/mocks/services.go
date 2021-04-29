@@ -58,3 +58,14 @@ func (s *UserServiceMock) UserBasicInfo(r *http.Request) (user.BasicInfo, error)
 	args := s.Called(r)
 	return args.Get(0).(user.BasicInfo), args.Error(1)
 }
+
+// ValidatorMock is a mock of validation service
+type ValidatorMock struct {
+	mock.Mock
+}
+
+// Validate returns error if comment is not valid
+func (s *ValidatorMock) Validate(c comment.Comment) error {
+	args := s.Called(c)
+	return args.Error(0)
+}

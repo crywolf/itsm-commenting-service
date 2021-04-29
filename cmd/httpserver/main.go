@@ -24,10 +24,11 @@ func main() {
 	}
 
 	s := couchdb.NewStorage(logger, couchdb.Config{
-		Host:     "localhost",
-		Port:     "5984",
-		Username: "admin",
-		Passwd:   "admin",
+		Host:      "localhost",
+		Port:      "5984",
+		Username:  "admin",
+		Passwd:    "admin",
+		Validator: couchdb.NewValidator(),
 	})
 
 	userService := rest.NewUserService()
@@ -36,12 +37,12 @@ func main() {
 	updater := updating.NewService(s)
 
 	server := rest.NewServer(rest.Config{
-		Addr:           bindAddress,
-		Logger:         logger,
-		UserService:    userService,
-		AddingService:  adder,
-		ListingService: lister,
-		UpdatingService: updater,
+		Addr:              bindAddress,
+		Logger:            logger,
+		UserService:       userService,
+		AddingService:     adder,
+		ListingService:    lister,
+		UpdatingService:   updater,
 		RepositoryService: s,
 	})
 

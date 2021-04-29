@@ -3,6 +3,7 @@ module github.com/KompiTech/itsm-commenting-service
 go 1.14
 
 require (
+	github.com/KompiTech/rmap v1.14.0
 	github.com/go-kivik/couchdb/v3 v3.2.7
 	github.com/go-kivik/kivik/v3 v3.2.3
 	github.com/go-kivik/kivikmock/v3 v3.2.0

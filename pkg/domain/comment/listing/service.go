@@ -17,7 +17,7 @@ type QueryResult struct {
 	Result   []map[string]interface{} `json:"result"`
 }
 
-// Repository provides access to the comment storage.
+// Repository provides access to the comment storage
 type Repository interface {
 	// GetComment returns the comment with given ID
 	GetComment(id, channelID, assetType string) (comment.Comment, error)
@@ -40,6 +40,7 @@ func (s *service) GetComment(id, channelID, assetType string) (comment.Comment, 
 	return s.r.GetComment(id, channelID, assetType)
 }
 
+// QueryComments finds documents using a declarative JSON querying syntax
 func (s *service) QueryComments(query map[string]interface{}, channelID, assetType string) (QueryResult, error) {
 	return s.r.QueryComments(query, channelID, assetType)
 }

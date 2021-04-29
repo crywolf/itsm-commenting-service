@@ -36,7 +36,9 @@ func TestAddCommentDBMock(t *testing.T) {
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
-	couchMock, s := testutils.NewCouchDBMock(logger)
+	validator := new(mocks.ValidatorMock)
+	validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
+	couchMock, s := testutils.NewCouchDBMock(logger, validator)
 
 	db := couchMock.NewDB()
 	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
@@ -84,7 +86,9 @@ func TestGetCommentDBMock(t *testing.T) {
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
-	couchMock, s := testutils.NewCouchDBMock(logger)
+	validator := new(mocks.ValidatorMock)
+	validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
+	couchMock, s := testutils.NewCouchDBMock(logger, validator)
 
 	db := couchMock.NewDB()
 	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)

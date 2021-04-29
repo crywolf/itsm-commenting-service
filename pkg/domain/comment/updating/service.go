@@ -8,7 +8,7 @@ type Service interface {
 	MarkAsReadByUser(id string, readBy comment.ReadBy, channelID, assetType string) (alreadyMarked bool, error error)
 }
 
-// Repository provides access to comments repository
+// Repository provides access to comments storage
 type Repository interface {
 	// MarkAsReadByUser adds user info to read_by array
 	MarkAsReadByUser(id string, readBy comment.ReadBy, channelID, assetType string) (alreadyMarked bool, error error)
@@ -23,7 +23,7 @@ type service struct {
 	r Repository
 }
 
-// MarkAsReadByUser adds user info to read_by array in the comment in the storage
+// MarkAsReadByUser adds user info to 'read_by' array in the comment in the storage
 // It returns true if comment was already marked before to notify that resource was not changed.
 func (s *service) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID, assetType string) (alreadyMarked bool, error error) {
 	return s.r.MarkAsReadByUser(id, readBy, channelID, assetType)

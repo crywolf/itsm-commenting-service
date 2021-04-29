@@ -1,0 +1,82 @@
+title: Comment
+type: object
+
+$defs:
+  uuid:
+    type: string
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+
+  user:
+    description: user basic data
+    type: object
+    properties:
+      uuid:
+        $ref: "#/$defs/uuid"
+      name:
+        type: string
+        pattern: \S
+      surname:
+        type: string
+        pattern: \S
+      org_name:
+        type: string
+        pattern: \S
+      org_display_name:
+        type: string
+        pattern: \S
+    additionalProperties: false
+    required:
+      - uuid
+      - name
+      - surname
+
+properties:
+  uuid:
+    $ref: "#/$defs/uuid"
+  entity:
+    description: Specification of target entity, format <name>:<uuid>
+    type: string
+    pattern: ^.*:.*$
+  external_id:
+    description: ID in external system
+    type: string
+    pattern: \S
+  text:
+    type: string
+    pattern: \S
+
+  read_by:
+    description: who and when read this comment
+    type: array
+    uniqueItems: true
+    items:
+      type: object
+      properties:
+        user:
+          description: user who read this comment
+          $ref: "#/$defs/user"
+        time:
+          description: timestamp
+          type: string
+          format: date-time
+      additionalProperties: false
+      required:
+        - user
+        - time
+
+  created_by:
+    description: user who created this comment
+    $ref: "#/$defs/user"
+
+  created_at:
+    description: timestamp
+    type: string
+    format: date-time
+
+additionalProperties: false
+required:
+  - uuid
+  - entity
+  - text
+  - created_by
+  - created_at
