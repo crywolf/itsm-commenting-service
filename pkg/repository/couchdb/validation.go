@@ -72,7 +72,7 @@ func (v validator) Validate(c comment.Comment) error {
 
 	if len(errs) > 0 {
 		// join errors into one
-		errorStrings := make([]string, len(errs))
+		errorStrings := make([]string, 0)
 		for _, err := range errs {
 			errorStrings = append(errorStrings, fmt.Sprintf("%s: %s", err.PropertyPath, err.Message))
 		}

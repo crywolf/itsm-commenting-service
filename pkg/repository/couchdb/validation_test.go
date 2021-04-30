@@ -448,6 +448,38 @@ func TestValidate(t *testing.T) {
 			wantErr:    true,
 			wantErrMsg: `/read_by/0/user/org_display_name: regexp pattern`,
 		},
+		{
+			name: "more invalid fields",
+			comment: comment.Comment{
+				UUID:   "9445f50b-28c4-4c9e-a9a6-4b16d6506c33",
+				Entity: e,
+				CreatedAt: time.Now().Format(time.RFC3339),
+				CreatedBy: &comment.CreatedBy{
+					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:    "Michael",
+					Surname: " ",
+				},
+				ReadBy: comment.ReadByList{
+					{
+						Time: time.Now().Format(time.RFC3339),
+						User: comment.UserInfo{
+							UUID:    "06e7f149-2ee1-48cc-9688-81d66b5a0ae7",
+							Name:    "James",
+							Surname: "Bond",
+							OrgName: "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+						},
+					},
+				},
+			},
+			wantErr: true,
+			wantErrMsg: func() string {
+				return strings.Join([]string{
+					`/: "text" value is required`,
+					`/created_by/surname: regexp pattern \S mismatch on string:  `,
+					`/read_by/0/user/org_display_name: regexp pattern \S mismatch on string: `,
+				}, "\n")
+			}(),
+		},
 	}
 
 	v := couchdb.NewValidator()
