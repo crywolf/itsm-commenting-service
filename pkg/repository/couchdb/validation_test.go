@@ -49,7 +49,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: "PropertyPath: /entity, Message: regexp pattern ^.*:.*$ mismatch on string: ",
+			wantErrMsg: "/entity: regexp pattern ^.*:.*$ mismatch on string: ",
 		},
 		{
 			name: "missing UUID",
@@ -65,7 +65,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /, Message: "uuid" value is required`,
+			wantErrMsg: `/: "uuid" value is required`,
 		},
 		{
 			name: "malformed UUID",
@@ -82,7 +82,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /uuid, Message: regexp pattern`,
+			wantErrMsg: `/uuid: regexp pattern`,
 		},
 		{
 			name: "missing Text",
@@ -99,7 +99,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /, Message: "text" value is required`,
+			wantErrMsg: `/: "text" value is required`,
 		},
 		{
 			name: "Text is white space string",
@@ -116,7 +116,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /text, Message: regexp pattern`,
+			wantErrMsg: `/text: regexp pattern`,
 		},
 		{
 			name: "missing ExternalID",
@@ -148,7 +148,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /external_id, Message: regexp pattern`,
+			wantErrMsg: `/external_id: regexp pattern`,
 		},
 		{
 			name: "missing CreatedAt",
@@ -163,7 +163,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /, Message: "created_at" value is required`,
+			wantErrMsg: `/: "created_at" value is required`,
 		},
 		{
 			name: "malformed CreatedAt",
@@ -179,7 +179,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /created_at, Message: invalid date-time`,
+			wantErrMsg: `/created_at: invalid date-time`,
 		},
 		{
 			name: "missing CreatedBy",
@@ -190,7 +190,7 @@ func TestValidate(t *testing.T) {
 				CreatedAt: time.Now().Format(time.RFC3339),
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /, Message: "created_by" value is required`,
+			wantErrMsg: `/: "created_by" value is required`,
 		},
 		{
 			name: "missing UUID in CreatedBy",
@@ -206,7 +206,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /created_by, Message: "uuid" value is required`,
+			wantErrMsg: `/created_by: "uuid" value is required`,
 		},
 		{
 			name: "malformed UUID in CreatedBy",
@@ -222,7 +222,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /created_by/uuid, Message: regexp pattern`,
+			wantErrMsg: `/created_by/uuid: regexp pattern`,
 		},
 		{
 			name: "missing Name in CreatedBy",
@@ -238,7 +238,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /created_by, Message: "name" value is required`,
+			wantErrMsg: `/created_by: "name" value is required`,
 		},
 		{
 			name: "missing Surname in CreatedBy",
@@ -254,7 +254,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /created_by, Message: "surname" value is required`,
+			wantErrMsg: `/created_by: "surname" value is required`,
 		},
 
 		// read_by
@@ -310,7 +310,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /read_by/0/user, Message: "uuid" value is required`,
+			wantErrMsg: `/read_by/0/user: "uuid" value is required`,
 		},
 		{
 			name: "malformed UUID in ReadBy user",
@@ -338,7 +338,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /read_by/0/user/uuid, Message: regexp pattern`,
+			wantErrMsg: `/read_by/0/user/uuid: regexp pattern`,
 		},
 		{
 			name: "missing Name in ReadBy user",
@@ -365,7 +365,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /read_by/0/user, Message: "name" value is required`,
+			wantErrMsg: `/read_by/0/user: "name" value is required`,
 		},
 		{
 			name: "missing Surname in ReadBy user",
@@ -392,7 +392,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /read_by/0/user, Message: "surname" value is required`,
+			wantErrMsg: `/read_by/0/user: "surname" value is required`,
 		},
 		{
 			name: "missing OrgName in ReadBy user",
@@ -419,7 +419,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /read_by/0/user/org_name, Message: regexp pattern`,
+			wantErrMsg: `/read_by/0/user/org_name: regexp pattern`,
 		},
 		{
 			name: "missing OrgDisplayName in ReadBy user",
@@ -446,7 +446,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `PropertyPath: /read_by/0/user/org_display_name, Message: regexp pattern`,
+			wantErrMsg: `/read_by/0/user/org_display_name: regexp pattern`,
 		},
 	}
 
@@ -455,11 +455,13 @@ func TestValidate(t *testing.T) {
 	for _, tt := range tests {
 
 		t.Run(tt.name, func(t *testing.T) {
-			if err := v.Validate(tt.comment); (err != nil) != tt.wantErr {
+			err := v.Validate(tt.comment)
+
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			if err := v.Validate(tt.comment); (err != nil) && !strings.Contains(err.Error(), tt.wantErrMsg) {
+			if err != nil && !strings.Contains(err.Error(), tt.wantErrMsg) {
 				t.Errorf("Validate() error message = %s, should contain %s", err, tt.wantErrMsg)
 			}
 		})
