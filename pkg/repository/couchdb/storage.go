@@ -77,6 +77,7 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 
 	uuid, err := repository.GenerateUUID(s.rand)
 	if err != nil {
+		s.logger.Error("could not generate UUID", zap.Error(err))
 		return "", err
 	}
 
@@ -244,6 +245,12 @@ func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID
 
 	c.ReadBy = append(c.ReadBy, readBy)
 
+	err = s.validator.Validate(c)
+	if err != nil {
+		s.logger.Error("invalid comment", zap.Error(err))
+		return false, err
+	}
+
 	// updated comment with revision ID
 	var uc struct {
 		Rev string `json:"_rev"`
@@ -276,7 +283,7 @@ func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID
 	return false, nil
 }
 
-// CreateDatabase creates new DB if it does not exist
+// CreateDatabase creates new DB if it does not exist. It returns true if database already existed.
 func (s *DBStorage) CreateDatabase(channelID, assetType string) (bool, error) {
 	dbName := databaseName(channelID, assetType)
 	ctx := context.TODO()
