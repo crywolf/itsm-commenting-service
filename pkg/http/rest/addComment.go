@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
+	"github.com/KompiTech/itsm-commenting-service/pkg/validation"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 )
@@ -17,10 +19,32 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("AddComment handler called")
 
-		decoder := json.NewDecoder(r.Body)
+		payload, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			s.logger.Error("could not read request body", zap.Error(err))
+			s.JSONError(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		defer func() { _ = r.Body.Close() }()
 
 		var newComment comment.Comment
-		err := decoder.Decode(&newComment)
+
+		err = s.payloadValidator.ValidatePayload(payload)
+		if err != nil {
+			var errGeneral *validation.ErrGeneral
+			if errors.As(err, &errGeneral) {
+				s.logger.Error("payload validation", zap.Error(err))
+				s.JSONError(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			s.logger.Warn("invalid payload", zap.Error(err))
+			s.JSONError(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		err = json.Unmarshal(payload, &newComment)
 		if err != nil {
 			eMsg := "could not decode JSON from request"
 			s.logger.Warn(eMsg, zap.Error(err))

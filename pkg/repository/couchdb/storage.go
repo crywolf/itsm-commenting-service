@@ -56,6 +56,10 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 		if err != nil {
 			logger.Fatal("couchdb client initialization failed", zap.Error(err))
 		}
+		on, err := client.Ping(context.TODO())
+		if err != nil || !on {
+			logger.Fatal("couchdb client PING failed", zap.Error(err))
+		}
 	} else {
 		client = cfg.Client
 	}

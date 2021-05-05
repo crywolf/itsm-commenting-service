@@ -8,6 +8,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
+	"github.com/stretchr/testify/require"
 )
 
 func TestValidate(t *testing.T) {
@@ -65,7 +66,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `/: "uuid" value is required`,
+			wantErrMsg: `/: 'uuid' value is required`,
 		},
 		{
 			name: "malformed UUID",
@@ -99,7 +100,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `/: "text" value is required`,
+			wantErrMsg: `/: 'text' value is required`,
 		},
 		{
 			name: "Text is white space string",
@@ -163,7 +164,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `/: "created_at" value is required`,
+			wantErrMsg: `/: 'created_at' value is required`,
 		},
 		{
 			name: "malformed CreatedAt",
@@ -190,7 +191,7 @@ func TestValidate(t *testing.T) {
 				CreatedAt: time.Now().Format(time.RFC3339),
 			},
 			wantErr:    true,
-			wantErrMsg: `/: "created_by" value is required`,
+			wantErrMsg: `/: 'created_by' value is required`,
 		},
 		{
 			name: "missing UUID in CreatedBy",
@@ -206,7 +207,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `/created_by: "uuid" value is required`,
+			wantErrMsg: `/created_by: 'uuid' value is required`,
 		},
 		{
 			name: "malformed UUID in CreatedBy",
@@ -238,7 +239,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `/created_by: "name" value is required`,
+			wantErrMsg: `/created_by: 'name' value is required`,
 		},
 		{
 			name: "missing Surname in CreatedBy",
@@ -254,7 +255,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `/created_by: "surname" value is required`,
+			wantErrMsg: `/created_by: 'surname' value is required`,
 		},
 
 		// read_by
@@ -310,7 +311,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `/read_by/0/user: "uuid" value is required`,
+			wantErrMsg: `/read_by/0/user: 'uuid' value is required`,
 		},
 		{
 			name: "malformed UUID in ReadBy user",
@@ -365,7 +366,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `/read_by/0/user: "name" value is required`,
+			wantErrMsg: `/read_by/0/user: 'name' value is required`,
 		},
 		{
 			name: "missing Surname in ReadBy user",
@@ -392,7 +393,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `/read_by/0/user: "surname" value is required`,
+			wantErrMsg: `/read_by/0/user: 'surname' value is required`,
 		},
 		{
 			name: "missing OrgName in ReadBy user",
@@ -451,8 +452,8 @@ func TestValidate(t *testing.T) {
 		{
 			name: "more invalid fields",
 			comment: comment.Comment{
-				UUID:   "9445f50b-28c4-4c9e-a9a6-4b16d6506c33",
-				Entity: e,
+				UUID:      "9445f50b-28c4-4c9e-a9a6-4b16d6506c33",
+				Entity:    e,
 				CreatedAt: time.Now().Format(time.RFC3339),
 				CreatedBy: &comment.CreatedBy{
 					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
@@ -474,7 +475,7 @@ func TestValidate(t *testing.T) {
 			wantErr: true,
 			wantErrMsg: func() string {
 				return strings.Join([]string{
-					`/: "text" value is required`,
+					`/: 'text' value is required`,
 					`/created_by/surname: regexp pattern \S mismatch on string:  `,
 					`/read_by/0/user/org_display_name: regexp pattern \S mismatch on string: `,
 				}, "\n")
@@ -482,7 +483,8 @@ func TestValidate(t *testing.T) {
 		},
 	}
 
-	v := couchdb.NewValidator()
+	v, err := couchdb.NewValidator()
+	require.NoError(t, err)
 
 	for _, tt := range tests {
 

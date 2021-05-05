@@ -1,0 +1,16 @@
+title: AddCommentPayload
+type: object
+
+properties:
+  entity:
+    description: Specification of target entity, format <name>:<uuid>
+    type: string
+    pattern: ^.*:.*$
+  text:
+    type: string
+    pattern: \S
+
+additionalProperties: false
+required:
+  - entity
+  - text

@@ -14,6 +14,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/memory"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
@@ -55,11 +56,15 @@ func TestAddCommentDBMock(t *testing.T) {
 
 	adder := adding.NewService(s)
 
+	pv, err := validation.NewPayloadValidator()
+	require.NoError(t, err)
+
 	server := rest.NewServer(rest.Config{
-		Addr:          "service.url",
-		UserService:   us,
-		Logger:        logger,
-		AddingService: adder,
+		Addr:             "service.url",
+		UserService:      us,
+		Logger:           logger,
+		AddingService:    adder,
+		PayloadValidator: pv,
 	})
 
 	payload := []byte(`{
@@ -184,11 +189,15 @@ func TestAddCommentAdderStub(t *testing.T) {
 	us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 		Return(mockUserData, nil)
 
+	pv, err := validation.NewPayloadValidator()
+	require.NoError(t, err)
+
 	server := rest.NewServer(rest.Config{
-		Addr:          "service.url",
-		UserService:   us,
-		Logger:        logger,
-		AddingService: adder,
+		Addr:             "service.url",
+		UserService:      us,
+		Logger:           logger,
+		AddingService:    adder,
+		PayloadValidator: pv,
 	})
 
 	payload := []byte(`{
@@ -232,11 +241,15 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 	us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 		Return(mockUserData, nil)
 
+	pv, err := validation.NewPayloadValidator()
+	require.NoError(t, err)
+
 	server := rest.NewServer(rest.Config{
-		Addr:          "service.url",
-		UserService:   us,
-		Logger:        logger,
-		AddingService: adder,
+		Addr:             "service.url",
+		UserService:      us,
+		Logger:           logger,
+		AddingService:    adder,
+		PayloadValidator: pv,
 	})
 
 	payload := []byte(`{"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", "text": "test with entity 1"}`)

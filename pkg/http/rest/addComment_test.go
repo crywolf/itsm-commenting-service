@@ -9,11 +9,14 @@ import (
 	"testing"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
+	pvalidation "github.com/KompiTech/itsm-commenting-service/pkg/validation"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAddCommentHandler(t *testing.T) {
@@ -32,10 +35,14 @@ func TestAddCommentHandler(t *testing.T) {
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
 		server := NewServer(Config{
-			Addr:        "service.url",
-			UserService: us,
-			Logger:      logger,
+			Addr:             "service.url",
+			Logger:           logger,
+			UserService:      us,
+			PayloadValidator: pv,
 		})
 
 		payload := []byte(`{
@@ -63,15 +70,19 @@ func TestAddCommentHandler(t *testing.T) {
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 
-	t.Run("when request is not valid", func(t *testing.T) {
+	t.Run("when request is not valid JSON", func(t *testing.T) {
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
 		server := NewServer(Config{
-			Addr:        "service.url",
-			UserService: us,
-			Logger:      logger,
+			Addr:             "service.url",
+			Logger:           logger,
+			UserService:      us,
+			PayloadValidator: pv,
 		})
 
 		payload := []byte(`{"invalid json request"}`)
@@ -92,7 +103,92 @@ func TestAddCommentHandler(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Status code")
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
-		expectedJSON := `{"error":"could not decode JSON from request: invalid character '}' after object key"}`
+		expectedJSON := `{"error":"error parsing JSON bytes: invalid character '}' after object key"}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
+
+	t.Run("when request is not valid ('uuid' key present, empty 'text' key)", func(t *testing.T) {
+		us := new(mocks.UserServiceMock)
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
+			Return(mockUserData, nil)
+
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
+		server := NewServer(Config{
+			Addr:             "service.url",
+			Logger:           logger,
+			UserService:      us,
+			PayloadValidator: pv,
+		})
+
+		payload := []byte(`{
+			"uuid": "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+			"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
+			"text": ""
+		}`)
+
+		body := bytes.NewReader(payload)
+		req := httptest.NewRequest("POST", "/comments", body)
+		req.Header.Set("grpc-metadata-space", channelID)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"error":"/: additional properties are not allowed\n/text: regexp pattern \\S mismatch on string: "}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
+
+	t.Run("when validator fails (ie. returns general error", func(t *testing.T) {
+		us := new(mocks.UserServiceMock)
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
+			Return(mockUserData, nil)
+
+		pv := new(mocks.PayloadValidatorMock)
+		pv.On("ValidatePayload", mock.AnythingOfType("[]uint8")).
+			Return(pvalidation.NewErrGeneral(errors.New("could not open schema file")))
+
+		server := NewServer(Config{
+			Addr:             "service.url",
+			Logger:           logger,
+			UserService:      us,
+			PayloadValidator: pv,
+		})
+
+		payload := []byte(`{
+			"uuid": "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+			"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
+			"text": "Comment 1"
+		}`)
+
+		body := bytes.NewReader(payload)
+		req := httptest.NewRequest("POST", "/comments", body)
+		req.Header.Set("grpc-metadata-space", channelID)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"error":"general error: could not open schema file"}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 
@@ -106,11 +202,15 @@ func TestAddCommentHandler(t *testing.T) {
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
 			Return("38316161-3035-4864-ad30-6231392d3433", nil)
 
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
 		server := NewServer(Config{
-			Addr:          "service.url",
-			UserService:   us,
-			Logger:        logger,
-			AddingService: adder,
+			Addr:             "service.url",
+			Logger:           logger,
+			UserService:      us,
+			AddingService:    adder,
+			PayloadValidator: pv,
 		})
 
 		payload := []byte(`{
@@ -141,11 +241,15 @@ func TestAddCommentHandler(t *testing.T) {
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
 			Return("", couchdb.ErrorConflict("Comment already exists"))
 
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
 		server := NewServer(Config{
-			Addr:          "service.url",
-			UserService:   us,
-			Logger:        logger,
-			AddingService: adder,
+			Addr:             "service.url",
+			Logger:           logger,
+			UserService:      us,
+			AddingService:    adder,
+			PayloadValidator: pv,
 		})
 
 		payload := []byte(`{
@@ -184,11 +288,15 @@ func TestAddCommentHandler(t *testing.T) {
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
 			Return("", errors.New("some error occurred"))
 
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
 		server := NewServer(Config{
-			Addr:          "service.url",
-			UserService:   us,
-			Logger:        logger,
-			AddingService: adder,
+			Addr:             "service.url",
+			Logger:           logger,
+			UserService:      us,
+			AddingService:    adder,
+			PayloadValidator: pv,
 		})
 
 		payload := []byte(`{
@@ -222,10 +330,14 @@ func TestAddCommentHandler(t *testing.T) {
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(user.BasicInfo{}, errors.New("some user service error"))
 
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
 		server := NewServer(Config{
-			Addr:        "service.url",
-			UserService: us,
-			Logger:      logger,
+			Addr:             "service.url",
+			Logger:           logger,
+			UserService:      us,
+			PayloadValidator: pv,
 		})
 
 		payload := []byte(`{
@@ -264,11 +376,15 @@ func TestAddCommentHandler(t *testing.T) {
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
 			Return("38316161-3035-4864-ad30-6231392d3433", nil)
 
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
 		server := NewServer(Config{
-			Addr:          "service.url",
-			UserService:   us,
-			Logger:        logger,
-			AddingService: adder,
+			Addr:             "service.url",
+			Logger:           logger,
+			UserService:      us,
+			AddingService:    adder,
+			PayloadValidator: pv,
 		})
 
 		payload := []byte(`{

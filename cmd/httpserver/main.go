@@ -8,6 +8,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/updating"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"go.uber.org/zap"
 )
@@ -23,18 +24,28 @@ func main() {
 		bindAddress = "localhost:8080"
 	}
 
+	v, err := couchdb.NewValidator()
+	if err != nil {
+		logger.Fatal("could not create couchDB validation service", zap.Error(err))
+	}
+
 	s := couchdb.NewStorage(logger, couchdb.Config{
 		Host:      "localhost",
 		Port:      "5984",
 		Username:  "admin",
 		Passwd:    "admin",
-		Validator: couchdb.NewValidator(),
+		Validator: v,
 	})
 
 	userService := rest.NewUserService()
 	adder := adding.NewService(s)
 	lister := listing.NewService(s)
 	updater := updating.NewService(s)
+
+	pv, err := validation.NewPayloadValidator()
+	if err != nil {
+		logger.Fatal("could not create payload validation service", zap.Error(err))
+	}
 
 	server := rest.NewServer(rest.Config{
 		Addr:              bindAddress,
@@ -44,6 +55,7 @@ func main() {
 		ListingService:    lister,
 		UpdatingService:   updater,
 		RepositoryService: s,
+		PayloadValidator:  pv,
 	})
 
 	logger.Info("starting server...")

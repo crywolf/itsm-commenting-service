@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/updating"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -20,22 +22,24 @@ type Server struct {
 	router *httprouter.Router
 	logger *zap.Logger
 
-	userService UserService
-	adder       adding.Service
-	lister      listing.Service
-	updater     updating.Service
+	userService       UserService
+	adder             adding.Service
+	lister            listing.Service
+	updater           updating.Service
 	repositoryService repository.Service
+	payloadValidator validation.PayloadValidator
 }
 
 // Config contains server configuration and dependencies
 type Config struct {
-	Addr            string
-	Logger          *zap.Logger
-	UserService     UserService
-	AddingService   adding.Service
-	ListingService  listing.Service
-	UpdatingService updating.Service
+	Addr              string
+	Logger            *zap.Logger
+	UserService       UserService
+	AddingService     adding.Service
+	ListingService    listing.Service
+	UpdatingService   updating.Service
 	RepositoryService repository.Service
+	PayloadValidator validation.PayloadValidator
 }
 
 // NewServer creates new server with the necessary dependencies
@@ -43,14 +47,15 @@ func NewServer(cfg Config) *Server {
 	r := httprouter.New()
 
 	s := &Server{
-		Addr:        cfg.Addr,
-		router:      r,
-		logger:      cfg.Logger,
-		userService: cfg.UserService,
-		adder:       cfg.AddingService,
-		lister:      cfg.ListingService,
-		updater:     cfg.UpdatingService,
+		Addr:              cfg.Addr,
+		router:            r,
+		logger:            cfg.Logger,
+		userService:       cfg.UserService,
+		adder:             cfg.AddingService,
+		lister:            cfg.ListingService,
+		updater:           cfg.UpdatingService,
 		repositoryService: cfg.RepositoryService,
+		payloadValidator: cfg.PayloadValidator,
 	}
 	s.routes()
 
@@ -101,5 +106,6 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s Server) JSONError(w http.ResponseWriter, error string, code int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	_, _ = fmt.Fprintln(w, `{"error":"`+error+`"}`)
+	errorJSON, _ := json.Marshal(error)
+	_, _ = fmt.Fprintf(w, `{"error":%s}`+"\n", errorJSON)
 }

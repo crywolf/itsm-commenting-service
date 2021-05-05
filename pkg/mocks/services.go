@@ -69,3 +69,14 @@ func (s *ValidatorMock) Validate(c comment.Comment) error {
 	args := s.Called(c)
 	return args.Error(0)
 }
+
+// PayloadValidatorMock is a mock of payload validation service
+type PayloadValidatorMock struct {
+	mock.Mock
+}
+
+// ValidatePayload returns error if payload is not valid
+func (s *PayloadValidatorMock) ValidatePayload(p []byte) error {
+	args := s.Called(p)
+	return args.Error(0)
+}
