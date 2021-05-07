@@ -65,10 +65,12 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
-		createdBy := &comment.CreatedBy{
-			UUID:    user.UUID,
-			Name:    user.Name,
-			Surname: user.Surname,
+		createdBy := &comment.UserInfo{
+			UUID:           user.UUID,
+			Name:           user.Name,
+			Surname:        user.Surname,
+			OrgName:        user.OrgName,
+			OrgDisplayName: user.OrgDisplayName,
 		}
 		newComment.CreatedBy = createdBy
 

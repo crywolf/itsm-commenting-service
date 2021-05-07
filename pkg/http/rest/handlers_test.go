@@ -13,6 +13,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
+	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
@@ -36,10 +37,18 @@ func TestAddCommentDBMock(t *testing.T) {
 	defer func() { _ = logger.Sync() }()
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+	orgID := "a897a407-e41b-4b14-924a-39f5d5a8038f"
 
 	validator := new(mocks.ValidatorMock)
 	validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
-	couchMock, s := testutils.NewCouchDBMock(logger, validator)
+
+	events := new(mocks.EventServiceMock)
+	queue := new(mocks.QueueMock)
+	events.On("NewQueue", event.UUID(channelID), event.UUID(orgID)).Return(queue, nil)
+	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), "comment").Return(nil)
+	queue.On("PublishEvents").Return(nil)
+
+	couchMock, s := testutils.NewCouchDBMock(logger, validator, events)
 
 	db := couchMock.NewDB()
 	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
@@ -47,9 +56,11 @@ func TestAddCommentDBMock(t *testing.T) {
 
 	us := new(mocks.UserServiceMock)
 	mockUserData := user.BasicInfo{
-		UUID:    "2af4f493-0bd5-4513-b440-6cbb465feadb",
-		Name:    "Alice",
-		Surname: "Cooper",
+		UUID:           "2af4f493-0bd5-4513-b440-6cbb465feadb",
+		Name:           "Alice",
+		Surname:        "Cooper",
+		OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+		OrgDisplayName: "Kompitech",
 	}
 	us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 		Return(mockUserData, nil)
@@ -90,10 +101,18 @@ func TestGetCommentDBMock(t *testing.T) {
 	defer func() { _ = logger.Sync() }()
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+	orgID := "a897a407-e41b-4b14-924a-39f5d5a8038f"
 
 	validator := new(mocks.ValidatorMock)
 	validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
-	couchMock, s := testutils.NewCouchDBMock(logger, validator)
+
+	events := new(mocks.EventServiceMock)
+	queue := new(mocks.QueueMock)
+	events.On("NewQueue", event.UUID(channelID), event.UUID(orgID)).Return(queue, nil)
+	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), "comment").Return(nil)
+	queue.On("PublishEvents").Return(nil)
+
+	couchMock, s := testutils.NewCouchDBMock(logger, validator, events)
 
 	db := couchMock.NewDB()
 	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
@@ -106,10 +125,12 @@ func TestGetCommentDBMock(t *testing.T) {
 		UUID:   "38316161-3035-4864-ad30-6231392d3433",
 		Text:   "Test comment 1",
 		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
-		CreatedBy: &comment.CreatedBy{
-			UUID:    "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
-			Name:    "Bob",
-			Surname: "Martin",
+		CreatedBy: &comment.UserInfo{
+			UUID:           "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
+			Name:           "Bob",
+			Surname:        "Martin",
+			OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+			OrgDisplayName: "Kompitech",
 		},
 		CreatedAt: "2021-04-01T12:34:56+02:00",
 	}
@@ -120,8 +141,14 @@ func TestGetCommentDBMock(t *testing.T) {
 	db.ExpectGet().WithDocID("38316161-3035-4864-ad30-6231392d3433").WillReturn(doc)
 
 	c1 := comment.Comment{
-		//Text:   "Test comment 1",
-		//Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
+		Text: "Test comment 1",
+		CreatedBy: &comment.UserInfo{
+			UUID:           "7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
+			Name:           "Andy",
+			Surname:        "Orange",
+			OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+			OrgDisplayName: "Kompitech",
+		},
 	}
 
 	assetType := "comment"
@@ -159,7 +186,9 @@ func TestGetCommentDBMock(t *testing.T) {
 		"created_by":{
 			"uuid":"8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
 			"name":"Bob",
-			"surname": "Martin"
+			"surname":"Martin",
+			"org_name":"a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+			"org_display_name":"Kompitech"
 		},
 		"created_at":"2021-04-01T12:34:56+02:00"
 	}`

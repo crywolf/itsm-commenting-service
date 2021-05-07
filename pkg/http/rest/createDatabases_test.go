@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
 	"github.com/stretchr/testify/assert"
 )
@@ -47,8 +46,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 	})
 
 	t.Run("when databases already exist", func(t *testing.T) {
-		validator := new(mocks.ValidatorMock)
-		couchMock, s := testutils.NewCouchDBMock(logger, validator)
+		couchMock, s := testutils.NewCouchDBMock(logger, nil, nil)
 
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(true)
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(true)
@@ -79,8 +77,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 	})
 
 	t.Run("when databases do not exist", func(t *testing.T) {
-		validator := new(mocks.ValidatorMock)
-		couchMock, s := testutils.NewCouchDBMock(logger, validator)
+		couchMock, s := testutils.NewCouchDBMock(logger, nil, nil)
 
 		// comments
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(false)

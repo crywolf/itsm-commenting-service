@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
+	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"go.uber.org/zap"
 
@@ -28,19 +30,21 @@ type DBStorage struct {
 	logger    *zap.Logger
 	rand      io.Reader
 	validator Validator
+	events    event.Service
 	username  string
 	passwd    string
 }
 
 // Config contains values for the data source
 type Config struct {
-	Client    *kivik.Client
-	Rand      io.Reader
-	Validator Validator
-	Host      string
-	Port      string
-	Username  string
-	Passwd    string
+	Client       *kivik.Client
+	Rand         io.Reader
+	Validator    Validator
+	EventService event.Service
+	Host         string
+	Port         string
+	Username     string
+	Passwd       string
 }
 
 // NewStorage creates new couchdb storage with initialized client
@@ -69,6 +73,7 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 		logger:    logger,
 		rand:      cfg.Rand,
 		validator: cfg.Validator,
+		events:    cfg.EventService,
 	}
 }
 
@@ -86,6 +91,8 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 	}
 
 	c.UUID = uuid
+	c.CreatedAt = time.Now().Format(time.RFC3339)
+
 	err = s.validator.Validate(c)
 	if err != nil {
 		s.logger.Error("invalid comment", zap.Error(err))
@@ -112,6 +119,21 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 	}
 
 	s.logger.Info(fmt.Sprintf("Comment inserted with revision %s", rev))
+
+	q, err := s.events.NewQueue(event.UUID(channelID), event.UUID(c.CreatedBy.OrgID()))
+	if err != nil {
+		s.logger.Error("could not get event queue", zap.Error(err))
+	}
+
+	err = q.AddCreateEvent(c, assetType)
+	if err != nil {
+		s.logger.Error("could not create event", zap.Error(err))
+	}
+
+	err = q.PublishEvents()
+	if err != nil {
+		s.logger.Error("could not publish events", zap.Error(err))
+	}
 
 	return uuid, nil
 }

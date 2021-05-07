@@ -14,7 +14,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-//ErrGeneral represents general error returned during pre-validation setup
+// ErrGeneral represents general error returned during pre-validation setup
 type ErrGeneral struct {
 	err error
 }

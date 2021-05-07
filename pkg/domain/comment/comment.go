@@ -1,6 +1,8 @@
 package comment
 
 import (
+	"strings"
+
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
 )
 
@@ -12,7 +14,7 @@ type Comment struct {
 	ExternalID string        `json:"external_id,omitempty"`
 	ReadBy     ReadByList    `json:"read_by,omitempty"`
 	CreatedAt  string        `json:"created_at,omitempty"`
-	CreatedBy  *CreatedBy    `json:"created_by,omitempty"`
+	CreatedBy  *UserInfo     `json:"created_by,omitempty"`
 }
 
 // ReadByList is the list of users who read this comment
@@ -29,13 +31,11 @@ type UserInfo struct {
 	UUID           string `json:"uuid,omitempty"`
 	Name           string `json:"name,omitempty"`
 	Surname        string `json:"surname,omitempty"`
-	OrgDisplayName string `json:"org_display_name"`
-	OrgName        string `json:"org_name"`
+	OrgDisplayName string `json:"org_display_name,omitempty"`
+	OrgName        string `json:"org_name,omitempty"`
 }
 
-// CreatedBy represents minimalistic info user that created this comment
-type CreatedBy struct {
-	UUID    string `json:"uuid,omitempty"`
-	Name    string `json:"name,omitempty"`
-	Surname string `json:"surname,omitempty"`
+// OrgID returns org_id based on orgName
+func (u *UserInfo) OrgID() string {
+	return strings.SplitN(u.OrgName, ".", 2)[0]
 }

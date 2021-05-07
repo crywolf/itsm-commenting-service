@@ -3,13 +3,14 @@ package testutils
 import (
 	"strings"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"github.com/go-kivik/kivikmock/v3"
 	"go.uber.org/zap"
 )
 
 // NewCouchDBMock creates new CouchDB mock
-func NewCouchDBMock(logger *zap.Logger, validator couchdb.Validator) (*kivikmock.Client, *couchdb.DBStorage) {
+func NewCouchDBMock(logger *zap.Logger, validator couchdb.Validator, events event.Service) (*kivikmock.Client, *couchdb.DBStorage) {
 	client, mock, err := kivikmock.New()
 	if err != nil {
 		panic(err)
@@ -20,9 +21,10 @@ func NewCouchDBMock(logger *zap.Logger, validator couchdb.Validator) (*kivikmock
 	rand := strings.NewReader("81aa058d-0b19-43e9-82ae-a7bca2457f10") // pseudo-random seed
 
 	storage := couchdb.NewStorage(logger, couchdb.Config{
-		Client:    client,
-		Rand:      rand,
-		Validator: validator,
+		Client:       client,
+		Rand:         rand,
+		Validator:    validator,
+		EventService: events,
 	})
 
 	return mock, storage

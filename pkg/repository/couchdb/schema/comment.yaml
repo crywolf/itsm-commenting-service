@@ -29,6 +29,8 @@ $defs:
       - uuid
       - name
       - surname
+      - org_name
+      - org_display_name
 
 properties:
   uuid:

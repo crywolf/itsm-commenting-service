@@ -7,6 +7,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/updating"
+	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
@@ -30,11 +31,12 @@ func main() {
 	}
 
 	s := couchdb.NewStorage(logger, couchdb.Config{
-		Host:      "localhost",
-		Port:      "5984",
-		Username:  "admin",
-		Passwd:    "admin",
-		Validator: v,
+		Host:         "localhost",
+		Port:         "5984",
+		Username:     "admin",
+		Passwd:       "admin",
+		Validator:    v,
+		EventService: event.NewService(),
 	})
 
 	userService := rest.NewUserService()

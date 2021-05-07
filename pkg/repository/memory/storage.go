@@ -79,7 +79,7 @@ func (m *Storage) GetComment(id, channelID, assetType string) (comment.Comment, 
 
 			c.CreatedAt = sc.CreatedAt
 			if sc.CreatedBy.UUID != "" {
-				createdBy := &comment.CreatedBy{
+				createdBy := &comment.UserInfo{
 					UUID:    sc.CreatedBy.UUID,
 					Name:    sc.CreatedBy.Name,
 					Surname: sc.CreatedBy.Surname,

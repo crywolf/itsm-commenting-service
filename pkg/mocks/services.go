@@ -6,6 +6,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
+	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -78,5 +79,33 @@ type PayloadValidatorMock struct {
 // ValidatePayload returns error if payload is not valid
 func (s *PayloadValidatorMock) ValidatePayload(p []byte) error {
 	args := s.Called(p)
+	return args.Error(0)
+}
+
+// EventServiceMock is a mock of event service
+type EventServiceMock struct {
+	mock.Mock
+}
+
+// NewQueue creates new event queue
+func (s *EventServiceMock) NewQueue(channelID, orgID event.UUID) (event.Queue, error) {
+	args := s.Called(channelID, orgID)
+	return args.Get(0).(event.Queue), args.Error(1)
+}
+
+// QueueMock is a mock of event queue
+type QueueMock struct {
+	mock.Mock
+}
+
+// AddCreateEvent prepares new event of type CREATE
+func (q *QueueMock) AddCreateEvent(c comment.Comment, assetType string) error {
+	args := q.Called(c, assetType)
+	return args.Error(0)
+}
+
+// PublishEvents publishes all prepared events not published yet
+func (q *QueueMock) PublishEvents() error {
+	args := q.Called()
 	return args.Error(0)
 }

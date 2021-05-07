@@ -54,10 +54,12 @@ func TestGetCommentHandler(t *testing.T) {
 			Text:   "Test comment 1",
 			Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 			UUID:   uuid,
-			CreatedBy: &comment.CreatedBy{
-				UUID:    "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
-				Name:    "Alice",
-				Surname: "Cooper",
+			CreatedBy: &comment.UserInfo{
+				UUID:           "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
+				Name:           "Alice",
+				Surname:        "Cooper",
+				OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+				OrgDisplayName: "Kompitech",
 			},
 			CreatedAt: "2021-04-01T12:34:56+02:00",
 		}
@@ -97,7 +99,9 @@ func TestGetCommentHandler(t *testing.T) {
 			"created_by":{
 				"uuid":"8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
 				"name":"Alice",
-				"surname":"Cooper"
+				"surname":"Cooper",
+				"org_name":"a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+				"org_display_name":"Kompitech"
 			},
 			"created_at":"2021-04-01T12:34:56+02:00"
 		}`
@@ -181,10 +185,12 @@ func TestGetCommentHandler(t *testing.T) {
 			Text:   "Test worknote 1",
 			Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 			UUID:   uuid,
-			CreatedBy: &comment.CreatedBy{
-				UUID:    "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
-				Name:    "Alice",
-				Surname: "Cooper",
+			CreatedBy: &comment.UserInfo{
+				UUID:           "8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
+				Name:           "Alice",
+				Surname:        "Cooper",
+				OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+				OrgDisplayName: "Kompitech",
 			},
 			CreatedAt: "2021-04-01T12:34:56+02:00",
 		}
@@ -224,7 +230,9 @@ func TestGetCommentHandler(t *testing.T) {
 			"created_by":{
 				"uuid":"8540d943-8ccd-4ff1-8a08-0c3aa338c58e",
 				"name":"Alice",
-				"surname":"Cooper"
+				"surname":"Cooper",
+				"org_name":"a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+				"org_display_name":"Kompitech"
 			},
 			"created_at":"2021-04-01T12:34:56+02:00"
 		}`

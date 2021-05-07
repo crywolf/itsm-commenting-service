@@ -28,10 +28,12 @@ func TestValidate(t *testing.T) {
 				Text:       "Comment 1",
 				ExternalID: "some external ID",
 				CreatedAt:  time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr: false,
@@ -43,10 +45,12 @@ func TestValidate(t *testing.T) {
 				Text:       "Comment 1",
 				ExternalID: "some external ID",
 				CreatedAt:  time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr:    true,
@@ -59,10 +63,12 @@ func TestValidate(t *testing.T) {
 				Text:       "Comment 1",
 				ExternalID: "some external ID",
 				CreatedAt:  time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr:    true,
@@ -76,10 +82,12 @@ func TestValidate(t *testing.T) {
 				Text:       "Comment 1",
 				ExternalID: "some external ID",
 				CreatedAt:  time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr:    true,
@@ -93,10 +101,12 @@ func TestValidate(t *testing.T) {
 				Text:       "",
 				ExternalID: "some external ID",
 				CreatedAt:  time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr:    true,
@@ -110,10 +120,12 @@ func TestValidate(t *testing.T) {
 				Text:       " ",
 				ExternalID: "some external ID",
 				CreatedAt:  time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr:    true,
@@ -126,10 +138,12 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr: false,
@@ -142,10 +156,12 @@ func TestValidate(t *testing.T) {
 				Text:       "Comment 1",
 				ExternalID: " ",
 				CreatedAt:  time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr:    true,
@@ -157,10 +173,12 @@ func TestValidate(t *testing.T) {
 				UUID:   "9445f50b-28c4-4c9e-a9a6-4b16d6506c33",
 				Entity: e,
 				Text:   "Comment 1",
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr:    true,
@@ -173,10 +191,12 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: "1.2.2003",
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr:    true,
@@ -200,7 +220,7 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
+				CreatedBy: &comment.UserInfo{
 					UUID:    "",
 					Name:    "Michael",
 					Surname: "Jackson",
@@ -216,10 +236,12 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "wrong UUID format",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "wrong UUID format",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr:    true,
@@ -232,10 +254,12 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr:    true,
@@ -248,14 +272,33 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 			},
 			wantErr:    true,
 			wantErrMsg: `/created_by: 'surname' value is required`,
+		},
+		{
+			name: "missing OrgName in CreatedBy",
+			comment: comment.Comment{
+				UUID:      "9445f50b-28c4-4c9e-a9a6-4b16d6506c33",
+				Entity:    e,
+				Text:      "Comment 1",
+				CreatedAt: time.Now().Format(time.RFC3339),
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgDisplayName: "Kompitech",
+				},
+			},
+			wantErr:    true,
+			wantErrMsg: `/created_by: 'org_name' value is required`,
 		},
 
 		// read_by
@@ -266,10 +309,12 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 				ReadBy: comment.ReadByList{
 					{
@@ -293,10 +338,12 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 				ReadBy: comment.ReadByList{
 					{
@@ -320,10 +367,12 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 				ReadBy: comment.ReadByList{
 					{
@@ -348,10 +397,12 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 				ReadBy: comment.ReadByList{
 					{
@@ -375,10 +426,12 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 				ReadBy: comment.ReadByList{
 					{
@@ -402,10 +455,12 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 				ReadBy: comment.ReadByList{
 					{
@@ -420,7 +475,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `/read_by/0/user/org_name: regexp pattern`,
+			wantErrMsg: `/read_by/0/user: 'org_name' value is required`,
 		},
 		{
 			name: "missing OrgDisplayName in ReadBy user",
@@ -429,10 +484,12 @@ func TestValidate(t *testing.T) {
 				Entity:    e,
 				Text:      "Comment 1",
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: "Jackson",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        "Jackson",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 				ReadBy: comment.ReadByList{
 					{
@@ -447,7 +504,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr:    true,
-			wantErrMsg: `/read_by/0/user/org_display_name: regexp pattern`,
+			wantErrMsg: `/read_by/0/user: 'org_display_name' value is required`,
 		},
 		{
 			name: "more invalid fields",
@@ -455,10 +512,12 @@ func TestValidate(t *testing.T) {
 				UUID:      "9445f50b-28c4-4c9e-a9a6-4b16d6506c33",
 				Entity:    e,
 				CreatedAt: time.Now().Format(time.RFC3339),
-				CreatedBy: &comment.CreatedBy{
-					UUID:    "1e88630d-2457-4f60-a66c-34a542a2e1f4",
-					Name:    "Michael",
-					Surname: " ",
+				CreatedBy: &comment.UserInfo{
+					UUID:           "1e88630d-2457-4f60-a66c-34a542a2e1f4",
+					Name:           "Michael",
+					Surname:        " ",
+					OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+					OrgDisplayName: "Kompitech",
 				},
 				ReadBy: comment.ReadByList{
 					{
@@ -477,7 +536,7 @@ func TestValidate(t *testing.T) {
 				return strings.Join([]string{
 					`/: 'text' value is required`,
 					`/created_by/surname: regexp pattern \S mismatch on string:  `,
-					`/read_by/0/user/org_display_name: regexp pattern \S mismatch on string: `,
+					`/read_by/0/user: 'org_display_name' value is required`,
 				}, "\n")
 			}(),
 		},
