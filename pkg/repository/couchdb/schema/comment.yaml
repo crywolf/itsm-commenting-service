@@ -5,13 +5,16 @@ $defs:
   uuid:
     type: string
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+  uuid_legacy:
+    type: string
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
 
   user:
     description: user basic data
     type: object
     properties:
       uuid:
-        $ref: "#/$defs/uuid"
+        $ref: "#/$defs/uuid_legacy"
       name:
         type: string
         pattern: \S

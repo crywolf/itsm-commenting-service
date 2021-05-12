@@ -361,7 +361,7 @@ func TestAddCommentHandler(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode, "Status code")
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
-		expectedJSON := `{"error":"could not retrieve correct user info from user service"}`
+		expectedJSON := `{"error":"could not retrieve correct user info from user service: some user service error"}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 

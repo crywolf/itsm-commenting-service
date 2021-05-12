@@ -6,8 +6,14 @@ import (
 	"net/http"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
+	pb "github.com/KompiTech/itsm-user-service/api/userservice"
 	"github.com/julienschmidt/httprouter"
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type userKeyType int
@@ -20,13 +26,15 @@ func (s Server) AddUserInfo(next httprouter.Handle, us UserService) httprouter.H
 		userData, err := us.UserBasicInfo(r)
 		if err != nil {
 			s.logger.Error("AddUserInfo middleware: UserBasicInfo service failed:", zap.Error(err))
-			s.JSONError(w, "could not retrieve correct user info from user service", http.StatusInternalServerError)
+			errMsg := errors.WithMessage(err, "could not retrieve correct user info from user service").Error()
+			s.JSONError(w, errMsg, http.StatusInternalServerError)
 			return
 		}
 
 		if userData.UUID == "" {
 			s.logger.Error(fmt.Sprintf("AddUserInfo middleware: UserBasicInfo service returned invalid data: %v", userData))
-			s.JSONError(w, "could not retrieve correct user info from user service", http.StatusInternalServerError)
+			errMsg := errors.WithMessage(err, "could not retrieve correct user info from user service").Error()
+			s.JSONError(w, errMsg, http.StatusInternalServerError)
 			return
 		}
 
@@ -47,28 +55,51 @@ type UserService interface {
 	UserBasicInfo(r *http.Request) (user.BasicInfo, error)
 }
 
-// NewUserService creates user service
-func NewUserService() UserService {
-	return &userService{}
+// NewUserService creates user service with initialized GRPC client
+func NewUserService() (UserService, error) {
+	viper.SetDefault("UserServiceGRPCDialTarget", "localhost:50051")
+	_ = viper.BindEnv("UserServiceGRPCDialTarget", "USER_SERVICE_GRPC_DIAL_TARGET")
+
+	conn, err := grpc.Dial(viper.GetString("UserServiceGRPCDialTarget"),
+		grpc.WithInsecure(),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &userService{
+		client: pb.NewUserManagementServiceClient(conn),
+	}, nil
 }
 
-// userService calls external user service that provides basic info about user
 type userService struct {
-	//client
+	client pb.UserManagementServiceClient
 }
 
-// UserBasicInfo returns basic info about user who initiated the request
+// UserBasicInfo calls external use service and returns basic info about user who initiated the request
 func (s userService) UserBasicInfo(r *http.Request) (user.BasicInfo, error) {
-	//authHeader := r.Header.Get("authorization")
-	//fmt.Println(authHeader)
+	md := metadata.New(map[string]string{
+		"grpc-metadata-space": r.Header.Get("grpc-metadata-space"),
+		"authorization":       r.Header.Get("authorization"),
+	})
 
-	// TODO fetch real user from some user service
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	var resp *pb.UserPersonalDetailsResponse
+	resp, err := s.client.GetMyUserPersonalDetails(ctx, &emptypb.Empty{})
+	if err != nil {
+		return user.BasicInfo{}, err
+	}
+
+	u := resp.GetResult()
+
 	userData := user.BasicInfo{
-		UUID:           "2af4f493-0bd5-4513-b440-6cbb465feadb",
-		Name:           "Alice",
-		Surname:        "Cooper",
-		OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
-		OrgDisplayName: "Kompitech",
+		UUID:           u.Uuid,
+		Name:           u.Name,
+		Surname:        u.Surname,
+		OrgName:        u.OrgName,
+		OrgDisplayName: u.OrgDisplayName,
 	}
 
 	return userData, nil

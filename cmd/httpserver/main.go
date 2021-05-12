@@ -42,11 +42,13 @@ func main() {
 	viper.SetDefault("CouchDBPasswd", "admin")
 	_ = viper.BindEnv("CouchDBPasswd", "COUCHDB_PASSWD")
 
+	// DB schema validator
 	v, err := couchdb.NewValidator()
 	if err != nil {
 		logger.Fatal("could not create couchDB validation service", zap.Error(err))
 	}
 
+	// NATS client for event service
 	nc, err := natswatcher.NewWatcher(&natswatcher.Config{
 		NATS: natswatcher.NatsConfig{
 			Address: viper.GetString("NATSQueueAddress"),
@@ -64,6 +66,7 @@ func main() {
 		logger.Fatal("could not create NATS client", zap.Error(err))
 	}
 
+	// Couch DB
 	s := couchdb.NewStorage(logger, couchdb.Config{
 		Host:         viper.GetString("CouchDBHost"),
 		Port:         viper.GetString("CouchDBPort"),
@@ -73,16 +76,23 @@ func main() {
 		EventService: event.NewService(nc),
 	})
 
-	userService := rest.NewUserService()
+	// User service fetches user data from external service
+	userService, err := rest.NewUserService()
+	if err != nil {
+		logger.Fatal("could not create user service", zap.Error(err))
+	}
+
 	adder := adding.NewService(s)
 	lister := listing.NewService(s)
 	updater := updating.NewService(s)
 
+	// Request payload validator
 	pv, err := validation.NewPayloadValidator()
 	if err != nil {
 		logger.Fatal("could not create payload validation service", zap.Error(err))
 	}
 
+	// HTTP server
 	server := rest.NewServer(rest.Config{
 		Addr:              viper.GetString("HTTPBindAddress"),
 		URISchema:         "http://",
@@ -94,6 +104,8 @@ func main() {
 		RepositoryService: s,
 		PayloadValidator:  pv,
 	})
+
+	// TODO add graceful shutdown
 
 	logger.Info("starting server...")
 	logger.Fatal("server start failed", zap.Error(http.ListenAndServe(server.Addr, server)))

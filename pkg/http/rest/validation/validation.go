@@ -18,7 +18,7 @@ type payloadValidator struct {
 	v validation.Validator
 }
 
-// NewPayloadValidator creates new validation service
+// NewPayloadValidator creates new payload validation service
 func NewPayloadValidator() (PayloadValidator, error) {
 	_, thisFile, _, ok := runtime.Caller(0)
 	if !ok {
