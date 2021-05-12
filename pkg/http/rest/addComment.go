@@ -88,8 +88,7 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
-		URIschema := "http://"
-		assetURI := fmt.Sprintf("%s%s/%s/%s", URIschema, s.Addr, pluralize(assetType), id)
+		assetURI := fmt.Sprintf("%s%s/%s/%s", s.URISchema, s.Addr, pluralize(assetType), id)
 
 		w.Header().Set("Location", assetURI)
 		w.WriteHeader(http.StatusCreated)

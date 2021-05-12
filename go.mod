@@ -12,6 +12,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/qri-io/jsonschema v0.2.1
+	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.4.0
 	gitlab.com/flimzy/testy v0.6.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect

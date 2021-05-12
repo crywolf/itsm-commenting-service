@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/KompiTech/go-toolkit/natswatcher"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
@@ -13,6 +12,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"github.com/google/uuid"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
@@ -22,10 +22,25 @@ func main() {
 		_ = logger.Sync()
 	}(logger)
 
-	bindAddress := os.Getenv("BIND_ADDRESS")
-	if bindAddress == "" {
-		bindAddress = "localhost:8080"
-	}
+	// HTTP server
+	viper.SetDefault("HTTPBindAddress", "localhost:8080")
+	_ = viper.BindEnv("HTTPBindAddress", "HTTP_BIND_ADDRESS")
+
+	// NATS
+	viper.SetDefault("NATSQueueAddress", "127.0.0.1")
+	_ = viper.BindEnv("NATSQueueAddress", "NATS_QUEUE_ADDRESS")
+	viper.SetDefault("NATSQueuePort", "4222")
+	_ = viper.BindEnv("NATSQueuePort", "NATS_QUEUE_PORT")
+
+	// Couch DB
+	viper.SetDefault("CouchDBHost", "localhost")
+	_ = viper.BindEnv("CouchDBHost", "COUCHDB_HOST")
+	viper.SetDefault("CouchDBPort", "5984")
+	_ = viper.BindEnv("CouchDBPort", "COUCHDB_PORT")
+	viper.SetDefault("CouchDBUsername", "admin")
+	_ = viper.BindEnv("CouchDBUsername", "COUCHDB_USERNAME")
+	viper.SetDefault("CouchDBPasswd", "admin")
+	_ = viper.BindEnv("CouchDBPasswd", "COUCHDB_PASSWD")
 
 	v, err := couchdb.NewValidator()
 	if err != nil {
@@ -34,8 +49,8 @@ func main() {
 
 	nc, err := natswatcher.NewWatcher(&natswatcher.Config{
 		NATS: natswatcher.NatsConfig{
-			Address: "127.0.0.1",
-			Port:    "4222",
+			Address: viper.GetString("NATSQueueAddress"),
+			Port:    viper.GetString("NATSQueuePort"),
 			TLS: &natswatcher.TLS{
 				CAPath:   "./certs/ca.pem",
 				CertPath: "./certs/cert.pem",
@@ -50,10 +65,10 @@ func main() {
 	}
 
 	s := couchdb.NewStorage(logger, couchdb.Config{
-		Host:         "localhost",
-		Port:         "5984",
-		Username:     "admin",
-		Passwd:       "admin",
+		Host:         viper.GetString("CouchDBHost"),
+		Port:         viper.GetString("CouchDBPort"),
+		Username:     viper.GetString("CouchDBUsername"),
+		Passwd:       viper.GetString("CouchDBPasswd"),
 		Validator:    v,
 		EventService: event.NewService(nc),
 	})
@@ -69,7 +84,8 @@ func main() {
 	}
 
 	server := rest.NewServer(rest.Config{
-		Addr:              bindAddress,
+		Addr:              viper.GetString("HTTPBindAddress"),
+		URISchema:         "http://",
 		Logger:            logger,
 		UserService:       userService,
 		AddingService:     adder,

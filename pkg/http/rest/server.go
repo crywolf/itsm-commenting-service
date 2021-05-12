@@ -18,36 +18,44 @@ import (
 
 // Server is a http.Handler with dependencies
 type Server struct {
-	Addr   string
-	router *httprouter.Router
-	logger *zap.Logger
+	Addr      string
+	URISchema string
+	router    *httprouter.Router
+	logger    *zap.Logger
 
 	userService       UserService
 	adder             adding.Service
 	lister            listing.Service
 	updater           updating.Service
 	repositoryService repository.Service
-	payloadValidator validation.PayloadValidator
+	payloadValidator  validation.PayloadValidator
 }
 
 // Config contains server configuration and dependencies
 type Config struct {
 	Addr              string
+	URISchema         string
 	Logger            *zap.Logger
 	UserService       UserService
 	AddingService     adding.Service
 	ListingService    listing.Service
 	UpdatingService   updating.Service
 	RepositoryService repository.Service
-	PayloadValidator validation.PayloadValidator
+	PayloadValidator  validation.PayloadValidator
 }
 
 // NewServer creates new server with the necessary dependencies
 func NewServer(cfg Config) *Server {
 	r := httprouter.New()
 
+	URISchema := "http://"
+	if cfg.URISchema != "" {
+		URISchema = cfg.URISchema
+	}
+
 	s := &Server{
 		Addr:              cfg.Addr,
+		URISchema:         URISchema,
 		router:            r,
 		logger:            cfg.Logger,
 		userService:       cfg.UserService,
@@ -55,7 +63,7 @@ func NewServer(cfg Config) *Server {
 		lister:            cfg.ListingService,
 		updater:           cfg.UpdatingService,
 		repositoryService: cfg.RepositoryService,
-		payloadValidator: cfg.PayloadValidator,
+		payloadValidator:  cfg.PayloadValidator,
 	}
 	s.routes()
 
