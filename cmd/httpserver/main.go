@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/KompiTech/go-toolkit/natswatcher"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/updating"
@@ -11,6 +12,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -30,13 +32,30 @@ func main() {
 		logger.Fatal("could not create couchDB validation service", zap.Error(err))
 	}
 
+	nc, err := natswatcher.NewWatcher(&natswatcher.Config{
+		NATS: natswatcher.NatsConfig{
+			Address: "127.0.0.1",
+			Port:    "4222",
+			TLS: &natswatcher.TLS{
+				CAPath:   "./certs/ca.pem",
+				CertPath: "./certs/cert.pem",
+				KeyPath:  "./certs/key.pem",
+			},
+		},
+		Instance: "stan-blits",
+		ClientID: uuid.New().String(),
+	})
+	if err != nil {
+		logger.Fatal("could not create NATS client", zap.Error(err))
+	}
+
 	s := couchdb.NewStorage(logger, couchdb.Config{
 		Host:         "localhost",
 		Port:         "5984",
 		Username:     "admin",
 		Passwd:       "admin",
 		Validator:    v,
-		EventService: event.NewService(),
+		EventService: event.NewService(nc),
 	})
 
 	userService := rest.NewUserService()

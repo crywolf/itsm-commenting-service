@@ -3,6 +3,7 @@ package mocks
 import (
 	"net/http"
 
+	"github.com/KompiTech/go-toolkit/natswatcher"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
@@ -79,6 +80,17 @@ type PayloadValidatorMock struct {
 // ValidatePayload returns error if payload is not valid
 func (s *PayloadValidatorMock) ValidatePayload(p []byte) error {
 	args := s.Called(p)
+	return args.Error(0)
+}
+
+// NATSClientMock is a mock of NATS queue client
+type NATSClientMock struct {
+	mock.Mock
+}
+
+// Publish publishes messages to NATS queue
+func (c *NATSClientMock) Publish(msgs ...natswatcher.Message) error {
+	args := c.Called(msgs)
 	return args.Error(0)
 }
 

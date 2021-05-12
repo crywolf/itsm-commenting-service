@@ -2,9 +2,9 @@ package event
 
 import (
 	"encoding/json"
-	"fmt"
 	"regexp"
 
+	"github.com/KompiTech/go-toolkit/natswatcher"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
 	"github.com/pkg/errors"
@@ -34,11 +34,18 @@ func (u UUID) isValid() bool {
 }
 
 // NewService creates an adding service
-func NewService() Service {
-	return &service{}
+func NewService(client NATSClient) Service {
+	return &service{client: client}
 }
 
-type service struct{}
+// NATSClient represents NATS queue client
+type NATSClient interface {
+	Publish(msgs ...natswatcher.Message) error
+}
+
+type service struct {
+	client NATSClient
+}
 
 const eventCreated = "CREATED"
 
@@ -53,6 +60,7 @@ func (s *service) NewQueue(channelID, orgID UUID) (Queue, error) {
 	}
 
 	return &queue{
+		client:    s.client,
 		channelID: channelID,
 		orgID:     orgID,
 	}, nil
@@ -75,6 +83,10 @@ func (q *queue) AddCreateEvent(c comment.Comment, assetType string) error {
 
 // PublishEvents publishes all prepared events not published yet
 func (q *queue) PublishEvents() error {
+	if len(q.events) == 0 { // empty queue
+		return nil
+	}
+
 	type finalEvent struct {
 		Events  []event `json:"events"`
 		Source  string  `json:"source"`
@@ -94,9 +106,13 @@ func (q *queue) PublishEvents() error {
 		return errors.Wrap(err, "unable to marshal event")
 	}
 
-	fmt.Printf("\n===> %s\n", mEvents)
-
-	// TODO implement events publishing to NATS
+	err = q.client.Publish(natswatcher.Message{
+		Subject: "consumer",
+		Data:    mEvents,
+	})
+	if err != nil {
+		return err
+	}
 
 	// clear the events queue
 	q.events = nil
@@ -105,6 +121,7 @@ func (q *queue) PublishEvents() error {
 }
 
 type queue struct {
+	client    NATSClient
 	channelID UUID
 	orgID     UUID
 	events    []event
