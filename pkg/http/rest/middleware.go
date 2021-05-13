@@ -7,12 +7,14 @@ import (
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	pb "github.com/KompiTech/itsm-user-service/api/userservice"
+	grpc2http "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -27,14 +29,16 @@ func (s Server) AddUserInfo(next httprouter.Handle, us UserService) httprouter.H
 		if err != nil {
 			s.logger.Error("AddUserInfo middleware: UserBasicInfo service failed:", zap.Error(err))
 			errMsg := errors.WithMessage(err, "could not retrieve correct user info from user service").Error()
-			s.JSONError(w, errMsg, http.StatusInternalServerError)
+			statusCode := grpc2http.HTTPStatusFromCode(status.Code(err))
+			s.JSONError(w, errMsg, statusCode)
 			return
 		}
 
 		if userData.UUID == "" {
 			s.logger.Error(fmt.Sprintf("AddUserInfo middleware: UserBasicInfo service returned invalid data: %v", userData))
 			errMsg := errors.WithMessage(err, "could not retrieve correct user info from user service").Error()
-			s.JSONError(w, errMsg, http.StatusInternalServerError)
+			statusCode := grpc2http.HTTPStatusFromCode(status.Code(err))
+			s.JSONError(w, errMsg, statusCode)
 			return
 		}
 
@@ -57,9 +61,6 @@ type UserService interface {
 
 // NewUserService creates user service with initialized GRPC client
 func NewUserService() (UserService, error) {
-	viper.SetDefault("UserServiceGRPCDialTarget", "localhost:50051")
-	_ = viper.BindEnv("UserServiceGRPCDialTarget", "USER_SERVICE_GRPC_DIAL_TARGET")
-
 	conn, err := grpc.Dial(viper.GetString("UserServiceGRPCDialTarget"),
 		grpc.WithInsecure(),
 	)

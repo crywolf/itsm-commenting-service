@@ -10,13 +10,13 @@ require (
 	github.com/go-kivik/kivikmock/v3 v3.2.0
 	github.com/google/uuid v1.2.0
 	github.com/gopherjs/gopherjs v0.0.0-20210406100015-1e088ea4ee04 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/qri-io/jsonschema v0.2.1
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 	gitlab.com/flimzy/testy v0.6.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
 	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0

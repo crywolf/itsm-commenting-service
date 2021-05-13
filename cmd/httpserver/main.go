@@ -22,25 +22,7 @@ func main() {
 		_ = logger.Sync()
 	}(logger)
 
-	// HTTP server
-	viper.SetDefault("HTTPBindAddress", "localhost:8080")
-	_ = viper.BindEnv("HTTPBindAddress", "HTTP_BIND_ADDRESS")
-
-	// NATS
-	viper.SetDefault("NATSQueueAddress", "127.0.0.1")
-	_ = viper.BindEnv("NATSQueueAddress", "NATS_QUEUE_ADDRESS")
-	viper.SetDefault("NATSQueuePort", "4222")
-	_ = viper.BindEnv("NATSQueuePort", "NATS_QUEUE_PORT")
-
-	// Couch DB
-	viper.SetDefault("CouchDBHost", "localhost")
-	_ = viper.BindEnv("CouchDBHost", "COUCHDB_HOST")
-	viper.SetDefault("CouchDBPort", "5984")
-	_ = viper.BindEnv("CouchDBPort", "COUCHDB_PORT")
-	viper.SetDefault("CouchDBUsername", "admin")
-	_ = viper.BindEnv("CouchDBUsername", "COUCHDB_USERNAME")
-	viper.SetDefault("CouchDBPasswd", "admin")
-	_ = viper.BindEnv("CouchDBPasswd", "COUCHDB_PASSWD")
+	loadEnvConfiguration()
 
 	// DB schema validator
 	v, err := couchdb.NewValidator()
@@ -54,9 +36,9 @@ func main() {
 			Address: viper.GetString("NATSQueueAddress"),
 			Port:    viper.GetString("NATSQueuePort"),
 			TLS: &natswatcher.TLS{
-				CAPath:   "./certs/ca.pem",
-				CertPath: "./certs/cert.pem",
-				KeyPath:  "./certs/key.pem",
+				CAPath:   viper.GetString("NATSQueueCaPath"),
+				CertPath: viper.GetString("NATSQueueCertPath"),
+				KeyPath:  viper.GetString("NATSQueueKeyPath"),
 			},
 		},
 		Instance: "stan-blits",
@@ -109,4 +91,39 @@ func main() {
 
 	logger.Info("starting server...")
 	logger.Fatal("server start failed", zap.Error(http.ListenAndServe(server.Addr, server)))
+}
+
+// loadEnvConfiguration loads environment variables
+func loadEnvConfiguration() {
+	// HTTP server
+	viper.SetDefault("HTTPBindAddress", "localhost:8080")
+	_ = viper.BindEnv("HTTPBindAddress", "HTTP_BIND_ADDRESS")
+
+	// NATS connection
+	viper.SetDefault("NATSQueueAddress", "127.0.0.1")
+	_ = viper.BindEnv("NATSQueueAddress", "NATS_QUEUE_ADDRESS")
+	viper.SetDefault("NATSQueuePort", "4222")
+	_ = viper.BindEnv("NATSQueuePort", "NATS_QUEUE_PORT")
+
+	// NATS certificates
+	viper.SetDefault("NATSQueueCaPath", "./certs/ca.pem")
+	_ = viper.BindEnv("NATSQueueCaPath", "NATS_QUEUE_CA_PATH")
+	viper.SetDefault("NATSQueueCertPath", "./certs/cert.pem")
+	_ = viper.BindEnv("NATSQueueCertPath", "NATS_QUEUE_CERT_PATH")
+	viper.SetDefault("NATSQueueKeyPath", "./certs/key.pem")
+	_ = viper.BindEnv("NATSQueueKeyPath", "NATS_QUEUE_KEY_PATH")
+
+	// Couch DB
+	viper.SetDefault("CouchDBHost", "localhost")
+	_ = viper.BindEnv("CouchDBHost", "COUCHDB_HOST")
+	viper.SetDefault("CouchDBPort", "5984")
+	_ = viper.BindEnv("CouchDBPort", "COUCHDB_PORT")
+	viper.SetDefault("CouchDBUsername", "admin")
+	_ = viper.BindEnv("CouchDBUsername", "COUCHDB_USERNAME")
+	viper.SetDefault("CouchDBPasswd", "admin")
+	_ = viper.BindEnv("CouchDBPasswd", "COUCHDB_PASSWD")
+
+	// User service
+	viper.SetDefault("UserServiceGRPCDialTarget", "localhost:50051")
+	_ = viper.BindEnv("UserServiceGRPCDialTarget", "USER_SERVICE_GRPC_DIAL_TARGET")
 }
