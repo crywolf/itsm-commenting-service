@@ -9,6 +9,10 @@ properties:
   text:
     type: string
     pattern: \S
+  external_id:
+    description: ID in external system
+    type: string
+    pattern: \S
 
 additionalProperties: false
 required:

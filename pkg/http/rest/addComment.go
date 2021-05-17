@@ -14,6 +14,14 @@ import (
 	"go.uber.org/zap"
 )
 
+// swagger:route POST /comments comments AddComment
+// Creates a new comment
+// responses:
+//	201: createdResponse
+//	400: errorResponse
+//	401: errorResponse
+//	409: errorResponse
+
 // AddComment returns handler for POST /comments requests
 func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

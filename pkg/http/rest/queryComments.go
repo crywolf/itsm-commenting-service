@@ -14,6 +14,12 @@ import (
 	"go.uber.org/zap"
 )
 
+// swagger:route GET /comments comments ListComments
+// Returns a list of comments from the repository filtered by some parameters
+// responses:
+//	200: commentsResponse
+//	400: errorResponse
+
 // QueryComments returns handler for POST /comments/query requests
 func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

@@ -47,7 +47,8 @@ func TestAddCommentHandler(t *testing.T) {
 
 		payload := []byte(`{
 			"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
-			"text": "test with entity 1"
+			"text": "test with entity 1",
+			"external_id": "someExternalID"
 		}`)
 
 		body := bytes.NewReader(payload)

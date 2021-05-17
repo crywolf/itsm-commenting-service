@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/KompiTech/go-toolkit/natswatcher"
@@ -89,7 +90,7 @@ func main() {
 
 	// TODO add graceful shutdown
 
-	logger.Info("starting server...")
+	logger.Info(fmt.Sprintf("starting server at %s...", server.Addr))
 	logger.Fatal("server start failed", zap.Error(http.ListenAndServe(server.Addr, server)))
 }
 

@@ -31,8 +31,6 @@ type DBStorage struct {
 	rand      io.Reader
 	validator Validator
 	events    event.Service
-	username  string
-	passwd    string
 }
 
 // Config contains values for the data source

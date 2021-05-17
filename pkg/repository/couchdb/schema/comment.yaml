@@ -47,6 +47,7 @@ properties:
     type: string
     pattern: \S
   text:
+    description: Content of the comment
     type: string
     pattern: \S
 

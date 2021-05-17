@@ -12,6 +12,14 @@ import (
 	"go.uber.org/zap"
 )
 
+// swagger:route POST /comments/{uuid}/read_by comments MarkAsReadBy
+// Marks specified comment as read by user
+// responses:
+//	201: createdResponse
+//	204: noContentResponse
+//	400: errorResponse
+//	401: errorResponse
+
 // MarkAsReadBy returns handler for POST /comments/:id/read_by requests
 func (s *Server) MarkAsReadBy(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {

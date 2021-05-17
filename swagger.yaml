@@ -1,0 +1,295 @@
+basePath: /
+consumes:
+- application/json
+definitions:
+  Comment:
+    description: Comment object
+    properties:
+      created_at:
+        description: Time when the resource was created
+        format: date-time
+        type: string
+        x-go-name: CreatedAt
+      created_by:
+        $ref: '#/definitions/UserInfo'
+      entity:
+        description: Entity represents some external entity reference in the form
+          "&lt;entity&gt;:&lt;UUID&gt;"
+        example: incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444
+        format: string
+        type: string
+        x-go-name: Entity
+      external_id:
+        description: ID in external system
+        type: string
+        x-go-name: ExternalID
+      read_by:
+        $ref: '#/definitions/ReadByList'
+      text:
+        description: Content of the comment
+        type: string
+        x-go-name: Text
+      uuid:
+        format: uuid
+        readOnly: true
+        type: string
+        x-go-name: UUID
+    required:
+    - uuid
+    - entity
+    - text
+    - created_at
+    - created_by
+    type: object
+    x-go-package: github.com/KompiTech/itsm-commenting-service/pkg/domain/comment
+  Entity:
+    title: Entity represents some external entity reference in the form "<entity>:<UUID>"
+    type: object
+    x-go-package: github.com/KompiTech/itsm-commenting-service/pkg/domain/entity
+  ReadBy:
+    description: ReadBy stores info when some user read this comment
+    properties:
+      time:
+        format: date-time
+        type: string
+        x-go-name: Time
+      user:
+        $ref: '#/definitions/UserInfo'
+    required:
+    - time
+    - user
+    type: object
+    x-go-package: github.com/KompiTech/itsm-commenting-service/pkg/domain/comment
+  ReadByList:
+    description: ReadByList is the list of users who read this comment
+    items:
+      $ref: '#/definitions/ReadBy'
+    type: array
+    x-go-package: github.com/KompiTech/itsm-commenting-service/pkg/domain/comment
+  UserInfo:
+    description: UserInfo represents basic info about user
+    properties:
+      name:
+        type: string
+        x-go-name: Name
+      org_display_name:
+        example: KompiTech
+        type: string
+        x-go-name: OrgDisplayName
+      org_name:
+        example: a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com
+        type: string
+        x-go-name: OrgName
+      surname:
+        type: string
+        x-go-name: Surname
+      uuid:
+        format: uuid
+        type: string
+        x-go-name: UUID
+    required:
+    - uuid
+    - name
+    - surname
+    - org_display_name
+    - org_name
+    type: object
+    x-go-package: github.com/KompiTech/itsm-commenting-service/pkg/domain/comment
+info:
+  description: |-
+    Documentation for Commenting service API.
+
+    It works for both comments and worknotes resources. If you want to use it for worknotes, just switch 'comment'
+    part of the endpoint path with 'worknote', for example:
+
+    "GET /comments" endpoint returns comments
+
+    "GET /worknotes" endpoint returns worknotes
+  title: Commenting service API
+  version: 1.0.0
+paths:
+  /comments:
+    get:
+      description: Returns a list of comments from the repository filtered by some
+        parameters
+      operationId: ListComments
+      parameters:
+      - description: Entity represents some external entity reference in the form
+          "&lt;entity&gt;:&lt;UUID&gt;"
+        example: incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444
+        format: string
+        in: query
+        name: entity
+        type: string
+        x-go-name: Entity
+      - default: 25
+        description: Amount of records to be returned (pagination)
+        format: int64
+        in: query
+        name: limit
+        type: integer
+        x-go-name: Limit
+      - description: Pagination bookmark
+        in: query
+        name: bookmark
+        type: string
+        x-go-name: Bookmark
+      responses:
+        "200":
+          $ref: '#/responses/commentsResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - comments
+    post:
+      description: Creates a new comment
+      operationId: AddComment
+      parameters:
+      - description: Comment/Worknote data structure to Create.
+        in: body
+        name: Body
+        schema:
+          properties:
+            entity:
+              description: Entity represents some external entity reference in the
+                form "&lt;entity&gt;:&lt;UUID&gt;"
+              example: incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444
+              type: string
+              x-go-name: Entity
+            external_id:
+              description: ID in external system
+              type: string
+              x-go-name: ExternalID
+            text:
+              description: Content of the comment
+              type: string
+              x-go-name: Text
+          required:
+          - entity
+          - text
+          type: object
+      responses:
+        "201":
+          $ref: '#/responses/createdResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "401":
+          $ref: '#/responses/errorResponse'
+        "409":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - comments
+  /comments/{uuid}:
+    get:
+      description: Returns a single comment from the repository
+      operationId: GetComment
+      parameters:
+      - description: ID of the comment
+        format: uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
+        x-go-name: UUID
+      responses:
+        "200":
+          $ref: '#/responses/commentResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - comments
+  /comments/{uuid}/read_by:
+    post:
+      description: Marks specified comment as read by user
+      operationId: MarkAsReadBy
+      parameters:
+      - description: ID of the comment
+        format: uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
+        x-go-name: UUID
+      responses:
+        "201":
+          $ref: '#/responses/createdResponse'
+        "204":
+          $ref: '#/responses/noContentResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "401":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - comments
+  /databases:
+    post:
+      description: Creates new databases for channel; if databases already exist it
+        just returns 204 No Content
+      operationId: CreateDatabases
+      parameters:
+      - description: ChannelID for which to create databases
+        in: body
+        name: Body
+        schema:
+          properties:
+            channel_id:
+              format: uuid
+              type: string
+              x-go-name: ChannelID
+          required:
+          - channel_id
+          type: object
+      responses:
+        "201":
+          $ref: '#/responses/databasesCreatedResponse'
+        "204":
+          $ref: '#/responses/databasesNoContentResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - databases
+produces:
+- application/json
+responses:
+  commentResponse:
+    description: Data structure representing a single comment or worknote
+    schema:
+      $ref: '#/definitions/Comment'
+  commentsResponse:
+    description: A list of comments or worknotes
+    schema:
+      items:
+        $ref: '#/definitions/Comment'
+      type: array
+  createdResponse:
+    description: Created is returned by this API endpoint
+    headers:
+      Location:
+        description: URI of the resource
+        example: http://localhost:8080/comments/2af4f493-0bd5-4513-b440-6cbb465feadb
+        type: string
+  databasesCreatedResponse:
+    description: Created is returned by this API endpoint
+  databasesNoContentResponse:
+    description: No content is returned by this API endpoint
+  errorResponse:
+    description: Error
+    schema:
+      properties:
+        error:
+          description: Description of the error
+          type: string
+          x-go-name: ErrorMessage
+      type: object
+  noContentResponse:
+    description: No content is returned by this API endpoint
+    headers:
+      Location:
+        description: URI of the resource
+        example: http://localhost:8080/comments/2af4f493-0bd5-4513-b440-6cbb465feadb
+        type: string
+schemes:
+- http
+swagger: "2.0"

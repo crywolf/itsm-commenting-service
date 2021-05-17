@@ -11,6 +11,14 @@ import (
 	"go.uber.org/zap"
 )
 
+// swagger:route POST /databases databases CreateDatabases
+// Creates new databases for channel; if databases already exist it just returns 204 No Content
+//
+// responses:
+//	201: databasesCreatedResponse
+//	204: databasesNoContentResponse
+//	400: errorResponse
+
 // CreateDatabases returns handler for POST /databases requests
 func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	type request struct {

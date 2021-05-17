@@ -10,6 +10,13 @@ import (
 	"go.uber.org/zap"
 )
 
+// swagger:route GET /comments/{uuid} comments GetComment
+// Returns a single comment from the repository
+// responses:
+//	200: commentResponse
+//	400: errorResponse
+//	404: errorResponse
+
 // GetComment returns handler for GET /comments/:id requests
 func (s *Server) GetComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
