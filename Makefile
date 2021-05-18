@@ -1,4 +1,4 @@
-swagger = docker run --rm -it -e GOPATH=$$HOME/go:/go -v $$HOME:$$HOME -w $$(pwd) quay.io/goswagger/swagger
+swagger = docker run --rm -it -e GOPATH=$$HOME/go:/go -v $$HOME:$$HOME -w $$(pwd) quay.io/goswagger/swagger:v0.27.0
 PORT ?= 3001 # HTTP port for docs server
 
 test:

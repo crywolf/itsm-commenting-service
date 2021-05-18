@@ -80,6 +80,16 @@ type commentResponseWrapper struct {
 
 // swagger:parameters GetComment MarkAsReadBy
 type commentIDParameterWrapper struct {
+	// Bearer token
+	// in: header
+	// required: true
+	Authorization string `json:"authorization"`
+
+	// in: header
+	// required: true
+	// swagger:strfmt uuid
+	ChannelID string `json:"grpc-metadata-space"`
+
 	// ID of the comment
 	// in: path
 	// required: true
@@ -89,6 +99,16 @@ type commentIDParameterWrapper struct {
 
 // swagger:parameters ListComments
 type listCommentsParameterWrapper struct {
+	// Bearer token
+	// in: header
+	// required: true
+	Authorization string `json:"authorization"`
+
+	// in: header
+	// required: true
+	// swagger:strfmt uuid
+	ChannelID string `json:"grpc-metadata-space"`
+
 	// Entity represents some external entity reference in the form "&lt;entity&gt;:&lt;UUID&gt;"
 	// in: query
 	// example: incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444
@@ -107,6 +127,16 @@ type listCommentsParameterWrapper struct {
 
 // swagger:parameters AddComment
 type commentParamWrapper struct {
+	// Bearer token
+	// in: header
+	// required: true
+	Authorization string `json:"authorization"`
+
+	// in: header
+	// required: true
+	// swagger:strfmt uuid
+	ChannelID string `json:"grpc-metadata-space"`
+
 	// Comment/Worknote data structure to Create.
 	// in: body
 	Body struct {
@@ -126,7 +156,12 @@ type commentParamWrapper struct {
 }
 
 // swagger:parameters CreateDatabases
-type channelIDParamWrapper struct {
+type databasesParamWrapper struct {
+	// Bearer token
+	// in: header
+	// required: true
+	Authorization string `json:"authorization"`
+
 	// ChannelID for which to create databases
 	// in: body
 	Body struct {

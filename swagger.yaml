@@ -114,6 +114,18 @@ paths:
         parameters
       operationId: ListComments
       parameters:
+      - description: Bearer token
+        in: header
+        name: authorization
+        required: true
+        type: string
+        x-go-name: Authorization
+      - format: uuid
+        in: header
+        name: grpc-metadata-space
+        required: true
+        type: string
+        x-go-name: ChannelID
       - description: Entity represents some external entity reference in the form
           "&lt;entity&gt;:&lt;UUID&gt;"
         example: incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444
@@ -145,6 +157,18 @@ paths:
       description: Creates a new comment
       operationId: AddComment
       parameters:
+      - description: Bearer token
+        in: header
+        name: authorization
+        required: true
+        type: string
+        x-go-name: Authorization
+      - format: uuid
+        in: header
+        name: grpc-metadata-space
+        required: true
+        type: string
+        x-go-name: ChannelID
       - description: Comment/Worknote data structure to Create.
         in: body
         name: Body
@@ -184,6 +208,18 @@ paths:
       description: Returns a single comment from the repository
       operationId: GetComment
       parameters:
+      - description: Bearer token
+        in: header
+        name: authorization
+        required: true
+        type: string
+        x-go-name: Authorization
+      - format: uuid
+        in: header
+        name: grpc-metadata-space
+        required: true
+        type: string
+        x-go-name: ChannelID
       - description: ID of the comment
         format: uuid
         in: path
@@ -205,6 +241,18 @@ paths:
       description: Marks specified comment as read by user
       operationId: MarkAsReadBy
       parameters:
+      - description: Bearer token
+        in: header
+        name: authorization
+        required: true
+        type: string
+        x-go-name: Authorization
+      - format: uuid
+        in: header
+        name: grpc-metadata-space
+        required: true
+        type: string
+        x-go-name: ChannelID
       - description: ID of the comment
         format: uuid
         in: path
@@ -229,6 +277,12 @@ paths:
         just returns 204 No Content
       operationId: CreateDatabases
       parameters:
+      - description: Bearer token
+        in: header
+        name: authorization
+        required: true
+        type: string
+        x-go-name: Authorization
       - description: ChannelID for which to create databases
         in: body
         name: Body
