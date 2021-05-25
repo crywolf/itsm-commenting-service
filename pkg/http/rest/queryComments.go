@@ -69,7 +69,7 @@ func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *
 			}
 
 			query["sort"] = []map[string]string{{"created_at": "desc"}}
-			query["fields"] = []string{"created_at", "created_by", "text", "uuid", "read_by"}
+			query["fields"] = []string{"created_at", "created_by", "text", "entity", "uuid", "read_by"}
 		}
 
 		channelID, err := s.assertChannelID(w, r)

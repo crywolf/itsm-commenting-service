@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// swagger:route POST /comments/{uuid}/read_by comments MarkAsReadBy
+// swagger:route POST /comments/{uuid}/read_by comments MarkAsReadByUser
 // Marks specified comment as read by user
 // responses:
 //	201: createdResponse

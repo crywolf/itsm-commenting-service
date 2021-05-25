@@ -156,7 +156,7 @@ func TestAddCommentHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		pv := new(mocks.PayloadValidatorMock)
-		pv.On("ValidatePayload", mock.AnythingOfType("[]uint8")).
+		pv.On("ValidatePayload", mock.AnythingOfType("[]uint8"), mock.AnythingOfType("string")).
 			Return(pvalidation.NewErrGeneral(errors.New("could not open schema file")))
 
 		server := NewServer(Config{

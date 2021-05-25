@@ -239,7 +239,7 @@ paths:
   /comments/{uuid}/read_by:
     post:
       description: Marks specified comment as read by user
-      operationId: MarkAsReadBy
+      operationId: MarkAsReadByUser
       parameters:
       - description: Bearer token
         in: header

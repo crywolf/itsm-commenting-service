@@ -78,8 +78,8 @@ type PayloadValidatorMock struct {
 }
 
 // ValidatePayload returns error if payload is not valid
-func (s *PayloadValidatorMock) ValidatePayload(p []byte) error {
-	args := s.Called(p)
+func (s *PayloadValidatorMock) ValidatePayload(p []byte, schemaFile string) error {
+	args := s.Called(p, schemaFile)
 	return args.Error(0)
 }
 

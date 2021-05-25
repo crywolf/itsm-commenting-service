@@ -17,7 +17,12 @@ CMD_PATH?=cmd/httpserver/main.go
 BUILD_DIR?=build
 
 test:
-	go test -v ./...
+	go test -v ./pkg/...
+
+e2e-test:
+	go test -v ./e2e_tests/.
+
+test-all: test e2e-test
 
 run:
 	go run ./cmd/httpserver/main.go

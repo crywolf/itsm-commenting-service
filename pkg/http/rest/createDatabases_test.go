@@ -7,8 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateDatabasesHandler(t *testing.T) {
@@ -17,10 +19,14 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
-	t.Run("when request is not valid", func(t *testing.T) {
+	t.Run("when request is not valid JSON", func(t *testing.T) {
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
 		server := NewServer(Config{
-			Addr:   "service.url",
-			Logger: logger,
+			Addr:             "service.url",
+			Logger:           logger,
+			PayloadValidator: pv,
 		})
 
 		payload := []byte(`{"invalid json request"}`)
@@ -41,7 +47,39 @@ func TestCreateDatabasesHandler(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Status code")
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
-		expectedJSON := `{"error":"could not decode JSON from request: invalid character '}' after object key"}`
+		expectedJSON := `{"error":"error parsing JSON bytes: invalid character '}' after object key"}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
+
+	t.Run("when request is not valid ('channel_id' missing)", func(t *testing.T) {
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
+		server := NewServer(Config{
+			Addr:             "service.url",
+			Logger:           logger,
+			PayloadValidator: pv,
+		})
+
+		payload := []byte(`{}`)
+
+		body := bytes.NewReader(payload)
+		req := httptest.NewRequest("POST", "/databases", body)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"error":"/: 'channel_id' value is required"}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 
@@ -51,10 +89,14 @@ func TestCreateDatabasesHandler(t *testing.T) {
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(true)
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(true)
 
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
 		server := NewServer(Config{
 			Addr:              "service.url",
 			Logger:            logger,
 			RepositoryService: s,
+			PayloadValidator:  pv,
 		})
 
 		payload := []byte(`{"channel_id":"e27ddcd0-0e1f-4bc5-93df-f6f04155beec"}`)
@@ -92,10 +134,14 @@ func TestCreateDatabasesHandler(t *testing.T) {
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(db)
 		db.ExpectCreateIndex()
 
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
 		server := NewServer(Config{
 			Addr:              "service.url",
 			Logger:            logger,
 			RepositoryService: s,
+			PayloadValidator:  pv,
 		})
 
 		payload := []byte(`{"channel_id":"e27ddcd0-0e1f-4bc5-93df-f6f04155beec"}`)

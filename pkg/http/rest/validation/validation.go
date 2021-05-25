@@ -11,7 +11,7 @@ import (
 // PayloadValidator provides payload validation
 type PayloadValidator interface {
 	// ValidatePayload returns error if payload is not valid
-	ValidatePayload(p []byte) error
+	ValidatePayload(p []byte, schemaFile string) error
 }
 
 type payloadValidator struct {
@@ -31,6 +31,6 @@ func NewPayloadValidator() (PayloadValidator, error) {
 }
 
 // ValidatePayload returns error if payload is not valid
-func (pv payloadValidator) ValidatePayload(p []byte) error {
-	return pv.v.ValidateBytes(p, "add_comment.yaml")
+func (pv payloadValidator) ValidatePayload(p []byte, schemaFile string) error {
+	return pv.v.ValidateBytes(p, schemaFile)
 }

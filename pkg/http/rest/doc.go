@@ -78,7 +78,7 @@ type commentResponseWrapper struct {
 	Body comment.Comment
 }
 
-// swagger:parameters GetComment MarkAsReadBy
+// swagger:parameters GetComment MarkAsReadByUser
 type commentIDParameterWrapper struct {
 	// Bearer token
 	// in: header

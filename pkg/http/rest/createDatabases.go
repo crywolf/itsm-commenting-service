@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
+	"github.com/KompiTech/itsm-commenting-service/pkg/validation"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 )
@@ -21,18 +23,38 @@ import (
 
 // CreateDatabases returns handler for POST /databases requests
 func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	type request struct {
+	type requestBody struct {
 		ChannelID string `json:"channel_id"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("CreateDatabases handler called")
 
-		decoder := json.NewDecoder(r.Body)
+		payload, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			s.logger.Error("could not read request body", zap.Error(err))
+			s.JSONError(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-		var payload request
+		defer func() { _ = r.Body.Close() }()
 
-		err := decoder.Decode(&payload)
+		err = s.payloadValidator.ValidatePayload(payload, "create_databases.yaml")
+		if err != nil {
+			var errGeneral *validation.ErrGeneral
+			if errors.As(err, &errGeneral) {
+				s.logger.Error("payload validation", zap.Error(err))
+				s.JSONError(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			s.logger.Warn("invalid payload", zap.Error(err))
+			s.JSONError(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var request requestBody
+		err = json.Unmarshal(payload, &request)
 		if err != nil {
 			eMsg := "could not decode JSON from request"
 			s.logger.Warn(eMsg, zap.Error(err))
@@ -45,7 +67,7 @@ func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, 
 		bothExisted := true
 
 		for _, assetType := range assetTypes {
-			alreadyExisted, err := s.repositoryService.CreateDatabase(payload.ChannelID, assetType)
+			alreadyExisted, err := s.repositoryService.CreateDatabase(request.ChannelID, assetType)
 			if err != nil {
 				var httpError *repository.Error
 				if errors.As(err, &httpError) {

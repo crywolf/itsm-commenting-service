@@ -38,7 +38,7 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 
 		var newComment comment.Comment
 
-		err = s.payloadValidator.ValidatePayload(payload)
+		err = s.payloadValidator.ValidatePayload(payload, "add_comment.yaml")
 		if err != nil {
 			var errGeneral *validation.ErrGeneral
 			if errors.As(err, &errGeneral) {

@@ -75,6 +75,11 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 	}
 }
 
+// Client returns kivik client connection handle
+func (s *DBStorage) Client() *kivik.Client {
+	return s.client
+}
+
 // AddComment saves the given comment to the database and returns it's ID
 func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (string, error) {
 	dbName := databaseName(channelID, assetType)
@@ -103,14 +108,14 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 
 		var httpError *chttp.HTTPError
 		if errors.As(err, &httpError) {
-			reason := httpError.Reason
-
 			if httpError.StatusCode() == http.StatusConflict {
-				reason = "Comment already exists"
+				reason := "Comment already exists"
+				eMsg := fmt.Sprintf("Comment could not be added: %s", reason)
+				return "", ErrorConflict(eMsg)
 			}
 
-			eMsg := fmt.Sprintf("Comment could not be added: %s", reason)
-			return "", ErrorConflict(eMsg)
+			eMsg := fmt.Sprintf("Comment could not be added: %s", httpError.Reason)
+			return "", repository.NewError(eMsg, http.StatusInternalServerError)
 		}
 
 		return "", err
@@ -152,14 +157,14 @@ func (s *DBStorage) GetComment(id, channelID, assetType string) (comment.Comment
 
 		var httpError *chttp.HTTPError
 		if errors.As(err, &httpError) {
-			reason := httpError.Reason
-
 			if httpError.StatusCode() == http.StatusNotFound {
-				reason = fmt.Sprintf("Comment with uuid='%s' does not exist", id)
+				reason := fmt.Sprintf("Comment with uuid='%s' does not exist", id)
+				eMsg := fmt.Sprintf("Comment could not be retrieved: %s", reason)
+				return c, ErrorNorFound(eMsg)
 			}
 
-			eMsg := fmt.Sprintf("Comment could not be retrieved: %s", reason)
-			return c, ErrorNorFound(eMsg)
+			eMsg := fmt.Sprintf("Comment could not be retrieved: %s", httpError.Reason)
+			return c, repository.NewError(eMsg, http.StatusInternalServerError)
 		}
 
 		return c, err
@@ -343,7 +348,7 @@ func (s *DBStorage) CreateDatabase(channelID, assetType string) (bool, error) {
 }
 
 func databaseName(channelID, assetType string) string {
-	return fmt.Sprintf("%s_%s", channelID, pluralize(assetType))
+	return fmt.Sprintf("p_%s_%s", channelID, pluralize(assetType))
 }
 
 func pluralize(assetType string) string {
