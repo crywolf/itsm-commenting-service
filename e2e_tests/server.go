@@ -1,8 +1,6 @@
 package e2e
 
 import (
-	"context"
-	"fmt"
 	"net/http/httptest"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
@@ -77,15 +75,4 @@ func StartServer() (*httptest.Server, *couchdb.DBStorage) {
 	s.Start()
 
 	return s, storage
-}
-
-// destroyTestDatabases deletes test databasesS
-func destroyTestDatabases(storage *couchdb.DBStorage) {
-	c := storage.Client()
-	if err := c.DestroyDB(context.TODO(), testutils.DatabaseName(testChannelID, "comment")); err != nil {
-		fmt.Printf("DestroyDB: %v\n", err)
-	}
-	if err := c.DestroyDB(context.TODO(), testutils.DatabaseName(testChannelID, "worknote")); err != nil {
-		fmt.Printf("DestroyDB: %v\n", err)
-	}
 }

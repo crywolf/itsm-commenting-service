@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
@@ -98,7 +99,7 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 
 	err = s.validator.Validate(c)
 	if err != nil {
-		s.logger.Error("invalid comment", zap.Error(err))
+		s.logger.Error("invalid "+assetType, zap.Error(err))
 		return "", err
 	}
 
@@ -109,19 +110,19 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 		var httpError *chttp.HTTPError
 		if errors.As(err, &httpError) {
 			if httpError.StatusCode() == http.StatusConflict {
-				reason := "Comment already exists"
-				eMsg := fmt.Sprintf("Comment could not be added: %s", reason)
+				reason := fmt.Sprintf("%s already exists", strings.Title(assetType))
+				eMsg := fmt.Sprintf("%s could not be added: %s", strings.Title(assetType), reason)
 				return "", ErrorConflict(eMsg)
 			}
 
-			eMsg := fmt.Sprintf("Comment could not be added: %s", httpError.Reason)
+			eMsg := fmt.Sprintf("%s could not be added: %s", strings.Title(assetType), httpError.Reason)
 			return "", repository.NewError(eMsg, http.StatusInternalServerError)
 		}
 
 		return "", err
 	}
 
-	s.logger.Info(fmt.Sprintf("Comment inserted with revision %s", rev))
+	s.logger.Info(fmt.Sprintf("%s inserted with revision %s", strings.Title(assetType), rev))
 
 	q, err := s.events.NewQueue(event.UUID(channelID), event.UUID(c.CreatedBy.OrgID()))
 	if err != nil {
@@ -158,19 +159,19 @@ func (s *DBStorage) GetComment(id, channelID, assetType string) (comment.Comment
 		var httpError *chttp.HTTPError
 		if errors.As(err, &httpError) {
 			if httpError.StatusCode() == http.StatusNotFound {
-				reason := fmt.Sprintf("Comment with uuid='%s' does not exist", id)
-				eMsg := fmt.Sprintf("Comment could not be retrieved: %s", reason)
+				reason := fmt.Sprintf("%s with uuid='%s' does not exist", strings.Title(assetType), id)
+				eMsg := fmt.Sprintf("%s could not be retrieved: %s", strings.Title(assetType), reason)
 				return c, ErrorNorFound(eMsg)
 			}
 
-			eMsg := fmt.Sprintf("Comment could not be retrieved: %s", httpError.Reason)
+			eMsg := fmt.Sprintf("%s could not be retrieved: %s", strings.Title(assetType), httpError.Reason)
 			return c, repository.NewError(eMsg, http.StatusInternalServerError)
 		}
 
 		return c, err
 	}
 
-	s.logger.Info(fmt.Sprintf("Comment fetched %v", c))
+	s.logger.Info(fmt.Sprintf("%s fetched %v", strings.Title(assetType), c))
 
 	return c, nil
 }
@@ -254,7 +255,7 @@ func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID
 			reason := httpError.Reason
 
 			if httpError.StatusCode() == http.StatusNotFound {
-				reason = fmt.Sprintf("Comment with uuid='%s' does not exist", id)
+				reason = fmt.Sprintf("%s with uuid='%s' does not exist", strings.Title(assetType), id)
 			}
 
 			return false, ErrorNorFound(reason)
@@ -298,7 +299,7 @@ func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID
 			reason := httpError.Reason
 
 			if httpError.StatusCode() == http.StatusConflict {
-				reason = "Comment could not be mark as read"
+				reason = fmt.Sprintf("%s could not be mark as read", strings.Title(assetType))
 			}
 
 			return false, ErrorConflict(reason)
@@ -307,7 +308,7 @@ func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID
 		return false, err
 	}
 
-	s.logger.Info(fmt.Sprintf("Comment updated %#v", c))
+	s.logger.Info(fmt.Sprintf("%s updated %#v", strings.Title(assetType), c))
 
 	return false, nil
 }

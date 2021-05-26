@@ -5,101 +5,20 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"strings"
-	"testing"
 
-	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-// TestE2E initializes test suite
-func TestE2E(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "End2End tests")
-}
-
-var server *httptest.Server
-var storage *couchdb.DBStorage
-
-var _ = BeforeSuite(func() {
-	server, storage = StartServer()
-})
-
-var _ = AfterSuite(func() {
-	destroyTestDatabases(storage)
-	server.Close()
-})
-
-var _ = Describe("API call", func() {
-	Describe("POST /databases", func() {
-		var payload []byte
-		var resp *http.Response
-
-		JustBeforeEach(func() {
-			By("request creation")
-			body := bytes.NewReader(payload)
-			req, err := http.NewRequest(http.MethodPost, server.URL+"/databases", body)
-			Expect(err).To(BeNil())
-
-			By("calling the endpoint")
-			c := http.Client{}
-			resp, err = c.Do(req)
-			Expect(err).To(BeNil())
-		})
-
-		Context("with invalid payload - missing 'channel_id'", func() {
-			BeforeEach(func() {
-				payload = []byte(`{}`)
-			})
-
-			It("should return error response", func() {
-				Expect(resp).To(HaveHTTPStatus(http.StatusBadRequest))
-				Expect(resp.Header.Get("Content-Type")).To(Equal("application/json"))
-				body, err := ioutil.ReadAll(resp.Body)
-				Expect(err).To(BeNil())
-				Expect(mapFromJSON(body)).To(HaveKey("error"))
-				Expect(body).To(MatchJSON(`{"error": "/: 'channel_id' value is required"}`))
-			})
-		})
-
-		Context("with valid payload", func() {
-			BeforeEach(func() {
-				payload = []byte(`{"channel_id": "` + testChannelID + `"}`)
-			})
-
-			When("databases do not exist", func() {
-				It("should return 'Created' response", func() {
-					Expect(resp).To(HaveHTTPStatus(http.StatusCreated))
-					Expect(resp.Header.Get("Content-Type")).To(Equal("application/json"))
-
-					body, err := ioutil.ReadAll(resp.Body)
-					Expect(err).To(BeNil())
-					Expect(body).To(MatchJSON(`{"message": "databases were successfully created"}`))
-				})
-			})
-
-			When("databases already exist", func() {
-				BeforeEach(func() {
-					createDatabases()
-				})
-
-				It("should return 'No content' response", func() {
-					Expect(resp).To(HaveHTTPStatus(http.StatusNoContent))
-					Expect(ioutil.ReadAll(resp.Body)).To(BeEmpty())
-				})
-			})
-		})
-	})
-
+var _ = Describe("Comments: API call", func() {
 	Describe("POST /comments", func() {
 		var payload []byte
 		var resp *http.Response
 
 		BeforeEach(func() {
-			createDatabases()
+			createTestDatabases()
 		})
 
 		JustBeforeEach(func() {
@@ -194,7 +113,7 @@ var _ = Describe("API call", func() {
 		var query string
 
 		BeforeEach(func() {
-			createDatabases()
+			createTestDatabases()
 		})
 
 		JustBeforeEach(func() {
@@ -212,7 +131,7 @@ var _ = Describe("API call", func() {
 		When("no comments exist", func() {
 			BeforeEach(func() {
 				destroyTestDatabases(storage)
-				createDatabases()
+				createTestDatabases()
 			})
 
 			It("should return correct response", func() {
@@ -289,7 +208,7 @@ var _ = Describe("API call", func() {
 				}
 
 				destroyTestDatabases(storage)
-				createDatabases()
+				createTestDatabases()
 
 				payload1 := []byte(`{
 					"entity":"incident:fc11b416-3dce-4f00-8d4e-fc43824e0b4b",
@@ -427,7 +346,7 @@ var _ = Describe("API call", func() {
 
 		BeforeEach(func() {
 			destroyTestDatabases(storage)
-			createDatabases()
+			createTestDatabases()
 		})
 
 		JustBeforeEach(func() {
@@ -499,7 +418,7 @@ var _ = Describe("API call", func() {
 
 		BeforeEach(func() {
 			destroyTestDatabases(storage)
-			createDatabases()
+			createTestDatabases()
 		})
 
 		JustBeforeEach(func() {
@@ -670,33 +589,3 @@ var _ = Describe("API call", func() {
 		})
 	})
 })
-
-func createDatabases() {
-	payload := []byte(`{"channel_id": "` + testChannelID + `"}`)
-	body := bytes.NewReader(payload)
-	req, err := http.NewRequest(http.MethodPost, server.URL+"/databases", body)
-	Expect(err).To(BeNil())
-
-	c := http.Client{}
-	resp, err := c.Do(req)
-	Expect(err).To(BeNil())
-	Expect(resp.StatusCode).To(Or(Equal(http.StatusCreated), Equal(http.StatusNoContent)), "createDatabases() failed: %s", resp.Status)
-}
-
-// createComment calls endpoint for comment creation and returns UUID of a newly created comment
-func createComment(payload []byte) string {
-	body := bytes.NewReader(payload)
-	req, err := http.NewRequest(http.MethodPost, server.URL+"/comments", body)
-	Expect(err).To(BeNil())
-	req.Header.Set("grpc-metadata-space", testChannelID)
-	req.Header.Set("authorization", bearerToken)
-
-	c := http.Client{}
-	resp, err := c.Do(req)
-	Expect(err).To(BeNil())
-	Expect(resp.StatusCode).To(Equal(http.StatusCreated), "createComment() failed: %s", resp.Status)
-
-	u, err := url.Parse(resp.Header.Get("Location"))
-	Expect(err).To(BeNil())
-	return strings.Split(u.Path, "/")[2]
-}
