@@ -14,7 +14,7 @@ import (
 )
 
 func TestCreateDatabasesHandler(t *testing.T) {
-	logger := testutils.NewTestLogger()
+	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"

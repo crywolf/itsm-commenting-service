@@ -33,7 +33,7 @@ import (
 */
 
 func TestAddCommentDBMock(t *testing.T) {
-	logger := testutils.NewTestLogger()
+	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
@@ -97,7 +97,7 @@ func TestAddCommentDBMock(t *testing.T) {
 }
 
 func TestGetCommentDBMock(t *testing.T) {
-	logger := testutils.NewTestLogger()
+	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
@@ -205,7 +205,7 @@ func (a AdderStub) AddComment(_ comment.Comment, _, _ string) (id string, err er
 }
 
 func TestAddCommentAdderStub(t *testing.T) {
-	logger := testutils.NewTestLogger()
+	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
 	adder := &AdderStub{}
@@ -252,7 +252,7 @@ func TestAddCommentAdderStub(t *testing.T) {
 /////////////////////////
 
 func TestAddCommentMemoryStorage(t *testing.T) {
-	logger := testutils.NewTestLogger()
+	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
 	rand := strings.NewReader("81aa058d-0b19-43e9-82ae-a7bca2457f10") // pseudo-random seed
@@ -298,7 +298,7 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 }
 
 func TestGetCommentMemoryStorage(t *testing.T) {
-	logger := testutils.NewTestLogger()
+	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
 	rand := strings.NewReader("81aa058d-0b19-43e9-82ae-a7bca2457f10") // pseudo-random seed

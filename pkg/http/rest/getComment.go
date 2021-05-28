@@ -53,7 +53,7 @@ func (s *Server) GetComment(assetType string) func(w http.ResponseWriter, r *htt
 		err = json.NewEncoder(w).Encode(asset)
 		if err != nil {
 			eMsg := "could not encode JSON response"
-			s.logger.Warn(eMsg, zap.Error(err))
+			s.logger.Error(eMsg, zap.Error(err))
 			s.JSONError(w, eMsg, http.StatusInternalServerError)
 			return
 		}

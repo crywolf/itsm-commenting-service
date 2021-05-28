@@ -11,6 +11,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
 var testChannelID = "3fc9958f-bace-4b1f-afcf-edf6670f91a9"
@@ -18,7 +19,7 @@ var bearerToken = "Bearer token - fake"
 
 // StartServer starts new test server and returns it. The caller should call Close when finished, to shut it down.
 func StartServer() (*httptest.Server, *couchdb.DBStorage) {
-	logger := testutils.NewTestLogger()
+	logger, cfg := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
 	us := new(UserServiceStub)
@@ -34,10 +35,14 @@ func StartServer() (*httptest.Server, *couchdb.DBStorage) {
 	_ = viper.BindEnv("TestCouchDBHost", "TEST_COUCHDB_HOST")
 	viper.SetDefault("TestCouchDBPort", "5984")
 	_ = viper.BindEnv("TestCouchDBPort", "TEST_COUCHDB_PORT")
-	viper.SetDefault("TestCouchDBUsername", "admin")
+	viper.SetDefault("TestCouchDBUsername", "test")
 	_ = viper.BindEnv("TestCouchDBUsername", "TEST_COUCHDB_USERNAME")
-	viper.SetDefault("TestCouchDBPasswd", "admin")
+	viper.SetDefault("TestCouchDBPasswd", "test")
 	_ = viper.BindEnv("TestCouchDBPasswd", "TEST_COUCHDB_PASSWD")
+
+	// set log level for couchDB initialization to see log output
+	origLevel := cfg.Level.Level()
+	cfg.Level.SetLevel(zap.InfoLevel)
 
 	// Couch DB
 	storage := couchdb.NewStorage(logger, couchdb.Config{
@@ -48,6 +53,8 @@ func StartServer() (*httptest.Server, *couchdb.DBStorage) {
 		Validator:    v,
 		EventService: new(EventServiceStub),
 	})
+
+	cfg.Level.SetLevel(origLevel) // restore orig log level
 
 	adder := adding.NewService(storage)
 	lister := listing.NewService(storage)

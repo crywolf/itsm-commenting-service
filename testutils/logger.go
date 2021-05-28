@@ -2,8 +2,8 @@ package testutils
 
 import "go.uber.org/zap"
 
-// NewTestLogger returns new logger with level set to FatalLevel
-func NewTestLogger() *zap.Logger {
+// NewTestLogger returns new logger with level set to FatalLevel and a reference to  it's config
+func NewTestLogger() (*zap.Logger, *zap.Config) {
 	cfg := zap.NewProductionConfig()
 	cfg.Level = zap.NewAtomicLevelAt(zap.FatalLevel)
 	logger, err := cfg.Build()
@@ -11,5 +11,5 @@ func NewTestLogger() *zap.Logger {
 		panic(err)
 	}
 
-	return logger
+	return logger, &cfg
 }

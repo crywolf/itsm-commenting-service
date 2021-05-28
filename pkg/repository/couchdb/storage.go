@@ -13,11 +13,10 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
-	"go.uber.org/zap"
-
 	_ "github.com/go-kivik/couchdb/v3" // The CouchDB driver
 	"github.com/go-kivik/couchdb/v3/chttp"
 	"github.com/go-kivik/kivik/v3"
+	"go.uber.org/zap"
 )
 
 const (
@@ -46,6 +45,32 @@ type Config struct {
 	Passwd       string
 }
 
+// waitForCouchDB repeatedly tries to ping DB server until it is ready for requests or timeout expires
+func waitForCouchDB(logger *zap.Logger, client *kivik.Client) {
+	logger.Info("Waiting for CouchDB to become ready...")
+	maxIters := 100 // default 100 * 100ms = 10 seconds
+	iter := 0
+	stepMs := 100
+	reportEveryIter := 10
+	step := time.Duration(stepMs) * time.Millisecond
+
+	// wait for couchdb to response to ping
+	for {
+		on, err := client.Ping(context.TODO())
+		if err == nil && on {
+			break
+		}
+		time.Sleep(step)
+		iter++
+		if iter == maxIters {
+			logger.Fatal("Waited for CouchDB for too long. Something is wrong. Check docker and docker-compose status and try again.")
+		} else if (iter > 0) && (iter%reportEveryIter == 0) {
+			logger.Warn("CouchDB still not ready, waiting...", zap.Int64("ms", int64(iter)*int64(stepMs)))
+		}
+	}
+	logger.Info("CouchDB became ready in", zap.Int64("ms", int64(iter)*int64(stepMs)))
+}
+
 // NewStorage creates new couchdb storage with initialized client
 func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 	var client *kivik.Client
@@ -59,10 +84,11 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 		if err != nil {
 			logger.Fatal("couchdb client initialization failed", zap.Error(err))
 		}
-		on, err := client.Ping(context.TODO())
-		if err != nil || !on {
-			logger.Fatal("couchdb client PING failed", zap.Error(err))
-		}
+		waitForCouchDB(logger, client)
+		//on, err := client.Ping(context.TODO())
+		//if err != nil || !on {
+		//	logger.Fatal("couchdb client PING failed", zap.Error(err))
+		//}
 	} else {
 		client = cfg.Client
 	}
@@ -320,7 +346,7 @@ func (s *DBStorage) CreateDatabase(channelID, assetType string) (bool, error) {
 
 	dbExists, err := s.client.DBExists(ctx, dbName)
 	if err != nil {
-		s.logger.Fatal("couchdb connection failed", zap.Error(err))
+		s.logger.Error("couchdb connection failed", zap.Error(err))
 		return false, err
 	}
 
@@ -330,7 +356,7 @@ func (s *DBStorage) CreateDatabase(channelID, assetType string) (bool, error) {
 
 	err = s.client.CreateDB(ctx, dbName)
 	if err != nil {
-		s.logger.Fatal("couchdb database creation failed", zap.Error(err))
+		s.logger.Error("couchdb database creation failed", zap.Error(err))
 		return false, err
 	}
 
@@ -341,7 +367,7 @@ func (s *DBStorage) CreateDatabase(channelID, assetType string) (bool, error) {
 	}
 	err = db.CreateIndex(ctx, "", "", index)
 	if err != nil {
-		s.logger.Fatal("couchdb database index creation failed", zap.Error(err))
+		s.logger.Error("couchdb database index creation failed", zap.Error(err))
 		return false, err
 	}
 

@@ -14,7 +14,7 @@ import (
 )
 
 func TestMarkAsReadByHandler(t *testing.T) {
-	logger := testutils.NewTestLogger()
+	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
 	mockUserData := user.BasicInfo{

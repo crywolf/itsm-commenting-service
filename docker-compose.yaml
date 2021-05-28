@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  test-couchdb:
+    image: couchdb:3.1.1
+    ports:
+      - "5984:5984"
+    environment:
+      COUCHDB_USER: test
+      COUCHDB_PASSWORD: test

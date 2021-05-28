@@ -16,7 +16,7 @@ import (
 
 // destroyTestDatabases deletes test databases
 func destroyTestDatabases(storage *couchdb.DBStorage) {
-	logger := testutils.NewTestLogger()
+	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
 	c := storage.Client()

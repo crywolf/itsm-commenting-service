@@ -64,7 +64,6 @@ func NewUserService() (UserService, error) {
 	conn, err := grpc.Dial(viper.GetString("UserServiceGRPCDialTarget"),
 		grpc.WithInsecure(),
 	)
-
 	if err != nil {
 		return nil, err
 	}

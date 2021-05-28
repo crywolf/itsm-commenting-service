@@ -71,12 +71,12 @@ func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, 
 			if err != nil {
 				var httpError *repository.Error
 				if errors.As(err, &httpError) {
-					s.logger.Warn("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType))
+					s.logger.Error("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType))
 					s.JSONError(w, err.Error(), httpError.StatusCode())
 					return
 				}
 
-				s.logger.Warn("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType))
+				s.logger.Error("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType))
 				s.JSONError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}

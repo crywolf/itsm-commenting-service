@@ -1,10 +1,13 @@
 # itsm-commenting-service
 ITSM commenting service
 
-```shell
-make test
-make run
-```
+`make test` runs unit tests
+
+`make e2e-test` runs end-to-end integration tests (requires docker-compose installed)
+
+`make test-all` runs all tests
+
+`make run` starts application for local use/testing
 
 `make docs` starts API documentation server on default port 3001;
 you can specify different port: `make docs PORT=3002`
