@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -17,13 +18,19 @@ import (
 // swagger:route GET /comments comments ListComments
 // Returns a list of comments from the repository filtered by some parameters
 // responses:
-//	200: commentsResponse
+//	200: commentsListResponse
 //	400: errorResponse
+//  401: errorResponse
+//  403: errorResponse
 
 // QueryComments returns handler for POST /comments/query requests
 func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("QueryComments handler called")
+
+		if err := s.authorize("QueryComments", assetType, auth.ReadAction, w, r); err != nil {
+			return
+		}
 
 		var query = map[string]interface{}{}
 

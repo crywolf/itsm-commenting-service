@@ -22,6 +22,7 @@ func StartServer() (*httptest.Server, *couchdb.DBStorage) {
 	logger, cfg := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
+	as := new(AuthServiceStub)
 	us := new(UserServiceStub)
 
 	// DB schema validator
@@ -67,6 +68,7 @@ func StartServer() (*httptest.Server, *couchdb.DBStorage) {
 
 	server := rest.NewServer(rest.Config{
 		Logger:            logger,
+		AuthService:       as,
 		UserService:       us,
 		AddingService:     adder,
 		ListingService:    lister,

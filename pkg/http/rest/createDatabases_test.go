@@ -7,7 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
+	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,14 +20,20 @@ func TestCreateDatabasesHandler(t *testing.T) {
 	defer func() { _ = logger.Sync() }()
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+	bearerToken := "some valid Bearer token"
 
 	t.Run("when request is not valid JSON", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", "database", auth.UpdateAction, bearerToken).
+			Return(true, nil)
+
 		pv, err := validation.NewPayloadValidator()
 		require.NoError(t, err)
 
 		server := NewServer(Config{
 			Addr:             "service.url",
 			Logger:           logger,
+			AuthService:      as,
 			PayloadValidator: pv,
 		})
 
@@ -33,6 +41,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/databases", body)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -52,11 +61,16 @@ func TestCreateDatabasesHandler(t *testing.T) {
 	})
 
 	t.Run("when request is not valid ('channel_id' missing)", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", "database", auth.UpdateAction, bearerToken).
+			Return(true, nil)
+
 		pv, err := validation.NewPayloadValidator()
 		require.NoError(t, err)
 
 		server := NewServer(Config{
 			Addr:             "service.url",
+			AuthService:      as,
 			Logger:           logger,
 			PayloadValidator: pv,
 		})
@@ -65,6 +79,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/databases", body)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -85,9 +100,12 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 	t.Run("when databases already exist", func(t *testing.T) {
 		couchMock, s := testutils.NewCouchDBMock(logger, nil, nil)
-
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(true)
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(true)
+
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", "database", auth.UpdateAction, bearerToken).
+			Return(true, nil)
 
 		pv, err := validation.NewPayloadValidator()
 		require.NoError(t, err)
@@ -95,6 +113,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 		server := NewServer(Config{
 			Addr:              "service.url",
 			Logger:            logger,
+			AuthService:       as,
 			RepositoryService: s,
 			PayloadValidator:  pv,
 		})
@@ -103,6 +122,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/databases", body)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -134,12 +154,17 @@ func TestCreateDatabasesHandler(t *testing.T) {
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(db)
 		db.ExpectCreateIndex()
 
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", "database", auth.UpdateAction, bearerToken).
+			Return(true, nil)
+
 		pv, err := validation.NewPayloadValidator()
 		require.NoError(t, err)
 
 		server := NewServer(Config{
 			Addr:              "service.url",
 			Logger:            logger,
+			AuthService:       as,
 			RepositoryService: s,
 			PayloadValidator:  pv,
 		})
@@ -148,6 +173,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/databases", body)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)

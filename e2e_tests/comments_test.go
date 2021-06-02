@@ -57,6 +57,7 @@ var _ = Describe("Comments: API call", func() {
 					req, err := http.NewRequest(http.MethodGet, locationHeader, nil)
 					Expect(err).To(BeNil())
 					req.Header.Set("grpc-metadata-space", testChannelID)
+					req.Header.Set("authorization", bearerToken)
 
 					c := http.Client{}
 					resp, err = c.Do(req)
@@ -121,6 +122,7 @@ var _ = Describe("Comments: API call", func() {
 			req, err := http.NewRequest(http.MethodGet, server.URL+"/comments"+query, nil)
 			Expect(err).To(BeNil())
 			req.Header.Set("grpc-metadata-space", testChannelID)
+			req.Header.Set("authorization", bearerToken)
 
 			By("calling the endpoint")
 			c := http.Client{}
@@ -354,6 +356,7 @@ var _ = Describe("Comments: API call", func() {
 			req, err := http.NewRequest(http.MethodGet, server.URL+"/comments/"+uuid, nil)
 			Expect(err).To(BeNil())
 			req.Header.Set("grpc-metadata-space", testChannelID)
+			req.Header.Set("authorization", bearerToken)
 
 			By("calling the endpoint")
 			c := http.Client{}
@@ -476,6 +479,7 @@ var _ = Describe("Comments: API call", func() {
 					req, err := http.NewRequest(http.MethodGet, server.URL+"/comments/"+uuid, nil)
 					Expect(err).To(BeNil())
 					req.Header.Set("grpc-metadata-space", testChannelID)
+					req.Header.Set("authorization", bearerToken)
 
 					c := http.Client{}
 					commentResp, err = c.Do(req)
@@ -549,6 +553,7 @@ var _ = Describe("Comments: API call", func() {
 					req, err := http.NewRequest(http.MethodGet, server.URL+"/comments/"+uuid, nil)
 					Expect(err).To(BeNil())
 					req.Header.Set("grpc-metadata-space", testChannelID)
+					req.Header.Set("authorization", bearerToken)
 
 					c := http.Client{}
 					commentResp, err = c.Do(req)

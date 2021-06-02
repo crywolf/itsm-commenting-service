@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/KompiTech/itsm-commenting-service/pkg/validation"
 	"github.com/julienschmidt/httprouter"
@@ -20,6 +21,8 @@ import (
 //	201: databasesCreatedResponse
 //	204: databasesNoContentResponse
 //	400: errorResponse
+//	401: errorResponse
+//  403: errorResponse
 
 // CreateDatabases returns handler for POST /databases requests
 func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -29,6 +32,10 @@ func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, 
 
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("CreateDatabases handler called")
+
+		if err := s.authorize("CreateDatabases", "database", auth.UpdateAction, w, r); err != nil {
+			return
+		}
 
 		payload, err := ioutil.ReadAll(r.Body)
 		if err != nil {

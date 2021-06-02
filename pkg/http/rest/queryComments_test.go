@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
@@ -22,16 +23,23 @@ func TestQueryCommentsHandler(t *testing.T) {
 	defer func() { _ = logger.Sync() }()
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+	bearerToken := "some valid Bearer token"
 
 	// TODO add tests that the service is called with correct queries
 
 	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
+			Return(true, nil)
+
 		server := NewServer(Config{
-			Addr:   "service.url",
-			Logger: logger,
+			Addr:        "service.url",
+			Logger:      logger,
+			AuthService: as,
 		})
 
 		req := httptest.NewRequest("GET", "/comments?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", nil)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -69,19 +77,25 @@ func TestQueryCommentsHandler(t *testing.T) {
 			t.Fatalf("could not marshall moc result: %v", err)
 		}
 
-		lister := new(mocks.ListingMock)
 		assetType := "comment"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+			Return(true, nil)
+
+		lister := new(mocks.ListingMock)
 		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID, assetType).
 			Return(listing.QueryResult{Result: result}, nil)
 
 		server := NewServer(Config{
 			Addr:           "service.url",
 			Logger:         logger,
+			AuthService:    as,
 			ListingService: lister,
 		})
 
 		req := httptest.NewRequest("GET", "/comments?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -124,8 +138,12 @@ func TestQueryCommentsHandler(t *testing.T) {
 			t.Fatalf("could not marshall moc result: %v", err)
 		}
 
-		lister := new(mocks.ListingMock)
 		assetType := "comment"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+			Return(true, nil)
+
+		lister := new(mocks.ListingMock)
 		bookmark := "g1AAAAC2eJw1zjsOwjAQBNBVKKCi4hqL4vUncVpEGWioaJDttUVCCBKk4fY4CLrRSPM0AwAU14Jh_Zrcc7rF94UfoeN77rewO7bt_nACTkonXWk0IVhU1iu0ITB652vrapO0DzArq78y5P1iRpY_Y87YjZmO49TERCSjYZTGiwwyo0vCIguqtGJpKX4vbKgkgaVEUidhGkmNKs99_wEUVC69"
 		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID, assetType).
 			Return(listing.QueryResult{
@@ -136,11 +154,13 @@ func TestQueryCommentsHandler(t *testing.T) {
 		server := NewServer(Config{
 			Addr:           "service.url",
 			Logger:         logger,
+			AuthService:    as,
 			ListingService: lister,
 		})
 
 		req := httptest.NewRequest("GET", "/comments", nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -163,15 +183,21 @@ func TestQueryCommentsHandler(t *testing.T) {
 	})
 
 	t.Run("when query is not a valid JSON and cannot be decoded", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
+			Return(true, nil)
+
 		lister := new(mocks.ListingMock)
 		server := NewServer(Config{
 			Addr:           "service.url",
 			Logger:         logger,
+			AuthService:    as,
 			ListingService: lister,
 		})
 
 		query := "{thisisnotvalidJSONatall}"
 		req := httptest.NewRequest("GET", "/comments?query="+query, nil)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -191,14 +217,19 @@ func TestQueryCommentsHandler(t *testing.T) {
 	})
 
 	t.Run("when repository returns Bad Request error", func(t *testing.T) {
-		lister := new(mocks.ListingMock)
 		assetType := "comment"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+			Return(true, nil)
+
+		lister := new(mocks.ListingMock)
 		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID, assetType).
 			Return(listing.QueryResult{}, couchdb.ErrorBadRequest("index does not exist"))
 
 		server := NewServer(Config{
 			Addr:           "service.url",
 			Logger:         logger,
+			AuthService:    as,
 			ListingService: lister,
 		})
 
@@ -210,6 +241,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/comments?query="+query, nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -229,14 +261,19 @@ func TestQueryCommentsHandler(t *testing.T) {
 	})
 
 	t.Run("when repository returns some other error", func(t *testing.T) {
-		lister := new(mocks.ListingMock)
 		assetType := "comment"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+			Return(true, nil)
+
+		lister := new(mocks.ListingMock)
 		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID, assetType).
 			Return(listing.QueryResult{}, errors.New("some error occurred"))
 
 		server := NewServer(Config{
 			Addr:           "service.url",
 			Logger:         logger,
+			AuthService:    as,
 			ListingService: lister,
 		})
 
@@ -248,6 +285,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		req := httptest.NewRequest("GET", "/comments?query="+query, nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -286,19 +324,25 @@ func TestQueryCommentsHandler(t *testing.T) {
 			t.Fatalf("could not marshall moc result: %v", err)
 		}
 
-		lister := new(mocks.ListingMock)
 		assetType := "worknote"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+			Return(true, nil)
+		lister := new(mocks.ListingMock)
+
 		lister.On("QueryComments", mock.AnythingOfType("map[string]interface {}"), channelID, assetType).
 			Return(listing.QueryResult{Result: result}, nil)
 
 		server := NewServer(Config{
 			Addr:           "service.url",
 			Logger:         logger,
+			AuthService:    as,
 			ListingService: lister,
 		})
 
 		req := httptest.NewRequest("GET", "/worknotes?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)

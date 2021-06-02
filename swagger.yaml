@@ -148,8 +148,12 @@ paths:
         x-go-name: Bookmark
       responses:
         "200":
-          $ref: '#/responses/commentsResponse'
+          $ref: '#/responses/commentsListResponse'
         "400":
+          $ref: '#/responses/errorResponse'
+        "401":
+          $ref: '#/responses/errorResponse'
+        "403":
           $ref: '#/responses/errorResponse'
       tags:
       - comments
@@ -199,6 +203,8 @@ paths:
           $ref: '#/responses/errorResponse'
         "401":
           $ref: '#/responses/errorResponse'
+        "403":
+          $ref: '#/responses/errorResponse'
         "409":
           $ref: '#/responses/errorResponse'
       tags:
@@ -231,6 +237,10 @@ paths:
         "200":
           $ref: '#/responses/commentResponse'
         "400":
+          $ref: '#/responses/errorResponse'
+        "401":
+          $ref: '#/responses/errorResponse'
+        "403":
           $ref: '#/responses/errorResponse'
         "404":
           $ref: '#/responses/errorResponse'
@@ -269,6 +279,8 @@ paths:
           $ref: '#/responses/errorResponse'
         "401":
           $ref: '#/responses/errorResponse'
+        "403":
+          $ref: '#/responses/errorResponse'
       tags:
       - comments
   /databases:
@@ -302,6 +314,10 @@ paths:
           $ref: '#/responses/databasesNoContentResponse'
         "400":
           $ref: '#/responses/errorResponse'
+        "401":
+          $ref: '#/responses/errorResponse'
+        "403":
+          $ref: '#/responses/errorResponse'
       tags:
       - databases
 produces:
@@ -311,12 +327,22 @@ responses:
     description: Data structure representing a single comment or worknote
     schema:
       $ref: '#/definitions/Comment'
-  commentsResponse:
+  commentsListResponse:
     description: A list of comments or worknotes
     schema:
-      items:
-        $ref: '#/definitions/Comment'
-      type: array
+      properties:
+        bookmark:
+          description: Pagination bookmark
+          type: string
+          x-go-name: Bookmark
+        result:
+          items:
+            $ref: '#/definitions/Comment'
+          type: array
+          x-go-name: Result
+      required:
+      - result
+      type: object
   createdResponse:
     description: Created is returned by this API endpoint
     headers:

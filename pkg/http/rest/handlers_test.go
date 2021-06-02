@@ -15,6 +15,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/memory"
@@ -36,8 +37,10 @@ func TestAddCommentDBMock(t *testing.T) {
 	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
+	bearerToken := "some valid Bearer token"
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 	orgID := "a897a407-e41b-4b14-924a-39f5d5a8038f"
+	assetType := "comment"
 
 	validator := new(mocks.ValidatorMock)
 	validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
@@ -45,14 +48,18 @@ func TestAddCommentDBMock(t *testing.T) {
 	events := new(mocks.EventServiceMock)
 	queue := new(mocks.QueueMock)
 	events.On("NewQueue", event.UUID(channelID), event.UUID(orgID)).Return(queue, nil)
-	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), "comment").Return(nil)
+	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
 	queue.On("PublishEvents").Return(nil)
 
 	couchMock, s := testutils.NewCouchDBMock(logger, validator, events)
 
 	db := couchMock.NewDB()
-	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
 	db.ExpectPut()
+
+	as := new(mocks.AuthServiceMock)
+	as.On("Enforce", assetType, auth.UpdateAction, bearerToken).
+		Return(true, nil)
 
 	us := new(mocks.UserServiceMock)
 	mockUserData := user.BasicInfo{
@@ -72,6 +79,7 @@ func TestAddCommentDBMock(t *testing.T) {
 
 	server := rest.NewServer(rest.Config{
 		Addr:             "service.url",
+		AuthService:      as,
 		UserService:      us,
 		Logger:           logger,
 		AddingService:    adder,
@@ -86,6 +94,7 @@ func TestAddCommentDBMock(t *testing.T) {
 	body := bytes.NewReader(payload)
 	req := httptest.NewRequest("POST", "/comments", body)
 	req.Header.Set("grpc-metadata-space", channelID)
+	req.Header.Set("authorization", bearerToken)
 
 	w := httptest.NewRecorder()
 	server.ServeHTTP(w, req)
@@ -100,8 +109,10 @@ func TestGetCommentDBMock(t *testing.T) {
 	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
+	bearerToken := "some valid Bearer token"
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 	orgID := "a897a407-e41b-4b14-924a-39f5d5a8038f"
+	assetType := "comment"
 
 	validator := new(mocks.ValidatorMock)
 	validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
@@ -109,17 +120,17 @@ func TestGetCommentDBMock(t *testing.T) {
 	events := new(mocks.EventServiceMock)
 	queue := new(mocks.QueueMock)
 	events.On("NewQueue", event.UUID(channelID), event.UUID(orgID)).Return(queue, nil)
-	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), "comment").Return(nil)
+	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
 	queue.On("PublishEvents").Return(nil)
 
 	couchMock, s := testutils.NewCouchDBMock(logger, validator, events)
 
 	db := couchMock.NewDB()
-	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
 	db.ExpectPut()
 
 	db = couchMock.NewDB()
-	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
 
 	dbDoc := comment.Comment{
 		UUID:   "38316161-3035-4864-ad30-6231392d3433",
@@ -151,7 +162,10 @@ func TestGetCommentDBMock(t *testing.T) {
 		},
 	}
 
-	assetType := "comment"
+	as := new(mocks.AuthServiceMock)
+	as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		Return(true, nil)
+
 	uuid, err := s.AddComment(c1, channelID, assetType)
 	require.NoError(t, err)
 
@@ -160,11 +174,13 @@ func TestGetCommentDBMock(t *testing.T) {
 	server := rest.NewServer(rest.Config{
 		Addr:           "service.url",
 		Logger:         logger,
+		AuthService:    as,
 		ListingService: lister,
 	})
 
 	req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
 	req.Header.Set("grpc-metadata-space", channelID)
+	req.Header.Set("authorization", bearerToken)
 
 	w := httptest.NewRecorder()
 	server.ServeHTTP(w, req)
@@ -195,65 +211,11 @@ func TestGetCommentDBMock(t *testing.T) {
 	require.JSONEq(t, expectedJSON, string(b), "response does not match")
 }
 
-//////////////////////////////
-
-type AdderStub struct{}
-
-func (a AdderStub) AddComment(_ comment.Comment, _, _ string) (id string, err error) {
-	id = "38316161-3035-4864-ad30-6231392d3433"
-	return id, err
-}
-
-func TestAddCommentAdderStub(t *testing.T) {
-	logger, _ := testutils.NewTestLogger()
-	defer func() { _ = logger.Sync() }()
-
-	adder := &AdderStub{}
-
-	us := new(mocks.UserServiceMock)
-	mockUserData := user.BasicInfo{
-		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
-		Name: "Some test user 1",
-	}
-	us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
-		Return(mockUserData, nil)
-
-	pv, err := validation.NewPayloadValidator()
-	require.NoError(t, err)
-
-	server := rest.NewServer(rest.Config{
-		Addr:             "service.url",
-		UserService:      us,
-		Logger:           logger,
-		AddingService:    adder,
-		PayloadValidator: pv,
-	})
-
-	payload := []byte(`{
-		"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
-		"text": "test with entity 1"
-	}`)
-
-	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
-
-	body := bytes.NewReader(payload)
-	req := httptest.NewRequest("POST", "/comments", body)
-	req.Header.Set("grpc-metadata-space", channelID)
-
-	w := httptest.NewRecorder()
-	server.ServeHTTP(w, req)
-	resp := w.Result()
-
-	assert.Equal(t, http.StatusCreated, resp.StatusCode, "Status code")
-	expectedLocation := "http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"
-	assert.Equal(t, expectedLocation, resp.Header.Get("Location"), "Location header")
-}
-
-/////////////////////////
-
 func TestAddCommentMemoryStorage(t *testing.T) {
 	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
+
+	bearerToken := "some valid Bearer token"
 
 	rand := strings.NewReader("81aa058d-0b19-43e9-82ae-a7bca2457f10") // pseudo-random seed
 	s := &memory.Storage{
@@ -262,6 +224,10 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 	}
 	adder := adding.NewService(s)
 
+	as := new(mocks.AuthServiceMock)
+	as.On("Enforce", "comment", auth.UpdateAction, bearerToken).
+		Return(true, nil)
+
 	us := new(mocks.UserServiceMock)
 	mockUserData := user.BasicInfo{
 		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
@@ -275,6 +241,7 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 
 	server := rest.NewServer(rest.Config{
 		Addr:             "service.url",
+		AuthService:      as,
 		UserService:      us,
 		Logger:           logger,
 		AddingService:    adder,
@@ -287,6 +254,7 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 	body := bytes.NewReader(payload)
 	req := httptest.NewRequest("POST", "/comments", body)
 	req.Header.Set("grpc-metadata-space", channelID)
+	req.Header.Set("authorization", bearerToken)
 
 	w := httptest.NewRecorder()
 	server.ServeHTTP(w, req)
@@ -312,9 +280,14 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 		Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 	}
 
+	bearerToken := "some valid Bearer token"
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
-
 	assetType := "comment"
+
+	as := new(mocks.AuthServiceMock)
+	as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		Return(true, nil)
+
 	uuid, err := s.AddComment(c1, channelID, assetType)
 	require.NoError(t, err)
 
@@ -323,11 +296,13 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 	server := rest.NewServer(rest.Config{
 		Addr:           "service.url",
 		Logger:         logger,
+		AuthService:    as,
 		ListingService: lister,
 	})
 
 	req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
 	req.Header.Set("grpc-metadata-space", channelID)
+	req.Header.Set("authorization", bearerToken)
 
 	w := httptest.NewRecorder()
 	server.ServeHTTP(w, req)

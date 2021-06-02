@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/KompiTech/itsm-commenting-service/pkg/validation"
 	"github.com/julienschmidt/httprouter"
@@ -20,12 +21,17 @@ import (
 //	201: createdResponse
 //	400: errorResponse
 //	401: errorResponse
+//  403: errorResponse
 //	409: errorResponse
 
 // AddComment returns handler for POST /comments requests
 func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("AddComment handler called")
+
+		if err := s.authorize("AddComment", assetType, auth.UpdateAction, w, r); err != nil {
+			return
+		}
 
 		payload, err := ioutil.ReadAll(r.Body)
 		if err != nil {

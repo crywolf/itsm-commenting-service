@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -19,11 +20,17 @@ import (
 //	204: noContentResponse
 //	400: errorResponse
 //	401: errorResponse
+//  403: errorResponse
 
 // MarkAsReadBy returns handler for POST /comments/:id/read_by requests
 func (s *Server) MarkAsReadBy(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		s.logger.Info("MarkAsReadBy handler called")
+
+		// use can update comment if he is allowed to read it!
+		if err := s.authorize("MarkAsReadBy", assetType, auth.ReadAction, w, r); err != nil {
+			return
+		}
 
 		id := params.ByName("id")
 		if id == "" {

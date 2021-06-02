@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
@@ -29,8 +30,14 @@ func TestAddCommentHandler(t *testing.T) {
 	}
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+	bearerToken := "some valid Bearer token"
 
 	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		assetType := "comment"
+		as.On("Enforce", assetType, auth.UpdateAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
@@ -41,6 +48,7 @@ func TestAddCommentHandler(t *testing.T) {
 		server := NewServer(Config{
 			Addr:             "service.url",
 			Logger:           logger,
+			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
 		})
@@ -53,6 +61,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/comments", body)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -72,6 +81,11 @@ func TestAddCommentHandler(t *testing.T) {
 	})
 
 	t.Run("when request is not valid JSON", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		assetType := "comment"
+		as.On("Enforce", assetType, auth.UpdateAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
@@ -82,6 +96,7 @@ func TestAddCommentHandler(t *testing.T) {
 		server := NewServer(Config{
 			Addr:             "service.url",
 			Logger:           logger,
+			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
 		})
@@ -90,6 +105,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/comments", body)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -109,6 +125,11 @@ func TestAddCommentHandler(t *testing.T) {
 	})
 
 	t.Run("when request is not valid ('uuid' key present, empty 'text' key)", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		assetType := "comment"
+		as.On("Enforce", assetType, auth.UpdateAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
@@ -119,6 +140,7 @@ func TestAddCommentHandler(t *testing.T) {
 		server := NewServer(Config{
 			Addr:             "service.url",
 			Logger:           logger,
+			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
 		})
@@ -132,6 +154,7 @@ func TestAddCommentHandler(t *testing.T) {
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/comments", body)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -151,6 +174,11 @@ func TestAddCommentHandler(t *testing.T) {
 	})
 
 	t.Run("when validator fails (ie. returns general error", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		assetType := "comment"
+		as.On("Enforce", assetType, auth.UpdateAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
@@ -162,6 +190,7 @@ func TestAddCommentHandler(t *testing.T) {
 		server := NewServer(Config{
 			Addr:             "service.url",
 			Logger:           logger,
+			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
 		})
@@ -175,6 +204,7 @@ func TestAddCommentHandler(t *testing.T) {
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/comments", body)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -194,12 +224,16 @@ func TestAddCommentHandler(t *testing.T) {
 	})
 
 	t.Run("when comment was not stored yet", func(t *testing.T) {
+		assetType := "comment"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.UpdateAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
-		assetType := "comment"
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
 			Return("38316161-3035-4864-ad30-6231392d3433", nil)
 
@@ -208,6 +242,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 		server := NewServer(Config{
 			Addr:             "service.url",
+			AuthService:      as,
 			Logger:           logger,
 			UserService:      us,
 			AddingService:    adder,
@@ -222,6 +257,7 @@ func TestAddCommentHandler(t *testing.T) {
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/comments", body)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -233,12 +269,16 @@ func TestAddCommentHandler(t *testing.T) {
 	})
 
 	t.Run("when repository returns conflict error (ie. trying to add already stored comment)", func(t *testing.T) {
+		assetType := "comment"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.UpdateAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
-		assetType := "comment"
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
 			Return("", couchdb.ErrorConflict("Comment already exists"))
 
@@ -248,6 +288,7 @@ func TestAddCommentHandler(t *testing.T) {
 		server := NewServer(Config{
 			Addr:             "service.url",
 			Logger:           logger,
+			AuthService:      as,
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
@@ -261,6 +302,7 @@ func TestAddCommentHandler(t *testing.T) {
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/comments", body)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -280,12 +322,16 @@ func TestAddCommentHandler(t *testing.T) {
 	})
 
 	t.Run("when repository returns some other general error", func(t *testing.T) {
+		assetType := "comment"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.UpdateAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
-		assetType := "comment"
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
 			Return("", errors.New("some error occurred"))
 
@@ -295,6 +341,7 @@ func TestAddCommentHandler(t *testing.T) {
 		server := NewServer(Config{
 			Addr:             "service.url",
 			Logger:           logger,
+			AuthService:      as,
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
@@ -308,6 +355,7 @@ func TestAddCommentHandler(t *testing.T) {
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/comments", body)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -368,12 +416,16 @@ func TestAddCommentHandler(t *testing.T) {
 
 	// worknote
 	t.Run("when worknote was not stored yet", func(t *testing.T) {
+		assetType := "worknote"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.UpdateAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
 		adder := new(mocks.AddingMock)
-		assetType := "worknote"
 		adder.On("AddComment", mock.AnythingOfType("comment.Comment"), channelID, assetType).
 			Return("38316161-3035-4864-ad30-6231392d3433", nil)
 
@@ -383,6 +435,7 @@ func TestAddCommentHandler(t *testing.T) {
 		server := NewServer(Config{
 			Addr:             "service.url",
 			Logger:           logger,
+			AuthService:      as,
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
@@ -396,6 +449,7 @@ func TestAddCommentHandler(t *testing.T) {
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/worknotes", body)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -405,5 +459,4 @@ func TestAddCommentHandler(t *testing.T) {
 		expectedLocation := "http://service.url/worknotes/38316161-3035-4864-ad30-6231392d3433"
 		assert.Equal(t, expectedLocation, resp.Header.Get("Location"), "Location header")
 	})
-
 }

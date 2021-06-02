@@ -8,6 +8,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/KompiTech/itsm-commenting-service/pkg/event"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -47,6 +48,17 @@ type UpdatingMock struct {
 // MarkAsReadByUser adds user info to read_by array in the comment in the storage
 func (u *UpdatingMock) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
 	args := u.Called(id, readBy, channelID, assetType)
+	return args.Bool(0), args.Error(1)
+}
+
+// AuthServiceMock is a mock of authentication service
+type AuthServiceMock struct {
+	mock.Mock
+}
+
+// Enforce returns true if action is allowed to be performed on specified asset
+func (s *AuthServiceMock) Enforce(assetType string, action auth.Action, authToken string) (bool, error) {
+	args := s.Called(assetType, action, authToken)
 	return args.Bool(0), args.Error(1)
 }
 

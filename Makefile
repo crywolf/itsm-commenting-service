@@ -22,7 +22,7 @@ test:
 e2e-test:
 	docker-compose down
 	docker-compose up -d
-	go test -v ./e2e_tests/.
+	go clean -testcache && go test -v ./e2e_tests/.
 	docker-compose down
 
 test-all: test e2e-test

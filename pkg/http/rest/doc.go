@@ -65,10 +65,15 @@ type noContentResponseWrapper struct {
 }
 
 // A list of comments or worknotes
-// swagger:response commentsResponse
-type commentsResponseWrapper struct {
+// swagger:response commentsListResponse
+type commentsListResponseWrapper struct {
 	// in: body
-	Body []comment.Comment
+	Body struct {
+		// required: true
+		Result []comment.Comment `json:"result"`
+		// Pagination bookmark
+		Bookmark string `json:"bookmark"`
+	}
 }
 
 // Data structure representing a single comment or worknote

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
 	"github.com/stretchr/testify/assert"
@@ -23,19 +24,26 @@ func TestMarkAsReadByHandler(t *testing.T) {
 	}
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+	bearerToken := "some valid Bearer token"
 
 	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
 		server := NewServer(Config{
 			Addr:        "service.url",
-			UserService: us,
 			Logger:      logger,
+			AuthService: as,
+			UserService: us,
 		})
 
 		req := httptest.NewRequest("POST", "/comments/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -56,6 +64,10 @@ func TestMarkAsReadByHandler(t *testing.T) {
 	})
 
 	t.Run("when comment is being marked as read", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
@@ -70,13 +82,15 @@ func TestMarkAsReadByHandler(t *testing.T) {
 
 		server := NewServer(Config{
 			Addr:            "service.url",
-			UserService:     us,
 			Logger:          logger,
+			AuthService:     as,
+			UserService:     us,
 			UpdatingService: updater,
 		})
 
 		req := httptest.NewRequest("POST", "/comments/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -88,6 +102,10 @@ func TestMarkAsReadByHandler(t *testing.T) {
 	})
 
 	t.Run("when comment is being marked as read twice by the same user", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
@@ -102,13 +120,15 @@ func TestMarkAsReadByHandler(t *testing.T) {
 
 		server := NewServer(Config{
 			Addr:            "service.url",
-			UserService:     us,
 			Logger:          logger,
+			AuthService:     as,
+			UserService:     us,
 			UpdatingService: updater,
 		})
 
 		req := httptest.NewRequest("POST", "/comments/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -121,12 +141,16 @@ func TestMarkAsReadByHandler(t *testing.T) {
 
 	// worknote
 	t.Run("when worknote is being marked as read", func(t *testing.T) {
+		assetType := "worknote"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+			Return(true, nil)
+
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
 			Return(mockUserData, nil)
 
 		updater := new(mocks.UpdatingMock)
-		assetType := "worknote"
 		updater.On(
 			"MarkAsReadByUser",
 			"7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
@@ -135,13 +159,15 @@ func TestMarkAsReadByHandler(t *testing.T) {
 
 		server := NewServer(Config{
 			Addr:            "service.url",
-			UserService:     us,
 			Logger:          logger,
+			AuthService:     as,
+			UserService:     us,
 			UpdatingService: updater,
 		})
 
 		req := httptest.NewRequest("POST", "/worknotes/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)

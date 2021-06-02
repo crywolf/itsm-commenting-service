@@ -1,11 +1,13 @@
 package e2e
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/KompiTech/itsm-commenting-service/pkg/event"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -26,8 +28,18 @@ var expectedMockUserJSON = `{
 	"org_name": "cc4c7533-4e34-4890-a79c-c1fda3c1be1e.kompitech.com"
 }`
 
+// AuthServiceStub to simulate authorization service
+type AuthServiceStub struct{}
 
-// UserServiceStub to simulate of user service
+// Enforce returns true if action is allowed to be performed on specified asset
+func (s *AuthServiceStub) Enforce(assetType string, act auth.Action, authToken string) (bool, error) {
+	if authToken == "" {
+		return false, errors.New("authorization failed (KompiGuard)")
+	}
+	return true, nil
+}
+
+// UserServiceStub to simulate user service
 type UserServiceStub struct{}
 
 // UserBasicInfo returns info about user who initiated the request

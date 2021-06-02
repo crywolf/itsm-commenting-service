@@ -10,6 +10,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/updating"
 	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"github.com/google/uuid"
@@ -80,6 +81,7 @@ func main() {
 		Addr:              viper.GetString("HTTPBindAddress"),
 		URISchema:         "http://",
 		Logger:            logger,
+		AuthService:       auth.NewService(),
 		UserService:       userService,
 		AddingService:     adder,
 		ListingService:    lister,

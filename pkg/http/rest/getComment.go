@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -15,12 +16,18 @@ import (
 // responses:
 //	200: commentResponse
 //	400: errorResponse
+//  401: errorResponse
+//  403: errorResponse
 //	404: errorResponse
 
 // GetComment returns handler for GET /comments/:id requests
 func (s *Server) GetComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		s.logger.Info("GetComment handler called")
+
+		if err := s.authorize("GetComment", assetType, auth.ReadAction, w, r); err != nil {
+			return
+		}
 
 		id := params.ByName("id")
 		if id == "" {

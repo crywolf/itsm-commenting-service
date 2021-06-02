@@ -61,7 +61,8 @@ type UserService interface {
 
 // NewUserService creates user service with initialized GRPC client
 func NewUserService() (UserService, error) {
-	conn, err := grpc.Dial(viper.GetString("UserServiceGRPCDialTarget"),
+	conn, err := grpc.Dial(
+		viper.GetString("UserServiceGRPCDialTarget"),
 		grpc.WithInsecure(),
 	)
 	if err != nil {

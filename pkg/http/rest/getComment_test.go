@@ -9,6 +9,7 @@ import (
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"github.com/KompiTech/itsm-commenting-service/testutils"
@@ -20,8 +21,9 @@ func TestGetCommentHandler(t *testing.T) {
 	defer func() { _ = logger.Sync() }()
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
+	bearerToken := "some valid Bearer token"
 
-	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
+	t.Run("when 'authorization' header with Bearer token is missing", func(t *testing.T) {
 		server := NewServer(Config{
 			Addr:   "service.url",
 			Logger: logger,
@@ -29,6 +31,73 @@ func TestGetCommentHandler(t *testing.T) {
 
 		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
 		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"error":"'authorization' header missing or invalid"}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
+
+	t.Run("when authorization service returns error", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		assetType := "comment"
+		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+			Return(false, errors.New("some authorization service error"))
+
+		server := NewServer(Config{
+			Addr:        "service.url",
+			Logger:      logger,
+			AuthService: as,
+		})
+
+		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
+		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+		req.Header.Set("authorization", bearerToken)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"error":"some authorization service error"}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
+
+	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
+			Return(true, nil)
+
+		server := NewServer(Config{
+			Addr:        "service.url",
+			Logger:      logger,
+			AuthService: as,
+		})
+
+		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
+		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -64,19 +133,25 @@ func TestGetCommentHandler(t *testing.T) {
 			CreatedAt: "2021-04-01T12:34:56+02:00",
 		}
 
-		lister := new(mocks.ListingMock)
 		assetType := "comment"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+			Return(true, nil)
+
+		lister := new(mocks.ListingMock)
 		lister.On("GetComment", uuid, channelID, assetType).
 			Return(retC, nil)
 
 		server := NewServer(Config{
 			Addr:           "service.url",
 			Logger:         logger,
+			AuthService:    as,
 			ListingService: lister,
 		})
 
 		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -110,20 +185,26 @@ func TestGetCommentHandler(t *testing.T) {
 
 	t.Run("when comment does not exist", func(t *testing.T) {
 		uuid := "someNonexistentUUID"
+		assetType := "comment"
+
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
-		assetType := "comment"
 		lister.On("GetComment", uuid, channelID, assetType).
 			Return(comment.Comment{}, couchdb.ErrorNorFound("comment not found"))
 
 		server := NewServer(Config{
 			Addr:           "service.url",
 			Logger:         logger,
+			AuthService:    as,
 			ListingService: lister,
 		})
 
 		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -145,20 +226,26 @@ func TestGetCommentHandler(t *testing.T) {
 
 	t.Run("when repository returns some other error", func(t *testing.T) {
 		uuid := "someNonexistentUUID"
+		assetType := "comment"
+
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
-		assetType := "comment"
 		lister.On("GetComment", uuid, channelID, assetType).
 			Return(comment.Comment{}, errors.New("some error occurred"))
 
 		server := NewServer(Config{
 			Addr:           "service.url",
+			AuthService:    as,
 			Logger:         logger,
 			ListingService: lister,
 		})
 
 		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
@@ -195,19 +282,26 @@ func TestGetCommentHandler(t *testing.T) {
 			CreatedAt: "2021-04-01T12:34:56+02:00",
 		}
 
-		lister := new(mocks.ListingMock)
 		assetType := "worknote"
+
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+			Return(true, nil)
+
+		lister := new(mocks.ListingMock)
 		lister.On("GetComment", uuid, channelID, assetType).
 			Return(retC, nil)
 
 		server := NewServer(Config{
 			Addr:           "service.url",
+			AuthService:    as,
 			Logger:         logger,
 			ListingService: lister,
 		})
 
 		req := httptest.NewRequest("GET", "/worknotes/"+uuid, nil)
 		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, req)
