@@ -19,9 +19,9 @@ import (
 // Returns a list of comments from the repository filtered by some parameters
 // responses:
 //	200: commentsListResponse
-//	400: errorResponse
-//  401: errorResponse
-//  403: errorResponse
+//	400: errorResponse400
+//  401: errorResponse401
+//  403: errorResponse403
 
 // QueryComments returns handler for POST /comments/query requests
 func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

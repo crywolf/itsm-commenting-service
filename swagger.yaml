@@ -150,11 +150,11 @@ paths:
         "200":
           $ref: '#/responses/commentsListResponse'
         "400":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse400'
         "401":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse401'
         "403":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse403'
       tags:
       - comments
     post:
@@ -200,13 +200,13 @@ paths:
         "201":
           $ref: '#/responses/createdResponse'
         "400":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse400'
         "401":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse401'
         "403":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse403'
         "409":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse409'
       tags:
       - comments
   /comments/{uuid}:
@@ -237,13 +237,13 @@ paths:
         "200":
           $ref: '#/responses/commentResponse'
         "400":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse400'
         "401":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse401'
         "403":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse403'
         "404":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse404'
       tags:
       - comments
   /comments/{uuid}/read_by:
@@ -276,11 +276,13 @@ paths:
         "204":
           $ref: '#/responses/noContentResponse'
         "400":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse400'
         "401":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse401'
         "403":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse403'
+        "404":
+          $ref: '#/responses/errorResponse404'
       tags:
       - comments
   /databases:
@@ -313,11 +315,11 @@ paths:
         "204":
           $ref: '#/responses/databasesNoContentResponse'
         "400":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse400'
         "401":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse401'
         "403":
-          $ref: '#/responses/errorResponse'
+          $ref: '#/responses/errorResponse403'
       tags:
       - databases
 produces:
@@ -344,27 +346,78 @@ responses:
       - result
       type: object
   createdResponse:
-    description: Created is returned by this API endpoint
+    description: Created
     headers:
       Location:
         description: URI of the resource
         example: http://localhost:8080/comments/2af4f493-0bd5-4513-b440-6cbb465feadb
         type: string
   databasesCreatedResponse:
-    description: Created is returned by this API endpoint
+    description: Created
   databasesNoContentResponse:
-    description: No content is returned by this API endpoint
+    description: No content
   errorResponse:
     description: Error
     schema:
       properties:
         error:
-          description: Description of the error
           type: string
           x-go-name: ErrorMessage
+      required:
+      - error
+      type: object
+  errorResponse400:
+    description: Bad Request
+    schema:
+      properties:
+        error:
+          type: string
+          x-go-name: ErrorMessage
+      required:
+      - error
+      type: object
+  errorResponse401:
+    description: Unauthorized
+    schema:
+      properties:
+        error:
+          type: string
+          x-go-name: ErrorMessage
+      required:
+      - error
+      type: object
+  errorResponse403:
+    description: Forbidden
+    schema:
+      properties:
+        error:
+          type: string
+          x-go-name: ErrorMessage
+      required:
+      - error
+      type: object
+  errorResponse404:
+    description: Not Found
+    schema:
+      properties:
+        error:
+          type: string
+          x-go-name: ErrorMessage
+      required:
+      - error
+      type: object
+  errorResponse409:
+    description: Conflict
+    schema:
+      properties:
+        error:
+          type: string
+          x-go-name: ErrorMessage
+      required:
+      - error
       type: object
   noContentResponse:
-    description: No content is returned by this API endpoint
+    description: No content
     headers:
       Location:
         description: URI of the resource

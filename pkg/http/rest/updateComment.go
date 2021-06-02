@@ -18,9 +18,10 @@ import (
 // responses:
 //	201: createdResponse
 //	204: noContentResponse
-//	400: errorResponse
-//	401: errorResponse
-//  403: errorResponse
+//	400: errorResponse400
+//	401: errorResponse401
+//  403: errorResponse403
+//	404: errorResponse404
 
 // MarkAsReadBy returns handler for POST /comments/:id/read_by requests
 func (s *Server) MarkAsReadBy(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

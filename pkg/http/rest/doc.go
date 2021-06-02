@@ -35,12 +35,33 @@ import (
 type errorResponseWrapper struct {
 	// in: body
 	Body struct {
+		// required: true
 		// Description of the error
 		ErrorMessage string `json:"error"`
 	}
 }
 
-// Created is returned by this API endpoint
+// Bad Request
+// swagger:response errorResponse400
+type errorResponseWrapper400 errorResponseWrapper
+
+// Unauthorized
+// swagger:response errorResponse401
+type errorResponseWrapper401 errorResponseWrapper
+
+// Forbidden
+// swagger:response errorResponse403
+type errorResponseWrapper403 errorResponseWrapper
+
+// Not Found
+// swagger:response errorResponse404
+type errorResponseWrapper404 errorResponseWrapper
+
+// Conflict
+// swagger:response errorResponse409
+type errorResponseWrapper409 errorResponseWrapper
+
+// Created
 // swagger:response createdResponse
 type createdResponseWrapper struct {
 	// URI of the resource
@@ -48,15 +69,15 @@ type createdResponseWrapper struct {
 	Location string
 }
 
-// No content is returned by this API endpoint
+// No content
 // swagger:response databasesNoContentResponse
 type databasesNoContentResponseWrapper struct{}
 
-// Created is returned by this API endpoint
+// Created
 // swagger:response databasesCreatedResponse
 type databasesCreatedResponseWrapper struct{}
 
-// No content is returned by this API endpoint
+// No content
 // swagger:response noContentResponse
 type noContentResponseWrapper struct {
 	// URI of the resource

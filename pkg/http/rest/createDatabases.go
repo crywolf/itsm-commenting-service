@@ -20,9 +20,9 @@ import (
 // responses:
 //	201: databasesCreatedResponse
 //	204: databasesNoContentResponse
-//	400: errorResponse
-//	401: errorResponse
-//  403: errorResponse
+//	400: errorResponse400
+//	401: errorResponse401
+//  403: errorResponse403
 
 // CreateDatabases returns handler for POST /databases requests
 func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
