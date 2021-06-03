@@ -81,7 +81,7 @@ func main() {
 		Addr:              viper.GetString("HTTPBindAddress"),
 		URISchema:         "http://",
 		Logger:            logger,
-		AuthService:       auth.NewService(),
+		AuthService:       auth.NewService(logger),
 		UserService:       userService,
 		AddingService:     adder,
 		ListingService:    lister,

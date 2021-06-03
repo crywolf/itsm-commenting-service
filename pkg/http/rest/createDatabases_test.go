@@ -24,7 +24,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 	t.Run("when request is not valid JSON", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", "database", auth.UpdateAction, bearerToken).
+		as.On("Enforce", "database", auth.UpdateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		pv, err := validation.NewPayloadValidator()
@@ -41,6 +41,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/databases", body)
+		req.Header.Set("grpc-metadata-space", channelID)
 		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
@@ -62,7 +63,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 	t.Run("when request is not valid ('channel_id' missing)", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", "database", auth.UpdateAction, bearerToken).
+		as.On("Enforce", "database", auth.UpdateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		pv, err := validation.NewPayloadValidator()
@@ -79,6 +80,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/databases", body)
+		req.Header.Set("grpc-metadata-space", channelID)
 		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
@@ -104,7 +106,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(true)
 
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", "database", auth.UpdateAction, bearerToken).
+		as.On("Enforce", "database", auth.UpdateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		pv, err := validation.NewPayloadValidator()
@@ -122,6 +124,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/databases", body)
+		req.Header.Set("grpc-metadata-space", channelID)
 		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
@@ -155,7 +158,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 		db.ExpectCreateIndex()
 
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", "database", auth.UpdateAction, bearerToken).
+		as.On("Enforce", "database", auth.UpdateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		pv, err := validation.NewPayloadValidator()
@@ -173,6 +176,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 
 		body := bytes.NewReader(payload)
 		req := httptest.NewRequest("POST", "/databases", body)
+		req.Header.Set("grpc-metadata-space", channelID)
 		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()

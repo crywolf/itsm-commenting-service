@@ -58,7 +58,7 @@ func TestAddCommentDBMock(t *testing.T) {
 	db.ExpectPut()
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", assetType, auth.UpdateAction, bearerToken).
+	as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
 		Return(true, nil)
 
 	us := new(mocks.UserServiceMock)
@@ -163,7 +163,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	}
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
 	uuid, err := s.AddComment(c1, channelID, assetType)
@@ -215,6 +215,7 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 	logger, _ := testutils.NewTestLogger()
 	defer func() { _ = logger.Sync() }()
 
+	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 	bearerToken := "some valid Bearer token"
 
 	rand := strings.NewReader("81aa058d-0b19-43e9-82ae-a7bca2457f10") // pseudo-random seed
@@ -225,7 +226,7 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 	adder := adding.NewService(s)
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", "comment", auth.UpdateAction, bearerToken).
+	as.On("Enforce", "comment", auth.UpdateAction, channelID, bearerToken).
 		Return(true, nil)
 
 	us := new(mocks.UserServiceMock)
@@ -249,7 +250,6 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 	})
 
 	payload := []byte(`{"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", "text": "test with entity 1"}`)
-	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
 	body := bytes.NewReader(payload)
 	req := httptest.NewRequest("POST", "/comments", body)
@@ -285,7 +285,7 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 	assetType := "comment"
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
 	uuid, err := s.AddComment(c1, channelID, assetType)

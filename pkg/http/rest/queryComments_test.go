@@ -29,8 +29,6 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
-			Return(true, nil)
 
 		server := NewServer(Config{
 			Addr:        "service.url",
@@ -79,7 +77,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		assetType := "comment"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -140,7 +138,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		assetType := "comment"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -184,7 +182,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 	t.Run("when query is not a valid JSON and cannot be decoded", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
+		as.On("Enforce", "comment", auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -197,6 +195,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		query := "{thisisnotvalidJSONatall}"
 		req := httptest.NewRequest("GET", "/comments?query="+query, nil)
+		req.Header.Set("grpc-metadata-space", channelID)
 		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
@@ -219,7 +218,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 	t.Run("when repository returns Bad Request error", func(t *testing.T) {
 		assetType := "comment"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -263,7 +262,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 	t.Run("when repository returns some other error", func(t *testing.T) {
 		assetType := "comment"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -326,7 +325,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		assetType := "worknote"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 		lister := new(mocks.ListingMock)
 

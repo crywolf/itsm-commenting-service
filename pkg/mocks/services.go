@@ -57,8 +57,8 @@ type AuthServiceMock struct {
 }
 
 // Enforce returns true if action is allowed to be performed on specified asset
-func (s *AuthServiceMock) Enforce(assetType string, action auth.Action, authToken string) (bool, error) {
-	args := s.Called(assetType, action, authToken)
+func (s *AuthServiceMock) Enforce(assetType string, action auth.Action, channelID, authToken string) (bool, error) {
+	args := s.Called(assetType, action, channelID, authToken)
 	return args.Bool(0), args.Error(1)
 }
 

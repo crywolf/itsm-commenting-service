@@ -53,7 +53,7 @@ func TestGetCommentHandler(t *testing.T) {
 	t.Run("when authorization service returns error", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
 		assetType := "comment"
-		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 			Return(false, errors.New("some authorization service error"))
 
 		server := NewServer(Config{
@@ -64,6 +64,7 @@ func TestGetCommentHandler(t *testing.T) {
 
 		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
 		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+		req.Header.Set("grpc-metadata-space", channelID)
 		req.Header.Set("authorization", bearerToken)
 
 		w := httptest.NewRecorder()
@@ -86,8 +87,6 @@ func TestGetCommentHandler(t *testing.T) {
 
 	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
-			Return(true, nil)
 
 		server := NewServer(Config{
 			Addr:        "service.url",
@@ -135,7 +134,7 @@ func TestGetCommentHandler(t *testing.T) {
 
 		assetType := "comment"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -188,7 +187,7 @@ func TestGetCommentHandler(t *testing.T) {
 		assetType := "comment"
 
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -229,7 +228,7 @@ func TestGetCommentHandler(t *testing.T) {
 		assetType := "comment"
 
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -285,7 +284,7 @@ func TestGetCommentHandler(t *testing.T) {
 		assetType := "worknote"
 
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)

@@ -33,14 +33,13 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
+		defer func() { _ = r.Body.Close() }()
 		payload, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			s.logger.Error("could not read request body", zap.Error(err))
 			s.JSONError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		defer func() { _ = r.Body.Close() }()
 
 		var newComment comment.Comment
 

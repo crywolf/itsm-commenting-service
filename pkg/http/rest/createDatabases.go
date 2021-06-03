@@ -37,14 +37,13 @@ func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, 
 			return
 		}
 
+		defer func() { _ = r.Body.Close() }()
 		payload, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			s.logger.Error("could not read request body", zap.Error(err))
 			s.JSONError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		defer func() { _ = r.Body.Close() }()
 
 		err = s.payloadValidator.ValidatePayload(payload, "create_databases.yaml")
 		if err != nil {

@@ -44,6 +44,7 @@ var _ = Describe("Databases: API call", func() {
 			body := bytes.NewReader(payload)
 			req, err := http.NewRequest(http.MethodPost, server.URL+"/databases", body)
 			Expect(err).To(BeNil())
+			req.Header.Set("grpc-metadata-space", testChannelID)
 			req.Header.Set("authorization", bearerToken)
 
 			By("calling the endpoint")

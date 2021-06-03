@@ -165,7 +165,12 @@ func (s *Server) authorize(handlerName, assetType string, action auth.Action, w 
 		return err
 	}
 
-	authorized, err := s.authService.Enforce(assetType, action, authToken)
+	channelID, err := s.assertChannelID(w, r)
+	if err != nil {
+		return err
+	}
+
+	authorized, err := s.authService.Enforce(assetType, action, channelID, authToken)
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("%s handler failed", handlerName), zap.Error(err))
 		s.JSONError(w, err.Error(), http.StatusInternalServerError)

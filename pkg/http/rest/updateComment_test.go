@@ -65,7 +65,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 
 	t.Run("when comment is being marked as read", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
+		as.On("Enforce", "comment", auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -103,7 +103,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 
 	t.Run("when comment is being marked as read twice by the same user", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
+		as.On("Enforce", "comment", auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -143,7 +143,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 	t.Run("when worknote is being marked as read", func(t *testing.T) {
 		assetType := "worknote"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, bearerToken).
+		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)

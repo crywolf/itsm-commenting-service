@@ -32,7 +32,7 @@ var expectedMockUserJSON = `{
 type AuthServiceStub struct{}
 
 // Enforce returns true if action is allowed to be performed on specified asset
-func (s *AuthServiceStub) Enforce(assetType string, act auth.Action, authToken string) (bool, error) {
+func (s *AuthServiceStub) Enforce(assetType string, act auth.Action, channelID, authToken string) (bool, error) {
 	if authToken == "" {
 		return false, errors.New("authorization failed (KompiGuard)")
 	}
