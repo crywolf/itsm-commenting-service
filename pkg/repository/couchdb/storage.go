@@ -45,32 +45,6 @@ type Config struct {
 	Passwd       string
 }
 
-// waitForCouchDB repeatedly tries to ping DB server until it is ready for requests or timeout expires
-func waitForCouchDB(logger *zap.Logger, client *kivik.Client) {
-	logger.Info("Waiting for CouchDB to become ready...")
-	maxIters := 100 // default 100 * 100ms = 10 seconds
-	iter := 0
-	stepMs := 100
-	reportEveryIter := 10
-	step := time.Duration(stepMs) * time.Millisecond
-
-	// wait for couchdb to response to ping
-	for {
-		on, err := client.Ping(context.TODO())
-		if err == nil && on {
-			break
-		}
-		time.Sleep(step)
-		iter++
-		if iter == maxIters {
-			logger.Fatal("Waited for CouchDB for too long. Something is wrong. Check docker and docker-compose status and try again.")
-		} else if (iter > 0) && (iter%reportEveryIter == 0) {
-			logger.Warn("CouchDB still not ready, waiting...", zap.Int64("ms", int64(iter)*int64(stepMs)))
-		}
-	}
-	logger.Info("CouchDB became ready in", zap.Int64("ms", int64(iter)*int64(stepMs)))
-}
-
 // NewStorage creates new couchdb storage with initialized client
 func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 	var client *kivik.Client
@@ -85,10 +59,6 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 			logger.Fatal("couchdb client initialization failed", zap.Error(err))
 		}
 		waitForCouchDB(logger, client)
-		//on, err := client.Ping(context.TODO())
-		//if err != nil || !on {
-		//	logger.Fatal("couchdb client PING failed", zap.Error(err))
-		//}
 	} else {
 		client = cfg.Client
 	}
@@ -152,20 +122,40 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 
 	q, err := s.events.NewQueue(event.UUID(channelID), event.UUID(c.CreatedBy.OrgID()))
 	if err != nil {
-		s.logger.Error("could not get event queue", zap.Error(err))
+		msg := "could not create event queue"
+		s.logger.Error(msg, zap.Error(err))
+		s.rollback(ctx, db, uuid, rev, assetType)
+
+		return "", fmt.Errorf("%s: %v", msg, err)
 	}
 
-	err = q.AddCreateEvent(c, assetType)
-	if err != nil {
-		s.logger.Error("could not create event", zap.Error(err))
+	if err = q.AddCreateEvent(c, assetType); err != nil {
+		msg := "could not create event"
+		s.logger.Error(msg, zap.Error(err))
+		s.rollback(ctx, db, uuid, rev, assetType)
+
+		return "", fmt.Errorf("%s: %v", msg, err)
 	}
 
-	err = q.PublishEvents()
-	if err != nil {
-		s.logger.Error("could not publish events", zap.Error(err))
+	if err = q.PublishEvents(); err != nil {
+		msg := "could not publish events"
+		s.logger.Error(msg, zap.Error(err))
+		s.rollback(ctx, db, uuid, rev, assetType)
+
+		return "", fmt.Errorf("%s: %v", msg, err)
 	}
 
 	return uuid, nil
+}
+
+func (s *DBStorage) rollback(ctx context.Context, db *kivik.DB, uuid string, rev string, assetType string) {
+	_, err := db.Delete(ctx, uuid, rev)
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("could not delete %s:%s (rollback)", assetType, uuid), zap.Error(err))
+		return
+	}
+
+	s.logger.Info(fmt.Sprintf("%s:%s deleted (rollback)", assetType, uuid))
 }
 
 // GetComment returns comment with the specified ID
@@ -380,4 +370,30 @@ func databaseName(channelID, assetType string) string {
 
 func pluralize(assetType string) string {
 	return fmt.Sprintf("%ss", assetType)
+}
+
+// waitForCouchDB repeatedly tries to ping DB server until it is ready for requests or timeout expires
+func waitForCouchDB(logger *zap.Logger, client *kivik.Client) {
+	logger.Info("Waiting for CouchDB to become ready...")
+	maxIters := 100 // default 100 * 100ms = 10 seconds
+	iter := 0
+	stepMs := 100
+	reportEveryIter := 10
+	step := time.Duration(stepMs) * time.Millisecond
+
+	// wait for couchdb to response to ping
+	for {
+		on, err := client.Ping(context.TODO())
+		if err == nil && on {
+			break
+		}
+		time.Sleep(step)
+		iter++
+		if iter == maxIters {
+			logger.Fatal("Waited for CouchDB for too long. Something is wrong. If this happens while running tests check docker and docker-compose status and try again.")
+		} else if (iter > 0) && (iter%reportEveryIter == 0) {
+			logger.Warn("CouchDB still not ready, waiting...", zap.Int64("ms", int64(iter)*int64(stepMs)))
+		}
+	}
+	logger.Info("CouchDB became ready in", zap.Int64("ms", int64(iter)*int64(stepMs)))
 }

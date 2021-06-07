@@ -8,7 +8,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
+	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
@@ -25,8 +27,11 @@ func TestAddCommentHandler(t *testing.T) {
 	defer func() { _ = logger.Sync() }()
 
 	mockUserData := user.BasicInfo{
-		UUID: "2af4f493-0bd5-4513-b440-6cbb465feadb",
-		Name: "Some test user 1",
+		UUID:           "2af4f493-0bd5-4513-b440-6cbb465feadb",
+		Name:           "Some test user 1",
+		Surname:        "Some surname",
+		OrgName:        "a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
+		OrgDisplayName: "Kompitech",
 	}
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
@@ -221,7 +226,7 @@ func TestAddCommentHandler(t *testing.T) {
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 
-	t.Run("when comment was not stored yet", func(t *testing.T) {
+	t.Run("when request is valid", func(t *testing.T) {
 		assetType := "comment"
 		as := new(mocks.AuthServiceMock)
 		as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
@@ -369,6 +374,75 @@ func TestAddCommentHandler(t *testing.T) {
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
 		expectedJSON := `{"error":"some error occurred"}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
+
+	t.Run("when event could not be published (event service returns error)", func(t *testing.T) {
+		orgID := "a897a407-e41b-4b14-924a-39f5d5a8038f"
+
+		assetType := "comment"
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
+			Return(true, nil)
+
+		us := new(mocks.UserServiceMock)
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
+			Return(mockUserData, nil)
+
+		validator := new(mocks.ValidatorMock)
+		validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
+
+		events := new(mocks.EventServiceMock)
+		queue := new(mocks.QueueMock)
+		events.On("NewQueue", event.UUID(channelID), event.UUID(orgID)).Return(queue, nil)
+		queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
+		queue.On("PublishEvents").Return(errors.New("some NATS error"))
+
+		couchMock, s := testutils.NewCouchDBMock(logger, validator, events)
+
+		db := couchMock.NewDB()
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
+		db.ExpectPut()
+		db.ExpectDelete()
+
+		adder := adding.NewService(s)
+
+		pv, err := validation.NewPayloadValidator()
+		require.NoError(t, err)
+
+		server := NewServer(Config{
+			Addr:             "service.url",
+			Logger:           logger,
+			AuthService:      as,
+			UserService:      us,
+			AddingService:    adder,
+			PayloadValidator: pv,
+		})
+
+		payload := []byte(`{
+			"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
+			"text": "test with entity 1"
+		}`)
+
+		body := bytes.NewReader(payload)
+		req := httptest.NewRequest("POST", "/comments", body)
+		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"error":"could not publish events: some NATS error"}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 

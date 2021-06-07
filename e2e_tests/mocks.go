@@ -34,7 +34,7 @@ type AuthServiceStub struct{}
 // Enforce returns true if action is allowed to be performed on specified asset
 func (s *AuthServiceStub) Enforce(assetType string, act auth.Action, channelID, authToken string) (bool, error) {
 	if authToken == "" {
-		return false, errors.New("authorization failed (KompiGuard)")
+		return false, errors.New("authorization service failed - missing authorization token")
 	}
 	return true, nil
 }
@@ -45,7 +45,7 @@ type UserServiceStub struct{}
 // UserBasicInfo returns info about user who initiated the request
 func (s *UserServiceStub) UserBasicInfo(r *http.Request) (user.BasicInfo, error) {
 	if r.Header.Get("authorization") == "" {
-		return user.BasicInfo{}, status.Error(codes.Unauthenticated, "authorization failed")
+		return user.BasicInfo{}, status.Error(codes.Unauthenticated, "user service failed - missing authorization token")
 	}
 	return mockUserData, nil
 }

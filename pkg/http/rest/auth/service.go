@@ -44,6 +44,7 @@ type service struct {
 
 // Enforce returns true if action is allowed to be performed on specified asset
 func (s *service) Enforce(assetType string, act Action, channelID, authToken string) (bool, error) {
+	// TODO real address in environment
 	// GET /api/v1/kompiguard/enforce/?obj=/comment/*&act=read
 	u := "http://api/v1/kompiguard/enforce/"
 	q := url.QueryEscape(fmt.Sprintf("?obj=/%s/*&act=%s", assetType, act))
