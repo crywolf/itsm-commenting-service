@@ -28,8 +28,6 @@ func TestMarkAsReadByHandler(t *testing.T) {
 
 	t.Run("when channelID is not set (ie. grpc-metadata-space header is missing)", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", "comment", auth.ReadAction, bearerToken).
-			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
 		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
@@ -60,6 +58,44 @@ func TestMarkAsReadByHandler(t *testing.T) {
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
 		expectedJSON := `{"error":"'grpc-metadata-space' header missing or invalid"}`
+		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
+	})
+
+	t.Run("when user is not authorized to READ the comment", func(t *testing.T) {
+		as := new(mocks.AuthServiceMock)
+		as.On("Enforce", "comment", auth.ReadAction, channelID, bearerToken).
+			Return(false, nil)
+
+		us := new(mocks.UserServiceMock)
+		us.On("UserBasicInfo", mock.AnythingOfType("*http.Request")).
+			Return(mockUserData, nil)
+
+		server := NewServer(Config{
+			Addr:        "service.url",
+			Logger:      logger,
+			AuthService: as,
+			UserService: us,
+		})
+
+		req := httptest.NewRequest("POST", "/comments/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
+		req.Header.Set("grpc-metadata-space", channelID)
+		req.Header.Set("authorization", bearerToken)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+		resp := w.Result()
+
+		defer func() { _ = resp.Body.Close() }()
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("could not read response: %v", err)
+		}
+
+		assert.Equal(t, http.StatusForbidden, resp.StatusCode, "Status code")
+		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
+
+		expectedJSON := `{"error":"Forbidden (comment, read)"}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 

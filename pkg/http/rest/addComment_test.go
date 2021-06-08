@@ -245,8 +245,8 @@ func TestAddCommentHandler(t *testing.T) {
 
 		server := NewServer(Config{
 			Addr:             "service.url",
-			AuthService:      as,
 			Logger:           logger,
+			AuthService:      as,
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
@@ -402,8 +402,9 @@ func TestAddCommentHandler(t *testing.T) {
 
 		db := couchMock.NewDB()
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
-		db.ExpectPut()
-		db.ExpectDelete()
+		expRev := "6067f156-c811-4b36-acfe-c9f4d1c491bc"
+		db.ExpectPut().WithDocID(testutils.GeneratedCommentUUID).WillReturn(expRev)
+		db.ExpectDelete().WithDocID(testutils.GeneratedCommentUUID).WithRev(expRev)
 
 		adder := adding.NewService(s)
 
