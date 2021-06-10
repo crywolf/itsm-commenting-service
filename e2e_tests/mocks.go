@@ -4,9 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
-	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -48,25 +46,4 @@ func (s *UserServiceStub) UserBasicInfo(r *http.Request) (user.BasicInfo, error)
 		return user.BasicInfo{}, status.Error(codes.Unauthenticated, "user service failed - missing authorization token")
 	}
 	return mockUserData, nil
-}
-
-// EventServiceStub to simulate Event service
-type EventServiceStub struct{}
-
-// EventQueueStub to simulate Event queue
-type EventQueueStub struct{}
-
-// NewQueue creates new event queue
-func (s *EventServiceStub) NewQueue(_, _ event.UUID) (event.Queue, error) {
-	return &EventQueueStub{}, nil
-}
-
-// AddCreateEvent prepares new event of type CREATE
-func (q *EventQueueStub) AddCreateEvent(_ comment.Comment, _ string) error {
-	return nil
-}
-
-// PublishEvents publishes all prepared events not published yet
-func (q *EventQueueStub) PublishEvents() error {
-	return nil
 }

@@ -173,6 +173,11 @@ paths:
         required: true
         type: string
         x-go-name: ChannelID
+      - format: uuid
+        in: header
+        name: on_behalf
+        type: string
+        x-go-name: OnBehalf
       - description: Comment/Worknote data structure to Create.
         in: body
         name: Body

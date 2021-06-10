@@ -13,6 +13,7 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20210406100015-1e088ea4ee04 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/nats-io/stan.go v0.8.1
 	github.com/onsi/ginkgo v1.16.2
 	github.com/onsi/gomega v1.12.0
 	github.com/pkg/errors v0.9.1

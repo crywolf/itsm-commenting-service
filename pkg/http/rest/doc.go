@@ -163,6 +163,10 @@ type commentParamWrapper struct {
 	// swagger:strfmt uuid
 	ChannelID string `json:"grpc-metadata-space"`
 
+	// in: header
+	// swagger:strfmt uuid
+	OnBehalf string `json:"on_behalf"`
+
 	// Comment/Worknote data structure to Create.
 	// in: body
 	Body struct {
