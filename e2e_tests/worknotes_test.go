@@ -13,6 +13,10 @@ import (
 )
 
 var _ = Describe("Worknotes: API call", func() {
+	JustBeforeEach(func() {
+		msgQueue.Clear()
+	})
+
 	Describe("POST /worknotes", func() {
 		var payload []byte
 		var resp *http.Response
@@ -47,6 +51,17 @@ var _ = Describe("Worknotes: API call", func() {
 				Expect(resp).To(HaveHTTPStatus(http.StatusCreated))
 				Expect(resp.Header.Get("Location")).To(ContainSubstring(server.URL + "/worknotes/"))
 				Expect(ioutil.ReadAll(resp.Body)).To(BeEmpty())
+			})
+
+			It("should publish correct event", func() {
+				events := msgQueue.LastEvents()
+				Expect(events).To(HaveLen(1))
+				event := events[0]
+				Expect(event).To(HaveKeyWithValue("docType", "worknote"))
+				Expect(event).To(HaveKeyWithValue("event", "CREATED"))
+				Expect(event).To(HaveKey("uuid"))
+				Expect(event).To(HaveKeyWithValue("entity", "incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"))
+				Expect(event).To(HaveKeyWithValue("text", "Test Worknote 1"))
 			})
 
 			When("calling GET on returned Location header", func() {

@@ -1,10 +1,18 @@
 version: "3"
 
 services:
-  test-couchdb:
+  couchdb:
     image: couchdb:3.1.1
     ports:
       - "5984:5984"
     environment:
       COUCHDB_USER: test
       COUCHDB_PASSWORD: test
+    depends_on:
+      - nats-streaming # just to be sure that tests do not start before NATS is on and running (tests wait for couchdb)
+
+  nats-streaming:
+    image: nats-streaming:0.19.0
+    ports:
+      - "4222:4222"
+    command: -cid=stan-blits

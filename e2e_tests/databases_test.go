@@ -4,31 +4,10 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
-	"testing"
 
-	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
-
-// TestE2E initializes test suite
-func TestE2E(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "End To End tests")
-}
-
-var server *httptest.Server
-var storage *couchdb.DBStorage
-
-var _ = BeforeSuite(func() {
-	server, storage = StartServer()
-})
-
-var _ = AfterSuite(func() {
-	destroyTestDatabases(storage)
-	server.Close()
-})
 
 var _ = Describe("Databases: API call", func() {
 	Describe("POST /databases", func() {
