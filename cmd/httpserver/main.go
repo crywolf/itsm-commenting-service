@@ -52,6 +52,7 @@ func main() {
 
 	// Couch DB
 	s := couchdb.NewStorage(logger, couchdb.Config{
+		CaPath: viper.GetString("CouchDBCaPath"),
 		Host:         viper.GetString("CouchDBHost"),
 		Port:         viper.GetString("CouchDBPort"),
 		Username:     viper.GetString("CouchDBUsername"),
@@ -121,6 +122,8 @@ func loadEnvConfiguration() {
 	_ = viper.BindEnv("CouchDBHost", "COUCHDB_HOST")
 	viper.SetDefault("CouchDBPort", "5984")
 	_ = viper.BindEnv("CouchDBPort", "COUCHDB_PORT")
+	viper.SetDefault("CouchDBCaPath", "./certs_couchdb/ca.crt")
+	_ = viper.BindEnv("CouchDBCaPath", "COUCHDB_CA_PATH")
 	viper.SetDefault("CouchDBUsername", "admin")
 	_ = viper.BindEnv("CouchDBUsername", "COUCHDB_USERNAME")
 	viper.SetDefault("CouchDBPasswd", "admin")

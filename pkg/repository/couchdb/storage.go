@@ -2,9 +2,12 @@ package couchdb
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -13,7 +16,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
-	_ "github.com/go-kivik/couchdb/v3" // The CouchDB driver
+	"github.com/go-kivik/couchdb/v3" // The CouchDB driver
 	"github.com/go-kivik/couchdb/v3/chttp"
 	"github.com/go-kivik/kivik/v3"
 	"go.uber.org/zap"
@@ -36,6 +39,7 @@ type DBStorage struct {
 // Config contains values for the data source
 type Config struct {
 	Client       *kivik.Client
+	CaPath       string
 	Rand         io.Reader
 	Validator    Validator
 	EventService event.Service
@@ -49,15 +53,48 @@ type Config struct {
 func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 	var client *kivik.Client
 	var err error
+	var caBytes []byte
+
+	ctx := context.TODO()
+	tlsOn := cfg.CaPath != ""
 
 	if cfg.Client == nil {
+		schema := "http"
+		if tlsOn {
+			schema = "https"
+		}
+
 		client, err = kivik.New(
 			"couch",
-			fmt.Sprintf("http://%s:%s@%s:%s/", cfg.Username, cfg.Passwd, cfg.Host, cfg.Port),
+			fmt.Sprintf("%s://%s:%s/", schema, cfg.Host, cfg.Port),
 		)
 		if err != nil {
 			logger.Fatal("couchdb client initialization failed", zap.Error(err))
 		}
+
+		if tlsOn {
+			caBytes, err = ioutil.ReadFile(cfg.CaPath)
+			if err != nil {
+				logger.Fatal("couchdb client initialization failed - certificate", zap.Error(err))
+			}
+
+			certPool := x509.NewCertPool()
+			certPool.AppendCertsFromPEM(caBytes)
+
+			couchAuthenticator := couchdb.SetTransport(&http.Transport{
+				TLSClientConfig: &tls.Config{
+					RootCAs: certPool,
+				},
+			})
+			if err := client.Authenticate(ctx, couchAuthenticator); err != nil {
+				logger.Fatal("couchdb authentication failed", zap.Error(err))
+			}
+		}
+
+		if err := client.Authenticate(ctx, &chttp.CookieAuth{Username: cfg.Username, Password: cfg.Passwd}); err != nil {
+			logger.Fatal("couchdb authentication failed", zap.Error(err))
+		}
+
 		waitForCouchDB(logger, client)
 	} else {
 		client = cfg.Client
