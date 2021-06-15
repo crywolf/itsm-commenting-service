@@ -2,9 +2,9 @@ package validation
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -37,13 +37,15 @@ type Validator interface {
 }
 
 type validator struct {
-	schemaDir string
+	schemaDir   string
+	schemaFiles embed.FS
 }
 
 // NewValidator creates new validation service
-func NewValidator(schemaDir string) Validator {
+func NewValidator(schemaFiles embed.FS) Validator {
 	return &validator{
-		schemaDir: schemaDir,
+		schemaDir:   "schema",
+		schemaFiles: schemaFiles,
 	}
 }
 
@@ -51,7 +53,7 @@ func NewValidator(schemaDir string) Validator {
 func (v validator) ValidateBytes(b []byte, schemaFile string) error {
 	fp := filepath.Join(v.schemaDir, schemaFile)
 
-	file, err := os.Open(fp)
+	file, err := v.schemaFiles.Open(fp)
 	if err != nil {
 		return NewErrGeneral(errors.Wrapf(err, "could not open file %s", fp))
 	}

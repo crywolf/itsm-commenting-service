@@ -1,12 +1,13 @@
 package validation
 
 import (
-	"errors"
-	"path/filepath"
-	"runtime"
+	"embed"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/validation"
 )
+
+//go:embed schema
+var schemaFiles embed.FS
 
 // PayloadValidator provides payload validation
 type PayloadValidator interface {
@@ -20,12 +21,7 @@ type payloadValidator struct {
 
 // NewPayloadValidator creates new payload validation service
 func NewPayloadValidator() (PayloadValidator, error) {
-	_, thisFile, _, ok := runtime.Caller(0)
-	if !ok {
-		return nil, errors.New("NewValidator(): could not retrieve filename from runtime.Caller()")
-	}
-
-	baseValidator := validation.NewValidator(filepath.Join(filepath.Dir(thisFile), "schema"))
+	baseValidator := validation.NewValidator(schemaFiles)
 
 	return &payloadValidator{v: baseValidator}, nil
 }

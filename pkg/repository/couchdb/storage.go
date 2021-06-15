@@ -95,7 +95,7 @@ func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
 			logger.Fatal("couchdb authentication failed", zap.Error(err))
 		}
 
-		waitForCouchDB(logger, client)
+		waitForCouchDB(logger, client, tlsOn)
 	} else {
 		client = cfg.Client
 	}
@@ -410,7 +410,7 @@ func pluralize(assetType string) string {
 }
 
 // waitForCouchDB repeatedly tries to ping DB server until it is ready for requests or timeout expires
-func waitForCouchDB(logger *zap.Logger, client *kivik.Client) {
+func waitForCouchDB(logger *zap.Logger, client *kivik.Client, tlsOn bool) {
 	logger.Info("Waiting for CouchDB to become ready...")
 	maxIters := 100 // default 100 * 100ms = 10 seconds
 	iter := 0
@@ -432,5 +432,5 @@ func waitForCouchDB(logger *zap.Logger, client *kivik.Client) {
 			logger.Warn("CouchDB still not ready, waiting...", zap.Int64("ms", int64(iter)*int64(stepMs)))
 		}
 	}
-	logger.Info("CouchDB became ready in", zap.Int64("ms", int64(iter)*int64(stepMs)))
+	logger.Info("CouchDB became ready in", zap.Int64("ms", int64(iter)*int64(stepMs)), zap.Bool("TLS mode", tlsOn))
 }

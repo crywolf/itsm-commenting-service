@@ -1,14 +1,15 @@
 package couchdb
 
 import (
+	"embed"
 	"encoding/json"
-	"errors"
-	"path/filepath"
-	"runtime"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/validation"
 )
+
+//go:embed schema
+var schemaFiles embed.FS
 
 // Validator provides comment validation
 type Validator interface {
@@ -22,12 +23,7 @@ type validator struct {
 
 // NewValidator creates new validation service
 func NewValidator() (Validator, error) {
-	_, thisFile, _, ok := runtime.Caller(0)
-	if !ok {
-		return nil, errors.New("NewValidator(): could not retrieve filename from runtime.Caller()")
-	}
-
-	baseValidator := validation.NewValidator(filepath.Join(filepath.Dir(thisFile), "schema"))
+	baseValidator := validation.NewValidator(schemaFiles)
 
 	return &validator{v: baseValidator}, nil
 }

@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:experimental
-FROM golang:1.15.6-alpine3.12 as build_base
+FROM golang:1.16.5-alpine3.12 as build_base
 ARG GOPROXY
 ARG GOPRIVATE='github.com/KompiTech/*'
 RUN apk add --no-cache --update alpine-sdk make git openssl gcc openssh
