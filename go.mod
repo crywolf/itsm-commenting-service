@@ -1,6 +1,6 @@
 module github.com/KompiTech/itsm-commenting-service
 
-go 1.14
+go 1.16
 
 require (
 	github.com/KompiTech/go-toolkit/natswatcher v0.0.0-20210414104720-4d1c0acd89a6
