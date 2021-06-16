@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Worknotes: API call", func() {
+var _ = Describe("Worknotes API calls", func() {
 	JustBeforeEach(func() {
 		msgQueue.Clear()
 	})

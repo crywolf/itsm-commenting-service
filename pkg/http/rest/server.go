@@ -170,6 +170,15 @@ func (s *Server) authorize(handlerName, assetType string, action auth.Action, w 
 		return err
 	}
 
+	if onBehalf := r.Header.Get("on_behalf"); onBehalf != "" {
+		action, err = action.OnBehalf()
+		if err != nil {
+			eMsg := fmt.Sprintf("authorization failed: %v", err)
+			s.JSONError(w, eMsg, http.StatusInternalServerError)
+			return err
+		}
+	}
+
 	authorized, err := s.authService.Enforce(assetType, action, channelID, authToken)
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("%s handler failed", handlerName), zap.Error(err))

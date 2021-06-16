@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Comments: API call", func() {
+var _ = Describe("Comments API calls", func() {
 	JustBeforeEach(func() {
 		msgQueue.Clear()
 	})
