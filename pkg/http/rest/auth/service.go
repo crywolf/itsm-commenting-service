@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -12,12 +13,23 @@ type Action int
 // Action values
 const (
 	ReadAction Action = iota
+	ReadOnBehalfAction
 	UpdateAction
+	UpdateOnBehalfAction
 	DeleteAction
+	DeleteOnBehalfAction
 )
 
 func (a Action) String() string {
-	return [...]string{"read", "update", "delete"}[a]
+	return [...]string{"read", "read_on_behalf", "update", "update_on_behalf", "delete", "delete_on_behalf"}[a]
+}
+
+// OnBehalf returns action that represents the same action but called "on_behalf"
+func (a Action) OnBehalf() (Action, error) {
+	if a%2 != 0 {
+		return a, fmt.Errorf("action %s cannot be transfromed to 'on_behalf' version", a)
+	}
+	return a + 1, nil
 }
 
 // Service provides ACL functionality

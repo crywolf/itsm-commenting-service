@@ -23,6 +23,7 @@ type userKeyType int
 var userKey userKeyType
 
 // AddUserInfo is a middleware that stores info about invoking user in request context
+// (or about user this request is made on behalf of)
 func (s Server) AddUserInfo(next httprouter.Handle, us UserService) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		userData, err := us.UserBasicInfo(r)
@@ -79,6 +80,7 @@ type userService struct {
 }
 
 // UserBasicInfo calls external use service and returns basic info about user who initiated the request
+// or about user this request is made on behalf of
 func (s userService) UserBasicInfo(r *http.Request) (user.BasicInfo, error) {
 	md := metadata.New(map[string]string{
 		"grpc-metadata-space": r.Header.Get("grpc-metadata-space"),
@@ -88,9 +90,18 @@ func (s userService) UserBasicInfo(r *http.Request) (user.BasicInfo, error) {
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
 	var resp *pb.UserPersonalDetailsResponse
-	resp, err := s.client.GetMyUserPersonalDetails(ctx, &emptypb.Empty{})
-	if err != nil {
-		return user.BasicInfo{}, err
+	var err error
+
+	if onBehalf := r.Header.Get("on_behalf"); onBehalf != "" {
+		resp, err = s.client.GetUserInfo(ctx, &pb.UserRequest{Uuid: onBehalf})
+		if err != nil {
+			return user.BasicInfo{}, err
+		}
+	} else {
+		resp, err = s.client.GetMyUserPersonalDetails(ctx, &emptypb.Empty{})
+		if err != nil {
+			return user.BasicInfo{}, err
+		}
 	}
 
 	u := resp.GetResult()
