@@ -27,7 +27,7 @@ func main() {
 	docsHandler := middleware.Redoc(opts, nil)
 	// handlers for API documentation
 	r.Handler(http.MethodGet, "/", docsHandler)
-	r.Handler(http.MethodGet, "/swagger.yaml", http.FileServer(http.Dir("./")))
+	r.Handler(http.MethodGet, "/swagger.yaml", http.FileServer(http.Dir("./pkg/http/rest")))
 
 	viper.SetDefault("HTTPBindPort", "3001")
 	_ = viper.BindEnv("HTTPBindPort", "HTTP_DOCS_PORT")

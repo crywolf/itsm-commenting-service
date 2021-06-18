@@ -1,5 +1,5 @@
-swagger = docker run --rm -it -e GOPATH=$$HOME/go:/go -v $$HOME:$$HOME -w $$(pwd) quay.io/goswagger/swagger:v0.27.0
-PORT ?= 3001 # HTTP port for docs server
+swagger = docker run --rm -it -e GOPATH=$$HOME/go:/go -v $$HOME:$$HOME -w $$(pwd)/pkg/http/rest quay.io/goswagger/swagger:v0.27.0
+PORT ?= 3001 # HTTP port for local docs server
 
 COMMIT=$(shell git rev-parse HEAD)
 COMMIT_SHORT=$(shell git rev-parse --short HEAD)
@@ -13,7 +13,7 @@ GOPRIVATE?='github.com/KompiTech/*'
 
 PKG_NAME?=${BRANDNAME}
 IMAGE?=${BRANDNAME}
-CMD_PATH?=cmd/httpserver/main.go
+CMD_PATH?=./cmd/httpserver
 BUILD_DIR?=build
 
 test:
@@ -28,10 +28,10 @@ e2e-test:
 test-all: test e2e-test
 
 run:
-	go run ./cmd/httpserver/main.go
+	go run ./cmd/httpserver
 
 docs:
-	go run ./cmd/docserver/main.go --port $(PORT)
+	go run ./cmd/docserver --port $(PORT)
 
 swagger:
 	$(swagger) generate spec -o ./swagger.yaml --scan-models
@@ -42,7 +42,7 @@ build-linux: swagger
 clean:
 	rm -rf ./${BUILD_DIR}/
 
-image: clean
+image: clean swagger
 	DOCKER_BUILDKIT=1 docker build --ssh default --build-arg GOPRIVATE=${GOPRIVATE} --build-arg GOPROXY="${GOPROXY}" --build-arg BRAND=${BRANDNAME} -t ${IMG_REPO}${IMAGE}:${IMG_TAG} -t ${IMG_REPO}${IMAGE}:${IMG_TAG_VERSION} --progress=plain .
 
 image-publish: image publish
