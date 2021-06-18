@@ -28,10 +28,10 @@ e2e-test:
 test-all: test e2e-test
 
 run:
-	go run ./cmd/httpserver/main.go
+	go run ./cmd/httpserver
 
 docs:
-	go run ./cmd/docserver/main.go --port $(PORT)
+	go run ./cmd/docserver --port $(PORT)
 
 swagger:
 	$(swagger) generate spec -o ./swagger.yaml --scan-models
