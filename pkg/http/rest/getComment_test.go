@@ -81,7 +81,7 @@ func TestGetCommentHandler(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode, "Status code")
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
-		expectedJSON := `{"error":"some authorization service error"}`
+		expectedJSON := `{"error":"Authorization failed: some authorization service error"}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 

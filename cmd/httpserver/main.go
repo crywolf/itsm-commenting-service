@@ -132,4 +132,8 @@ func loadEnvConfiguration() {
 	// User service
 	viper.SetDefault("UserServiceGRPCDialTarget", "localhost:50051")
 	_ = viper.BindEnv("UserServiceGRPCDialTarget", "USER_SERVICE_GRPC_DIAL_TARGET")
+
+	// Authorization service
+	viper.SetDefault("AuthServiceAddress", "localhost:8081")
+	_ = viper.BindEnv("AuthServiceAddress", "AUTH_SERVICE_ADDRESS")
 }

@@ -36,7 +36,7 @@ docs:
 swagger:
 	$(swagger) generate spec -o ./swagger.yaml --scan-models
 
-build-linux:
+build-linux: swagger
 	env GO111MODULE=on GOOS=linux GOPROXY=${GOPROXY} GOARCH=amd64 CGO_ENABLED=${CGO} go build -o ${BUILD_DIR}/${PKG_NAME}.linux ${CMD_PATH}
 
 clean:
