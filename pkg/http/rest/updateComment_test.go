@@ -95,7 +95,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 		assert.Equal(t, http.StatusForbidden, resp.StatusCode, "Status code")
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
-		expectedJSON := `{"error":"Forbidden (comment, read)"}`
+		expectedJSON := `{"error":"Authorization failed, action forbidden (comment, read)"}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 

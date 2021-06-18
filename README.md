@@ -1,6 +1,8 @@
 # itsm-commenting-service
 ITSM commenting service
 
+Requires Go ver. > 1.16
+
 `make test` runs unit tests
 
 `make e2e-test` runs end-to-end integration tests (requires docker-compose installed)

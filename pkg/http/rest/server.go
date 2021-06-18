@@ -173,7 +173,7 @@ func (s *Server) authorize(handlerName, assetType string, action auth.Action, w 
 	if onBehalf := r.Header.Get("on_behalf"); onBehalf != "" {
 		action, err = action.OnBehalf()
 		if err != nil {
-			eMsg := fmt.Sprintf("authorization failed: %v", err)
+			eMsg := fmt.Sprintf("Authorization failed: %v", err)
 			s.JSONError(w, eMsg, http.StatusInternalServerError)
 			return err
 		}
@@ -182,12 +182,13 @@ func (s *Server) authorize(handlerName, assetType string, action auth.Action, w 
 	authorized, err := s.authService.Enforce(assetType, action, channelID, authToken)
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("%s handler failed", handlerName), zap.Error(err))
-		s.JSONError(w, err.Error(), http.StatusInternalServerError)
+		eMsg := fmt.Sprintf("Authorization failed: %v", err)
+		s.JSONError(w, eMsg, http.StatusInternalServerError)
 		return err
 	}
 
 	if !authorized {
-		eMsg := fmt.Sprintf("Forbidden (%s, %s)", assetType, action)
+		eMsg := fmt.Sprintf("Authorization failed, action forbidden (%s, %s)", assetType, action)
 		s.logger.Warn(fmt.Sprintf("%s handler failed", handlerName), zap.String("msg", eMsg))
 		s.JSONError(w, eMsg, http.StatusForbidden)
 		return errors.New(eMsg)
