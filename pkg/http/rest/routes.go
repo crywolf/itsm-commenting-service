@@ -1,13 +1,19 @@
 package rest
 
 import (
+	"embed"
 	"net/http"
+
+	"github.com/go-openapi/runtime/middleware"
 )
 
 const (
 	assetTypeComment  = "comment"
 	assetTypeWorknote = "worknote"
 )
+
+//go:embed swagger.yaml
+var swaggerFS embed.FS
 
 func (s *Server) routes() {
 	router := s.router
@@ -28,6 +34,13 @@ func (s *Server) routes() {
 
 	// databases creation
 	router.POST("/databases", s.CreateDatabases())
+
+	// API documentation
+	opts := middleware.RedocOpts{Path: "/docs", SpecURL: "/swagger.yaml", Title: "Commenting service API documentation"}
+	docsHandler := middleware.Redoc(opts, nil)
+	// handlers for API documentation
+	router.Handler(http.MethodGet, "/docs", docsHandler)
+	router.Handler(http.MethodGet, "/swagger.yaml", http.FileServer(http.FS(swaggerFS)))
 
 	// default Not Found handler
 	router.NotFound = http.HandlerFunc(s.JSONNotFoundError)
