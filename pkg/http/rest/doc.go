@@ -70,20 +70,20 @@ type createdResponseWrapper struct {
 }
 
 // No content
-// swagger:response databasesNoContentResponse
-type databasesNoContentResponseWrapper struct{}
-
-// Created
-// swagger:response databasesCreatedResponse
-type databasesCreatedResponseWrapper struct{}
-
-// No content
 // swagger:response noContentResponse
 type noContentResponseWrapper struct {
 	// URI of the resource
 	// example: http://localhost:8080/comments/2af4f493-0bd5-4513-b440-6cbb465feadb
 	Location string
 }
+
+// No content
+// swagger:response databasesNoContentResponse
+type databasesNoContentResponseWrapper struct{}
+
+// Created
+// swagger:response databasesCreatedResponse
+type databasesCreatedResponseWrapper struct{}
 
 // A list of comments or worknotes
 // swagger:response commentsListResponse

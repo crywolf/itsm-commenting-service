@@ -1,4 +1,4 @@
-swagger = docker run --rm -it -e GOPATH=$$HOME/go:/go -v $$HOME:$$HOME -w $$(pwd)/pkg/http/rest quay.io/goswagger/swagger:v0.27.0
+swagger = docker run --rm -e GOPATH=$$HOME/go:/go -v $$HOME:$$HOME -w $$(pwd) quay.io/goswagger/swagger:v0.27.0
 PORT ?= 3001 # HTTP port for local docs server
 
 COMMIT=$(shell git rev-parse HEAD)
@@ -34,15 +34,15 @@ docs:
 	go run ./cmd/docserver --port $(PORT)
 
 swagger:
-	$(swagger) generate spec -o ./swagger.yaml --scan-models
+	$(swagger) generate spec -o ./pkg/http/rest/swagger.yaml --scan-models
 
-build-linux: swagger
+build-linux:
 	env GO111MODULE=on GOOS=linux GOPROXY=${GOPROXY} GOARCH=amd64 CGO_ENABLED=${CGO} go build -o ${BUILD_DIR}/${PKG_NAME}.linux ${CMD_PATH}
 
 clean:
 	rm -rf ./${BUILD_DIR}/
 
-image: clean swagger
+image: clean
 	DOCKER_BUILDKIT=1 docker build --ssh default --build-arg GOPRIVATE=${GOPRIVATE} --build-arg GOPROXY="${GOPROXY}" --build-arg BRAND=${BRANDNAME} -t ${IMG_REPO}${IMAGE}:${IMG_TAG} -t ${IMG_REPO}${IMAGE}:${IMG_TAG_VERSION} --progress=plain .
 
 image-publish: image publish
