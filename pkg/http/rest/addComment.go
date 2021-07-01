@@ -29,13 +29,13 @@ func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ htt
 	return s.addComment(assetTypeComment)
 }
 
-// swagger:route POST /worknotes comments AddWorknote
-// Creates a new comment
+// swagger:route POST /worknotes worknotes AddWorknote
+// Creates a new worknote
 // responses:
 //	201: createdResponse
 //	400: errorResponse400
 //	401: errorResponse401
-//  403: errorResponse403
+//	403: errorResponse403
 //	409: errorResponse409
 
 // AddWorknote returns handler for POST /worknotes requests

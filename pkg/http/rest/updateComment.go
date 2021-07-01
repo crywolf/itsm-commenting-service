@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// swagger:route POST /comments/{uuid}/read_by comments MarkAsReadByUser
+// swagger:route POST /comments/{uuid}/read_by comments MarkCommentAsReadByUser
 // Marks specified comment as read by user
 // responses:
 //	201: createdResponse
@@ -29,7 +29,7 @@ func (s *Server) MarkCommentAsReadBy() func(w http.ResponseWriter, r *http.Reque
 	return s.markAsReadBy(assetTypeComment)
 }
 
-// swagger:route POST /worknotes/{uuid}/read_by worknotes MarkAsReadByUser
+// swagger:route POST /worknotes/{uuid}/read_by worknotes MarkWorknoteAsReadByUser
 // Marks specified worknote as read by user
 // responses:
 //	201: createdResponse

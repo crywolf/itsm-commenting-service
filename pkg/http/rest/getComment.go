@@ -24,7 +24,7 @@ func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ htt
 	return s.getComment(assetTypeComment)
 }
 
-// swagger:route GET /worknotes/{uuid} worknotes GetComment
+// swagger:route GET /worknotes/{uuid} worknotes GetWorknote
 // Returns a single worknote from the repository
 // responses:
 //	200: commentResponse

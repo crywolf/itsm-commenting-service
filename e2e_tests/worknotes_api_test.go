@@ -50,7 +50,7 @@ var _ = Describe("Worknotes API calls", func() {
 			It("should return 'Created' response", func() {
 				Expect(resp).To(HaveHTTPStatus(http.StatusCreated))
 				Expect(resp.Header.Get("Location")).To(ContainSubstring(server.URL + "/worknotes/"))
-				Expect(ioutil.ReadAll(resp.Body)).To(BeEmpty())
+				Expect(ioutil.ReadAll(resp.Body)).NotTo(BeEmpty())
 			})
 
 			It("should publish correct event", func() {
