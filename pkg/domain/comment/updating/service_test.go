@@ -1,6 +1,7 @@
 package updating_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
@@ -33,18 +34,20 @@ func TestMarkAsReadByUserService(t *testing.T) {
 		},
 	}
 
+	ctx := context.Background()
 	clock := testutils.FixedClock{}
 	mockStorage := &memory.Storage{
 		Clock: clock,
 	}
 
 	assetType := "comment"
+
 	adder := adding.NewService(mockStorage)
 
-	com1ID, err := adder.AddComment(c1, channelID, assetType)
+	com1ID, err := adder.AddComment(ctx, c1, channelID, assetType)
 	require.NoError(t, err)
 
-	com2ID, err := adder.AddComment(c2, channelID, assetType)
+	com2ID, err := adder.AddComment(ctx, c2, channelID, assetType)
 	require.NoError(t, err)
 
 	updater := updating.NewService(mockStorage)
@@ -59,11 +62,11 @@ func TestMarkAsReadByUserService(t *testing.T) {
 			OrgDisplayName: "Kompitech",
 		},
 	}
-	alreadyRead, err := updater.MarkAsReadByUser(com1ID, readBy, channelID, assetType)
+	alreadyRead, err := updater.MarkAsReadByUser(ctx, com1ID, readBy, channelID, assetType)
 	require.NoError(t, err)
 	assert.False(t, alreadyRead)
 
-	alreadyRead, err = updater.MarkAsReadByUser(com1ID, readBy, channelID, assetType)
+	alreadyRead, err = updater.MarkAsReadByUser(ctx, com1ID, readBy, channelID, assetType)
 	require.NoError(t, err)
 	assert.True(t, alreadyRead)
 
@@ -77,19 +80,19 @@ func TestMarkAsReadByUserService(t *testing.T) {
 			OrgDisplayName: "Kompitech",
 		},
 	}
-	alreadyRead, err = updater.MarkAsReadByUser(com1ID, readBy2, channelID, assetType)
+	alreadyRead, err = updater.MarkAsReadByUser(ctx, com1ID, readBy2, channelID, assetType)
 	require.NoError(t, err)
 	assert.False(t, alreadyRead)
 
 	lister := listing.NewService(mockStorage)
 
-	com1, err := lister.GetComment(com1ID, channelID, assetType)
+	com1, err := lister.GetComment(ctx, com1ID, channelID, assetType)
 	require.NoError(t, err)
 	assert.NotNil(t, com1.ReadBy)
 	assert.Len(t, com1.ReadBy, 2)
 	assert.Equal(t, comment.ReadByList{readBy, readBy2}, com1.ReadBy)
 
-	com2, err := lister.GetComment(com2ID, channelID, assetType)
+	com2, err := lister.GetComment(ctx, com2ID, channelID, assetType)
 	require.NoError(t, err)
 	assert.Nil(t, com2.ReadBy)
 }

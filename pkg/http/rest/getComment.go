@@ -60,7 +60,9 @@ func (s *Server) getComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
-		asset, err := s.lister.GetComment(id, channelID, assetType)
+		ctx := r.Context()
+
+		asset, err := s.lister.GetComment(ctx, id, channelID, assetType)
 		if err != nil {
 			s.logger.Warn("GetComment handler failed", zap.Error(err))
 			var httpError *repository.Error

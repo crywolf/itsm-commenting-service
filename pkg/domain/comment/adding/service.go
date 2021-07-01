@@ -1,16 +1,20 @@
 package adding
 
-import "github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+import (
+	"context"
+
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+)
 
 // Service provides comment adding operations
 type Service interface {
-	AddComment(c comment.Comment, channelID, assetType string) (id string, err error)
+	AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (id string, err error)
 }
 
 // Repository provides access to comments storage
 type Repository interface {
 	// AddComment saves a given comment to the repository
-	AddComment(c comment.Comment, channelID, assetType string) (id string, err error)
+	AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (id string, err error)
 }
 
 // NewService creates an adding service
@@ -23,6 +27,6 @@ type service struct {
 }
 
 // AddComment persists the given comment to storage
-func (s *service) AddComment(c comment.Comment, channelID, assetType string) (string, error) {
-	return s.r.AddComment(c, channelID, assetType)
+func (s *service) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (string, error) {
+	return s.r.AddComment(ctx, c, channelID, assetType)
 }

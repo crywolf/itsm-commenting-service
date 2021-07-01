@@ -2,6 +2,7 @@ package rest_test
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -51,7 +52,7 @@ func TestAddCommentDBMock(t *testing.T) {
 	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
 	queue.On("PublishEvents").Return(nil)
 
-	couchMock, s := testutils.NewCouchDBMock(logger, validator, events)
+	couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, events)
 
 	db := couchMock.NewDB()
 	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
@@ -123,7 +124,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
 	queue.On("PublishEvents").Return(nil)
 
-	couchMock, s := testutils.NewCouchDBMock(logger, validator, events)
+	couchMock, s := testutils.NewCouchDBMock(context.Background(),logger, validator, events)
 
 	db := couchMock.NewDB()
 	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
@@ -166,7 +167,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
-	uuid, err := s.AddComment(c1, channelID, assetType)
+	uuid, err := s.AddComment(context.Background(), c1, channelID, assetType)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)
@@ -288,7 +289,7 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
-	uuid, err := s.AddComment(c1, channelID, assetType)
+	uuid, err := s.AddComment(context.Background(), c1, channelID, assetType)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)

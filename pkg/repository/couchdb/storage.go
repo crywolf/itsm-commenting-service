@@ -50,12 +50,11 @@ type Config struct {
 }
 
 // NewStorage creates new couchdb storage with initialized client
-func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
+func NewStorage(ctx context.Context,logger *zap.Logger, cfg Config) *DBStorage {
 	var client *kivik.Client
 	var err error
 	var caBytes []byte
 
-	ctx := context.TODO()
 	tlsOn := cfg.CaPath != ""
 
 	if cfg.Client == nil {
@@ -115,9 +114,8 @@ func (s *DBStorage) Client() *kivik.Client {
 }
 
 // AddComment saves the given comment to the database and returns it's ID
-func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (string, error) {
+func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (string, error) {
 	dbName := databaseName(channelID, assetType)
-	ctx := context.TODO()
 
 	db := s.client.DB(ctx, dbName)
 
@@ -196,9 +194,8 @@ func (s *DBStorage) rollback(ctx context.Context, db *kivik.DB, uuid string, rev
 }
 
 // GetComment returns comment with the specified ID
-func (s *DBStorage) GetComment(id, channelID, assetType string) (comment.Comment, error) {
+func (s *DBStorage) GetComment(ctx context.Context, id, channelID, assetType string) (comment.Comment, error) {
 	dbName := databaseName(channelID, assetType)
-	ctx := context.TODO()
 
 	var c comment.Comment
 
@@ -230,9 +227,8 @@ func (s *DBStorage) GetComment(id, channelID, assetType string) (comment.Comment
 }
 
 // QueryComments finds documents using a declarative JSON querying syntax
-func (s *DBStorage) QueryComments(query map[string]interface{}, channelID, assetType string) (listing.QueryResult, error) {
+func (s *DBStorage) QueryComments(ctx context.Context, query map[string]interface{}, channelID, assetType string) (listing.QueryResult, error) {
 	dbName := databaseName(channelID, assetType)
-	ctx := context.TODO()
 
 	var docs []map[string]interface{}
 	docs = make([]map[string]interface{}, 0)
@@ -290,9 +286,8 @@ func (s *DBStorage) QueryComments(query map[string]interface{}, channelID, asset
 
 // MarkAsReadByUser adds user info to read_by array in the comment with specified ID.
 // It returns true if comment was already marked before to notify that resource was not changed.
-func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
+func (s *DBStorage) MarkAsReadByUser(ctx context.Context, id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
 	dbName := databaseName(channelID, assetType)
-	ctx := context.TODO()
 
 	var c comment.Comment
 
@@ -367,9 +362,8 @@ func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID
 }
 
 // CreateDatabase creates new DB if it does not exist. It returns true if database already existed.
-func (s *DBStorage) CreateDatabase(channelID, assetType string) (bool, error) {
+func (s *DBStorage) CreateDatabase(ctx context.Context, channelID, assetType string) (bool, error) {
 	dbName := databaseName(channelID, assetType)
-	ctx := context.TODO()
 
 	dbExists, err := s.client.DBExists(ctx, dbName)
 	if err != nil {

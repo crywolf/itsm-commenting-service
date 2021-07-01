@@ -2,6 +2,7 @@ package rest
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -398,7 +399,7 @@ func TestAddCommentHandler(t *testing.T) {
 		queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
 		queue.On("PublishEvents").Return(errors.New("some NATS error"))
 
-		couchMock, s := testutils.NewCouchDBMock(logger, validator, events)
+		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, events)
 
 		db := couchMock.NewDB()
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)

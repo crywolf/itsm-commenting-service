@@ -1,6 +1,7 @@
 package adding_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
@@ -39,10 +40,12 @@ func TestAddCommentService(t *testing.T) {
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
-	_, err := adder.AddComment(c1, channelID, assetType)
+	ctx := context.Background()
+
+	_, err := adder.AddComment(ctx, c1, channelID, assetType)
 	require.NoError(t, err)
 
-	_, err = adder.AddComment(c2, channelID, assetType)
+	_, err = adder.AddComment(ctx, c2, channelID, assetType)
 	require.NoError(t, err)
 
 	comments := mockStorage.GetAllComments()

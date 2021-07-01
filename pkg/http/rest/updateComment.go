@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -23,7 +24,7 @@ import (
 //  403: errorResponse403
 //	404: errorResponse404
 
-// MarkAsReadBy returns handler for POST /comments/:id/read_by requests
+// MarkCommentAsReadBy returns handler for POST /comments/:id/read_by requests
 func (s *Server) MarkCommentAsReadBy() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return s.markAsReadBy(assetTypeComment)
 }
@@ -38,7 +39,7 @@ func (s *Server) MarkCommentAsReadBy() func(w http.ResponseWriter, r *http.Reque
 //  403: errorResponse403
 //	404: errorResponse404
 
-// MarkAsReadBy returns handler for POST /worknotes/:id/read_by requests
+// MarkWorknoteAsReadBy returns handler for POST /worknotes/:id/read_by requests
 func (s *Server) MarkWorknoteAsReadBy() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
  return s.markAsReadBy(assetTypeWorknote)
 }
@@ -85,7 +86,7 @@ func (s *Server) markAsReadBy(assetType string) func(w http.ResponseWriter, r *h
 			},
 		}
 
-		alreadyMarked, err := s.updater.MarkAsReadByUser(id, readBy, channelID, assetType)
+		alreadyMarked, err := s.updater.MarkAsReadByUser(context.Background(), id, readBy, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {

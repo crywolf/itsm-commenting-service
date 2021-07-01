@@ -106,7 +106,9 @@ func (s *Server) addComment(assetType string) func(w http.ResponseWriter, r *htt
 		}
 		newComment.CreatedBy = createdBy
 
-		id, err := s.adder.AddComment(newComment, channelID, assetType)
+		ctx := r.Context()
+
+		id, err := s.adder.AddComment(ctx, newComment, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {

@@ -102,7 +102,9 @@ func (s *Server) queryComments(assetType string) func(w http.ResponseWriter, r *
 			return
 		}
 
-		qResult, err := s.lister.QueryComments(query, channelID, assetType)
+		ctx := r.Context()
+
+		qResult, err := s.lister.QueryComments(ctx, query, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
