@@ -48,7 +48,7 @@ func (s *Server) addComment(assetType string) func(w http.ResponseWriter, r *htt
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("AddComment handler called")
 
-		if err := s.authorize("AddComment", assetType, auth.UpdateAction, w, r); err != nil {
+		if err := s.authorize("AddComment", assetType, auth.CreateAction, w, r); err != nil {
 			return
 		}
 

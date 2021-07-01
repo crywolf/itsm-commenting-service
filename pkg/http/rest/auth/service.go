@@ -17,6 +17,8 @@ type Action int
 const (
 	ReadAction Action = iota
 	ReadOnBehalfAction
+	CreateAction
+	CreateOnBehalfAction
 	UpdateAction
 	UpdateOnBehalfAction
 	DeleteAction
@@ -24,7 +26,7 @@ const (
 )
 
 func (a Action) String() string {
-	return [...]string{"read", "read_on_behalf", "update", "update_on_behalf", "delete", "delete_on_behalf"}[a]
+	return [...]string{"read", "read_on_behalf", "create", "create_on_behalf", "update", "update_on_behalf", "delete", "delete_on_behalf"}[a]
 }
 
 // OnBehalf returns action that represents the same action but called "on_behalf"

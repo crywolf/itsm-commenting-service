@@ -58,7 +58,7 @@ func TestAddCommentDBMock(t *testing.T) {
 	db.ExpectPut()
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
+	as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
 		Return(true, nil)
 
 	us := new(mocks.UserServiceMock)
@@ -226,7 +226,7 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 	adder := adding.NewService(s)
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", "comment", auth.UpdateAction, channelID, bearerToken).
+	as.On("Enforce", "comment", auth.CreateAction, channelID, bearerToken).
 		Return(true, nil)
 
 	us := new(mocks.UserServiceMock)
