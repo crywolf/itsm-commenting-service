@@ -39,20 +39,20 @@ func TestGetCommentService(t *testing.T) {
 
 	ctx := context.Background()
 
-	id1, err := mockStorage.AddComment(ctx, c1, channelID, assetType)
+	storedComment1, err := mockStorage.AddComment(ctx, c1, channelID, assetType)
 	require.NoError(t, err)
 
-	id2, err := mockStorage.AddComment(ctx, c2, channelID, assetType)
+	storedComment2, err := mockStorage.AddComment(ctx, c2, channelID, assetType)
 	require.NoError(t, err)
 
-	com1, err := lister.GetComment(ctx, id1, channelID, assetType)
+	com1, err := lister.GetComment(ctx, storedComment1.UUID, channelID, assetType)
 	require.NoError(t, err)
 	assert.Equal(t, c1.Text, com1.Text)
 	assert.Equal(t, c1.Entity, com1.Entity)
 	assert.Equal(t, c1.CreatedBy, com1.CreatedBy)
 	assert.Equal(t, clock.NowFormatted(), com1.CreatedAt)
 
-	com2, err := lister.GetComment(ctx, id2, channelID, assetType)
+	com2, err := lister.GetComment(ctx, storedComment2.UUID, channelID, assetType)
 	require.NoError(t, err)
 	assert.Equal(t, c2.Text, com2.Text)
 	assert.Equal(t, c2.Entity, com2.Entity)

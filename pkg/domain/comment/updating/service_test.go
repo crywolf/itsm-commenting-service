@@ -62,11 +62,11 @@ func TestMarkAsReadByUserService(t *testing.T) {
 			OrgDisplayName: "Kompitech",
 		},
 	}
-	alreadyRead, err := updater.MarkAsReadByUser(ctx, com1ID, readBy, channelID, assetType)
+	alreadyRead, err := updater.MarkAsReadByUser(ctx, com1ID.UUID, readBy, channelID, assetType)
 	require.NoError(t, err)
 	assert.False(t, alreadyRead)
 
-	alreadyRead, err = updater.MarkAsReadByUser(ctx, com1ID, readBy, channelID, assetType)
+	alreadyRead, err = updater.MarkAsReadByUser(ctx, com1ID.UUID, readBy, channelID, assetType)
 	require.NoError(t, err)
 	assert.True(t, alreadyRead)
 
@@ -80,19 +80,19 @@ func TestMarkAsReadByUserService(t *testing.T) {
 			OrgDisplayName: "Kompitech",
 		},
 	}
-	alreadyRead, err = updater.MarkAsReadByUser(ctx, com1ID, readBy2, channelID, assetType)
+	alreadyRead, err = updater.MarkAsReadByUser(ctx, com1ID.UUID, readBy2, channelID, assetType)
 	require.NoError(t, err)
 	assert.False(t, alreadyRead)
 
 	lister := listing.NewService(mockStorage)
 
-	com1, err := lister.GetComment(ctx, com1ID, channelID, assetType)
+	com1, err := lister.GetComment(ctx, com1ID.UUID, channelID, assetType)
 	require.NoError(t, err)
 	assert.NotNil(t, com1.ReadBy)
 	assert.Len(t, com1.ReadBy, 2)
 	assert.Equal(t, comment.ReadByList{readBy, readBy2}, com1.ReadBy)
 
-	com2, err := lister.GetComment(ctx, com2ID, channelID, assetType)
+	com2, err := lister.GetComment(ctx, com2ID.UUID, channelID, assetType)
 	require.NoError(t, err)
 	assert.Nil(t, com2.ReadBy)
 }

@@ -100,7 +100,7 @@ func (s *Server) markAsReadBy(assetType string) func(w http.ResponseWriter, r *h
 			return
 		}
 
-		assetURI := fmt.Sprintf("%s%s/%s/%s", s.URISchema, s.Addr, pluralize(assetType), id)
+		assetURI := fmt.Sprintf("%s/%s/%s", s.ExternalLocationAddress, pluralize(assetType), id)
 
 		w.Header().Set("Location", assetURI)
 

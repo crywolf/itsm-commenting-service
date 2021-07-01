@@ -114,7 +114,7 @@ func (s *DBStorage) Client() *kivik.Client {
 }
 
 // AddComment saves the given comment to the database and returns it's ID
-func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (string, error) {
+func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (*comment.Comment, error) {
 	dbName := databaseName(channelID, assetType)
 
 	db := s.client.DB(ctx, dbName)
@@ -122,7 +122,7 @@ func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID
 	uuid, err := repository.GenerateUUID(s.rand)
 	if err != nil {
 		s.logger.Error("could not generate UUID", zap.Error(err))
-		return "", err
+		return nil, err
 	}
 
 	c.UUID = uuid
@@ -131,7 +131,7 @@ func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID
 	err = s.validator.Validate(c)
 	if err != nil {
 		s.logger.Error("invalid "+assetType, zap.Error(err))
-		return "", err
+		return nil, err
 	}
 
 	rev, err := db.Put(ctx, uuid, c)
@@ -143,14 +143,14 @@ func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID
 			if httpError.StatusCode() == http.StatusConflict {
 				reason := fmt.Sprintf("%s already exists", strings.Title(assetType))
 				eMsg := fmt.Sprintf("%s could not be added: %s", strings.Title(assetType), reason)
-				return "", ErrorConflict(eMsg)
+				return nil, ErrorConflict(eMsg)
 			}
 
 			eMsg := fmt.Sprintf("%s could not be added: %s", strings.Title(assetType), httpError.Reason)
-			return "", repository.NewError(eMsg, http.StatusInternalServerError)
+			return nil, repository.NewError(eMsg, http.StatusInternalServerError)
 		}
 
-		return "", err
+		return nil, err
 	}
 
 	s.logger.Info(fmt.Sprintf("%s inserted with revision %s", strings.Title(assetType), rev))
@@ -161,7 +161,7 @@ func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID
 		s.logger.Error(msg, zap.Error(err))
 		s.rollback(ctx, db, uuid, rev, assetType)
 
-		return "", fmt.Errorf("%s: %v", msg, err)
+		return nil, fmt.Errorf("%s: %v", msg, err)
 	}
 
 	if err = q.AddCreateEvent(c, assetType); err != nil {
@@ -169,7 +169,7 @@ func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID
 		s.logger.Error(msg, zap.Error(err))
 		s.rollback(ctx, db, uuid, rev, assetType)
 
-		return "", fmt.Errorf("%s: %v", msg, err)
+		return nil, fmt.Errorf("%s: %v", msg, err)
 	}
 
 	if err = q.PublishEvents(); err != nil {
@@ -177,10 +177,10 @@ func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID
 		s.logger.Error(msg, zap.Error(err))
 		s.rollback(ctx, db, uuid, rev, assetType)
 
-		return "", fmt.Errorf("%s: %v", msg, err)
+		return nil, fmt.Errorf("%s: %v", msg, err)
 	}
 
-	return uuid, nil
+	return &c, nil
 }
 
 func (s *DBStorage) rollback(ctx context.Context, db *kivik.DB, uuid string, rev string, assetType string) {

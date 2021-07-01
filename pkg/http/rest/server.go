@@ -30,6 +30,7 @@ type Server struct {
 	updater           updating.Service
 	repositoryService repository.Service
 	payloadValidator  validation.PayloadValidator
+	ExternalLocationAddress string
 }
 
 // Config contains server configuration and dependencies
@@ -44,6 +45,7 @@ type Config struct {
 	UpdatingService   updating.Service
 	RepositoryService repository.Service
 	PayloadValidator  validation.PayloadValidator
+	ExternalLocationAddress string
 }
 
 // NewServer creates new server with the necessary dependencies
@@ -67,6 +69,7 @@ func NewServer(cfg Config) *Server {
 		updater:           cfg.UpdatingService,
 		repositoryService: cfg.RepositoryService,
 		payloadValidator:  cfg.PayloadValidator,
+		ExternalLocationAddress: cfg.ExternalLocationAddress,
 	}
 	s.routes()
 

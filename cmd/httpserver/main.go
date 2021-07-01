@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -51,7 +52,7 @@ func main() {
 	}
 
 	// Couch DB
-	s := couchdb.NewStorage(logger, couchdb.Config{
+	s := couchdb.NewStorage(context.Background(),logger, couchdb.Config{
 		CaPath:       viper.GetString("CouchDBCaPath"),
 		Host:         viper.GetString("CouchDBHost"),
 		Port:         viper.GetString("CouchDBPort"),
@@ -89,6 +90,7 @@ func main() {
 		UpdatingService:   updater,
 		RepositoryService: s,
 		PayloadValidator:  pv,
+		ExternalLocationAddress: viper.GetString("ExternalLocationAddress"),
 	})
 
 	// TODO add graceful shutdown

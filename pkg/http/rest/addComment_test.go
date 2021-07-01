@@ -54,6 +54,7 @@ func TestAddCommentHandler(t *testing.T) {
 			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -102,6 +103,7 @@ func TestAddCommentHandler(t *testing.T) {
 			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{"invalid json request"}`)
@@ -147,6 +149,7 @@ func TestAddCommentHandler(t *testing.T) {
 			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -197,6 +200,7 @@ func TestAddCommentHandler(t *testing.T) {
 			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -251,6 +255,7 @@ func TestAddCommentHandler(t *testing.T) {
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -296,6 +301,7 @@ func TestAddCommentHandler(t *testing.T) {
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -349,6 +355,7 @@ func TestAddCommentHandler(t *testing.T) {
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -419,6 +426,7 @@ func TestAddCommentHandler(t *testing.T) {
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -461,6 +469,7 @@ func TestAddCommentHandler(t *testing.T) {
 			Logger:           logger,
 			UserService:      us,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -513,6 +522,7 @@ func TestAddCommentHandler(t *testing.T) {
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{

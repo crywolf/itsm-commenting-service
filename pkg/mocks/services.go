@@ -36,9 +36,9 @@ type AddingMock struct {
 }
 
 // AddComment saves a given comment to the repository
-func (a *AddingMock) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (string, error) {
+func (a *AddingMock) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (*comment.Comment, error) {
 	args := a.Called(c, channelID, assetType)
-	return args.String(0), args.Error(1)
+	return &comment.Comment{UUID:args.String(0)}, args.Error(1)
 }
 
 // UpdatingMock is a mock of adding service

@@ -85,6 +85,7 @@ func TestAddCommentDBMock(t *testing.T) {
 		Logger:           logger,
 		AddingService:    adder,
 		PayloadValidator: pv,
+		ExternalLocationAddress: "http://service.url",
 	})
 
 	payload := []byte(`{
@@ -167,7 +168,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
-	uuid, err := s.AddComment(context.Background(), c1, channelID, assetType)
+	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)
@@ -179,7 +180,7 @@ func TestGetCommentDBMock(t *testing.T) {
 		ListingService: lister,
 	})
 
-	req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+	req := httptest.NewRequest("GET", "/comments/"+storedComment.UUID, nil)
 	req.Header.Set("grpc-metadata-space", channelID)
 	req.Header.Set("authorization", bearerToken)
 
@@ -248,6 +249,7 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 		Logger:           logger,
 		AddingService:    adder,
 		PayloadValidator: pv,
+		ExternalLocationAddress: "http://service.url",
 	})
 
 	payload := []byte(`{"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", "text": "test with entity 1"}`)
@@ -289,7 +291,7 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
-	uuid, err := s.AddComment(context.Background(), c1, channelID, assetType)
+	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)
@@ -301,7 +303,7 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 		ListingService: lister,
 	})
 
-	req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+	req := httptest.NewRequest("GET", "/comments/"+storedComment.UUID, nil)
 	req.Header.Set("grpc-metadata-space", channelID)
 	req.Header.Set("authorization", bearerToken)
 

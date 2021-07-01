@@ -108,7 +108,7 @@ func (s *Server) addComment(assetType string) func(w http.ResponseWriter, r *htt
 
 		ctx := r.Context()
 
-		id, err := s.adder.AddComment(ctx, newComment, channelID, assetType)
+		storedComment, err := s.adder.AddComment(ctx, newComment, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
@@ -122,10 +122,18 @@ func (s *Server) addComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
-		assetURI := fmt.Sprintf("%s%s/%s/%s", s.URISchema, s.Addr, pluralize(assetType), id)
+		commentBytes, err := json.Marshal(storedComment)
+		if err != nil {
+			s.logger.Error("AddComment handler failed", zap.Error(err))
+			s.JSONError(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		assetURI := fmt.Sprintf("%s/%s/%s", s.ExternalLocationAddress, pluralize(assetType), storedComment.UUID)
 
 		w.Header().Set("Location", assetURI)
 		w.WriteHeader(http.StatusCreated)
+		w.Write(commentBytes)
 	}
 }
 

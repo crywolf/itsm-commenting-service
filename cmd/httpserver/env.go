@@ -8,6 +8,9 @@ func loadEnvConfiguration() {
 	viper.SetDefault("HTTPBindAddress", "localhost:8080")
 	_ = viper.BindEnv("HTTPBindAddress", "HTTP_BIND_ADDRESS")
 
+	viper.SetDefault("ExternalLocationAddress", "http://localhost:8080")
+	_ = viper.BindEnv("ExternalLocationAddress", "EXTERNAL_LOCATION_ADDRESS")
+
 	// NATS connection
 	viper.SetDefault("NATSQueueAddress", "127.0.0.1")
 	_ = viper.BindEnv("NATSQueueAddress", "NATS_QUEUE_ADDRESS")

@@ -57,9 +57,9 @@ func TestAddComment(t *testing.T) {
 			},
 		}
 
-		id, err := s.AddComment(context.Background(), c, channelID, "comment")
+		newC, err := s.AddComment(context.Background(), c, channelID, "comment")
 		assert.Nil(t, err)
-		assert.Equal(t, "38316161-3035-4864-ad30-6231392d3433", id)
+		assert.Equal(t, "38316161-3035-4864-ad30-6231392d3433", newC.UUID)
 
 		validator.AssertExpectations(t)
 		events.AssertExpectations(t)
@@ -80,11 +80,11 @@ func TestAddComment(t *testing.T) {
 			Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 		}
 
-		id, err := s.AddComment(context.Background(), c, channelID, "comment")
+		newC, err := s.AddComment(context.Background(), c, channelID, "comment")
 		assert.Error(t, err)
 		assert.EqualErrorf(t, err, "invalid comment", "errors are not equal")
 
-		assert.Equal(t, "", id)
+		assert.Nil(t, newC)
 
 		validator.AssertNumberOfCalls(t, "Validate", 1)
 	})
@@ -109,10 +109,10 @@ func TestAddComment(t *testing.T) {
 			Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 		}
 
-		id, err := s.AddComment(context.Background(), c, channelID, "comment")
+		newC, err := s.AddComment(context.Background(), c, channelID, "comment")
 		assert.Error(t, err)
 		assert.EqualErrorf(t, err, "Comment could not be added: Comment already exists", "errors are not equal")
-		assert.Equal(t, "", id)
+		assert.Nil(t, newC)
 
 		validator.AssertNumberOfCalls(t, "Validate", 1)
 	})
