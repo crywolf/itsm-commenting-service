@@ -24,7 +24,27 @@ import (
 //	404: errorResponse404
 
 // MarkAsReadBy returns handler for POST /comments/:id/read_by requests
-func (s *Server) MarkAsReadBy(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) MarkCommentAsReadBy() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	return s.markAsReadBy(assetTypeComment)
+}
+
+// swagger:route POST /worknotes/{uuid}/read_by worknotes MarkAsReadByUser
+// Marks specified worknote as read by user
+// responses:
+//	201: createdResponse
+//	204: noContentResponse
+//	400: errorResponse400
+//	401: errorResponse401
+//  403: errorResponse403
+//	404: errorResponse404
+
+// MarkAsReadBy returns handler for POST /worknotes/:id/read_by requests
+func (s *Server) MarkWorknoteAsReadBy() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+ return s.markAsReadBy(assetTypeWorknote)
+}
+
+// markAsReadBy returns handler for POST /comments/:id/read_by requests
+func (s *Server) markAsReadBy(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		s.logger.Info("MarkAsReadBy handler called")
 
