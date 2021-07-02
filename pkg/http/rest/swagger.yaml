@@ -437,6 +437,26 @@ paths:
     get:
       description: Returns a single worknote from the repository
       operationId: GetWorknote
+      parameters:
+      - description: Bearer token
+        in: header
+        name: authorization
+        required: true
+        type: string
+        x-go-name: Authorization
+      - format: uuid
+        in: header
+        name: grpc-metadata-space
+        required: true
+        type: string
+        x-go-name: ChannelID
+      - description: ID of the comment
+        format: uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
+        x-go-name: UUID
       responses:
         "200":
           $ref: '#/responses/commentResponse'
