@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"context"
 	"net/http/httptest"
 
 	"github.com/KompiTech/go-toolkit/natswatcher"
@@ -68,7 +69,7 @@ func StartServer() (*httptest.Server, *couchdb.DBStorage, *natswatcher.Watcher) 
 	cfg.Level.SetLevel(zap.InfoLevel)
 
 	// Couch DB
-	storage := couchdb.NewStorage(logger, couchdb.Config{
+	storage := couchdb.NewStorage(context.Background(), logger, couchdb.Config{
 		Host:         viper.GetString("CouchDBHost"),
 		Port:         viper.GetString("CouchDBPort"),
 		Username:     viper.GetString("CouchDBUsername"),
@@ -103,6 +104,7 @@ func StartServer() (*httptest.Server, *couchdb.DBStorage, *natswatcher.Watcher) 
 
 	// set address of the newly started listener to original handler
 	server.Addr = s.Listener.Addr().String()
+	server.ExternalLocationAddress = "http://" + server.Addr
 	s.Start()
 
 	return s, storage, nc

@@ -75,6 +75,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			Logger:      logger,
 			AuthService: as,
 			UserService: us,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		req := httptest.NewRequest("POST", "/comments/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
@@ -122,6 +123,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			AuthService:     as,
 			UserService:     us,
 			UpdatingService: updater,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		req := httptest.NewRequest("POST", "/comments/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
@@ -160,6 +162,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			AuthService:     as,
 			UserService:     us,
 			UpdatingService: updater,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		req := httptest.NewRequest("POST", "/comments/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)
@@ -199,6 +202,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			AuthService:     as,
 			UserService:     us,
 			UpdatingService: updater,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		req := httptest.NewRequest("POST", "/worknotes/7e0d38d1-e5f5-4211-b2aa-3b142e4da80e/read_by", nil)

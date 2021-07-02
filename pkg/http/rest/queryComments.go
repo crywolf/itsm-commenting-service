@@ -24,7 +24,25 @@ import (
 //  403: errorResponse403
 
 // QueryComments returns handler for POST /comments/query requests
-func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) QueryComments() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	return s.queryComments(assetTypeComment)
+}
+
+// swagger:route GET /worknotes worknotes ListWorknotes
+// Returns a list of worknotes from the repository filtered by some parameters
+// responses:
+//	200: commentsListResponse
+//	400: errorResponse400
+//  401: errorResponse401
+//  403: errorResponse403
+
+// QueryWorknotes returns handler for POST /worknotes/query requests
+func (s *Server) QueryWorknotes() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	return s.queryComments(assetTypeWorknote)
+}
+
+// queryComments returns handler for POST /comments/query requests
+func (s *Server) queryComments(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("QueryComments handler called")
 
@@ -84,7 +102,9 @@ func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *
 			return
 		}
 
-		qResult, err := s.lister.QueryComments(query, channelID, assetType)
+		ctx := r.Context()
+
+		qResult, err := s.lister.QueryComments(ctx, query, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {

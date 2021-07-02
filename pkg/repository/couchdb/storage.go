@@ -50,12 +50,11 @@ type Config struct {
 }
 
 // NewStorage creates new couchdb storage with initialized client
-func NewStorage(logger *zap.Logger, cfg Config) *DBStorage {
+func NewStorage(ctx context.Context,logger *zap.Logger, cfg Config) *DBStorage {
 	var client *kivik.Client
 	var err error
 	var caBytes []byte
 
-	ctx := context.TODO()
 	tlsOn := cfg.CaPath != ""
 
 	if cfg.Client == nil {
@@ -115,16 +114,15 @@ func (s *DBStorage) Client() *kivik.Client {
 }
 
 // AddComment saves the given comment to the database and returns it's ID
-func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (string, error) {
+func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (*comment.Comment, error) {
 	dbName := databaseName(channelID, assetType)
-	ctx := context.TODO()
 
 	db := s.client.DB(ctx, dbName)
 
 	uuid, err := repository.GenerateUUID(s.rand)
 	if err != nil {
 		s.logger.Error("could not generate UUID", zap.Error(err))
-		return "", err
+		return nil, err
 	}
 
 	c.UUID = uuid
@@ -133,7 +131,7 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 	err = s.validator.Validate(c)
 	if err != nil {
 		s.logger.Error("invalid "+assetType, zap.Error(err))
-		return "", err
+		return nil, err
 	}
 
 	rev, err := db.Put(ctx, uuid, c)
@@ -145,14 +143,14 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 			if httpError.StatusCode() == http.StatusConflict {
 				reason := fmt.Sprintf("%s already exists", strings.Title(assetType))
 				eMsg := fmt.Sprintf("%s could not be added: %s", strings.Title(assetType), reason)
-				return "", ErrorConflict(eMsg)
+				return nil, ErrorConflict(eMsg)
 			}
 
 			eMsg := fmt.Sprintf("%s could not be added: %s", strings.Title(assetType), httpError.Reason)
-			return "", repository.NewError(eMsg, http.StatusInternalServerError)
+			return nil, repository.NewError(eMsg, http.StatusInternalServerError)
 		}
 
-		return "", err
+		return nil, err
 	}
 
 	s.logger.Info(fmt.Sprintf("%s inserted with revision %s", strings.Title(assetType), rev))
@@ -163,7 +161,7 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 		s.logger.Error(msg, zap.Error(err))
 		s.rollback(ctx, db, uuid, rev, assetType)
 
-		return "", fmt.Errorf("%s: %v", msg, err)
+		return nil, fmt.Errorf("%s: %v", msg, err)
 	}
 
 	if err = q.AddCreateEvent(c, assetType); err != nil {
@@ -171,7 +169,7 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 		s.logger.Error(msg, zap.Error(err))
 		s.rollback(ctx, db, uuid, rev, assetType)
 
-		return "", fmt.Errorf("%s: %v", msg, err)
+		return nil, fmt.Errorf("%s: %v", msg, err)
 	}
 
 	if err = q.PublishEvents(); err != nil {
@@ -179,10 +177,10 @@ func (s *DBStorage) AddComment(c comment.Comment, channelID, assetType string) (
 		s.logger.Error(msg, zap.Error(err))
 		s.rollback(ctx, db, uuid, rev, assetType)
 
-		return "", fmt.Errorf("%s: %v", msg, err)
+		return nil, fmt.Errorf("%s: %v", msg, err)
 	}
 
-	return uuid, nil
+	return &c, nil
 }
 
 func (s *DBStorage) rollback(ctx context.Context, db *kivik.DB, uuid string, rev string, assetType string) {
@@ -196,9 +194,8 @@ func (s *DBStorage) rollback(ctx context.Context, db *kivik.DB, uuid string, rev
 }
 
 // GetComment returns comment with the specified ID
-func (s *DBStorage) GetComment(id, channelID, assetType string) (comment.Comment, error) {
+func (s *DBStorage) GetComment(ctx context.Context, id, channelID, assetType string) (comment.Comment, error) {
 	dbName := databaseName(channelID, assetType)
-	ctx := context.TODO()
 
 	var c comment.Comment
 
@@ -230,9 +227,8 @@ func (s *DBStorage) GetComment(id, channelID, assetType string) (comment.Comment
 }
 
 // QueryComments finds documents using a declarative JSON querying syntax
-func (s *DBStorage) QueryComments(query map[string]interface{}, channelID, assetType string) (listing.QueryResult, error) {
+func (s *DBStorage) QueryComments(ctx context.Context, query map[string]interface{}, channelID, assetType string) (listing.QueryResult, error) {
 	dbName := databaseName(channelID, assetType)
-	ctx := context.TODO()
 
 	var docs []map[string]interface{}
 	docs = make([]map[string]interface{}, 0)
@@ -290,9 +286,8 @@ func (s *DBStorage) QueryComments(query map[string]interface{}, channelID, asset
 
 // MarkAsReadByUser adds user info to read_by array in the comment with specified ID.
 // It returns true if comment was already marked before to notify that resource was not changed.
-func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
+func (s *DBStorage) MarkAsReadByUser(ctx context.Context, id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
 	dbName := databaseName(channelID, assetType)
-	ctx := context.TODO()
 
 	var c comment.Comment
 
@@ -367,9 +362,8 @@ func (s *DBStorage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID
 }
 
 // CreateDatabase creates new DB if it does not exist. It returns true if database already existed.
-func (s *DBStorage) CreateDatabase(channelID, assetType string) (bool, error) {
+func (s *DBStorage) CreateDatabase(ctx context.Context, channelID, assetType string) (bool, error) {
 	dbName := databaseName(channelID, assetType)
-	ctx := context.TODO()
 
 	dbExists, err := s.client.DBExists(ctx, dbName)
 	if err != nil {

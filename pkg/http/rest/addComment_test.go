@@ -2,6 +2,7 @@ package rest
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -53,6 +54,7 @@ func TestAddCommentHandler(t *testing.T) {
 			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -85,7 +87,7 @@ func TestAddCommentHandler(t *testing.T) {
 	t.Run("when request is not valid JSON", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
 		assetType := "comment"
-		as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
+		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -101,6 +103,7 @@ func TestAddCommentHandler(t *testing.T) {
 			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{"invalid json request"}`)
@@ -130,7 +133,7 @@ func TestAddCommentHandler(t *testing.T) {
 	t.Run("when request is not valid ('uuid' key present, empty 'text' key)", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
 		assetType := "comment"
-		as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
+		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -146,6 +149,7 @@ func TestAddCommentHandler(t *testing.T) {
 			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -179,7 +183,7 @@ func TestAddCommentHandler(t *testing.T) {
 	t.Run("when validator fails (ie. returns general error", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
 		assetType := "comment"
-		as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
+		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -196,6 +200,7 @@ func TestAddCommentHandler(t *testing.T) {
 			AuthService:      as,
 			UserService:      us,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -229,7 +234,7 @@ func TestAddCommentHandler(t *testing.T) {
 	t.Run("when request is valid", func(t *testing.T) {
 		assetType := "comment"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
+		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -250,6 +255,7 @@ func TestAddCommentHandler(t *testing.T) {
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -274,7 +280,7 @@ func TestAddCommentHandler(t *testing.T) {
 	t.Run("when repository returns conflict error (ie. trying to add already stored comment)", func(t *testing.T) {
 		assetType := "comment"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
+		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -295,6 +301,7 @@ func TestAddCommentHandler(t *testing.T) {
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -327,7 +334,7 @@ func TestAddCommentHandler(t *testing.T) {
 	t.Run("when repository returns some other general error", func(t *testing.T) {
 		assetType := "comment"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
+		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -348,6 +355,7 @@ func TestAddCommentHandler(t *testing.T) {
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -382,7 +390,7 @@ func TestAddCommentHandler(t *testing.T) {
 
 		assetType := "comment"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
+		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -398,7 +406,7 @@ func TestAddCommentHandler(t *testing.T) {
 		queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
 		queue.On("PublishEvents").Return(errors.New("some NATS error"))
 
-		couchMock, s := testutils.NewCouchDBMock(logger, validator, events)
+		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, events)
 
 		db := couchMock.NewDB()
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
@@ -418,6 +426,7 @@ func TestAddCommentHandler(t *testing.T) {
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -460,6 +469,7 @@ func TestAddCommentHandler(t *testing.T) {
 			Logger:           logger,
 			UserService:      us,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{
@@ -491,7 +501,7 @@ func TestAddCommentHandler(t *testing.T) {
 	t.Run("when worknote was not stored yet", func(t *testing.T) {
 		assetType := "worknote"
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
+		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -512,6 +522,7 @@ func TestAddCommentHandler(t *testing.T) {
 			UserService:      us,
 			AddingService:    adder,
 			PayloadValidator: pv,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		payload := []byte(`{

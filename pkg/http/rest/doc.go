@@ -104,7 +104,7 @@ type commentResponseWrapper struct {
 	Body comment.Comment
 }
 
-// swagger:parameters GetComment MarkAsReadByUser
+// swagger:parameters GetComment MarkAsReadByUser MarkCommentAsReadByUser MarkWorknoteAsReadByUser
 type commentIDParameterWrapper struct {
 	// Bearer token
 	// in: header
@@ -123,7 +123,7 @@ type commentIDParameterWrapper struct {
 	UUID string `json:"uuid"`
 }
 
-// swagger:parameters ListComments
+// swagger:parameters ListComments ListWorknotes
 type listCommentsParameterWrapper struct {
 	// Bearer token
 	// in: header
@@ -151,7 +151,7 @@ type listCommentsParameterWrapper struct {
 	Bookmark string `json:"bookmark"`
 }
 
-// swagger:parameters AddComment
+// swagger:parameters AddComment AddWorknote
 type commentParamWrapper struct {
 	// Bearer token
 	// in: header

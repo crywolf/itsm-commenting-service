@@ -2,6 +2,7 @@ package rest_test
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -51,14 +52,14 @@ func TestAddCommentDBMock(t *testing.T) {
 	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
 	queue.On("PublishEvents").Return(nil)
 
-	couchMock, s := testutils.NewCouchDBMock(logger, validator, events)
+	couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, events)
 
 	db := couchMock.NewDB()
 	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
 	db.ExpectPut()
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", assetType, auth.UpdateAction, channelID, bearerToken).
+	as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
 		Return(true, nil)
 
 	us := new(mocks.UserServiceMock)
@@ -84,6 +85,7 @@ func TestAddCommentDBMock(t *testing.T) {
 		Logger:           logger,
 		AddingService:    adder,
 		PayloadValidator: pv,
+		ExternalLocationAddress: "http://service.url",
 	})
 
 	payload := []byte(`{
@@ -123,7 +125,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
 	queue.On("PublishEvents").Return(nil)
 
-	couchMock, s := testutils.NewCouchDBMock(logger, validator, events)
+	couchMock, s := testutils.NewCouchDBMock(context.Background(),logger, validator, events)
 
 	db := couchMock.NewDB()
 	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
@@ -166,7 +168,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
-	uuid, err := s.AddComment(c1, channelID, assetType)
+	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)
@@ -178,7 +180,7 @@ func TestGetCommentDBMock(t *testing.T) {
 		ListingService: lister,
 	})
 
-	req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+	req := httptest.NewRequest("GET", "/comments/"+storedComment.UUID, nil)
 	req.Header.Set("grpc-metadata-space", channelID)
 	req.Header.Set("authorization", bearerToken)
 
@@ -226,7 +228,7 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 	adder := adding.NewService(s)
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", "comment", auth.UpdateAction, channelID, bearerToken).
+	as.On("Enforce", "comment", auth.CreateAction, channelID, bearerToken).
 		Return(true, nil)
 
 	us := new(mocks.UserServiceMock)
@@ -247,6 +249,7 @@ func TestAddCommentMemoryStorage(t *testing.T) {
 		Logger:           logger,
 		AddingService:    adder,
 		PayloadValidator: pv,
+		ExternalLocationAddress: "http://service.url",
 	})
 
 	payload := []byte(`{"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", "text": "test with entity 1"}`)
@@ -288,7 +291,7 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
-	uuid, err := s.AddComment(c1, channelID, assetType)
+	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)
@@ -300,7 +303,7 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 		ListingService: lister,
 	})
 
-	req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
+	req := httptest.NewRequest("GET", "/comments/"+storedComment.UUID, nil)
 	req.Header.Set("grpc-metadata-space", channelID)
 	req.Header.Set("authorization", bearerToken)
 

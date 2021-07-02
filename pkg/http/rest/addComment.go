@@ -25,11 +25,30 @@ import (
 //	409: errorResponse409
 
 // AddComment returns handler for POST /comments requests
-func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	return s.addComment(assetTypeComment)
+}
+
+// swagger:route POST /worknotes worknotes AddWorknote
+// Creates a new worknote
+// responses:
+//	201: createdResponse
+//	400: errorResponse400
+//	401: errorResponse401
+//	403: errorResponse403
+//	409: errorResponse409
+
+// AddWorknote returns handler for POST /worknotes requests
+func (s *Server) AddWorknote() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	return s.addComment(assetTypeWorknote)
+}
+
+// addComment returns handler for POST requests
+func (s *Server) addComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("AddComment handler called")
 
-		if err := s.authorize("AddComment", assetType, auth.UpdateAction, w, r); err != nil {
+		if err := s.authorize("AddComment", assetType, auth.CreateAction, w, r); err != nil {
 			return
 		}
 
@@ -87,7 +106,9 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 		}
 		newComment.CreatedBy = createdBy
 
-		id, err := s.adder.AddComment(newComment, channelID, assetType)
+		ctx := r.Context()
+
+		storedComment, err := s.adder.AddComment(ctx, newComment, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
@@ -101,10 +122,18 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
-		assetURI := fmt.Sprintf("%s%s/%s/%s", s.URISchema, s.Addr, pluralize(assetType), id)
+		commentBytes, err := json.Marshal(storedComment)
+		if err != nil {
+			s.logger.Error("AddComment handler failed", zap.Error(err))
+			s.JSONError(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		assetURI := fmt.Sprintf("%s/%s/%s", s.ExternalLocationAddress, pluralize(assetType), storedComment.UUID)
 
 		w.Header().Set("Location", assetURI)
 		w.WriteHeader(http.StatusCreated)
+		w.Write(commentBytes)
 	}
 }
 

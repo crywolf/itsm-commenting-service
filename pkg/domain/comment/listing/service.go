@@ -1,14 +1,18 @@
 package listing
 
-import "github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+import (
+	"context"
+
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
+)
 
 // Service provides comment listing operations
 type Service interface {
 	// GetComment returns the comment with given ID
-	GetComment(id, channelID, assetType string) (comment.Comment, error)
+	GetComment(ctx context.Context, id, channelID, assetType string) (comment.Comment, error)
 
 	// QueryComments finds documents using a declarative JSON querying syntax
-	QueryComments(query map[string]interface{}, channelID, assetType string) (QueryResult, error)
+	QueryComments(ctx context.Context, query map[string]interface{}, channelID, assetType string) (QueryResult, error)
 }
 
 // QueryResult wraps the result returned by querying comments
@@ -20,10 +24,10 @@ type QueryResult struct {
 // Repository provides access to the comment storage
 type Repository interface {
 	// GetComment returns the comment with given ID
-	GetComment(id, channelID, assetType string) (comment.Comment, error)
+	GetComment(ctx context.Context,id, channelID, assetType string) (comment.Comment, error)
 
 	// QueryComments finds documents using a declarative JSON querying syntax
-	QueryComments(query map[string]interface{}, channelID, assetType string) (QueryResult, error)
+	QueryComments(ctx context.Context, query map[string]interface{}, channelID, assetType string) (QueryResult, error)
 }
 
 // NewService creates a listing service
@@ -36,11 +40,11 @@ type service struct {
 }
 
 // GetComment returns the comment with given ID
-func (s *service) GetComment(id, channelID, assetType string) (comment.Comment, error) {
-	return s.r.GetComment(id, channelID, assetType)
+func (s *service) GetComment(ctx context.Context,id, channelID, assetType string) (comment.Comment, error) {
+	return s.r.GetComment(ctx, id, channelID, assetType)
 }
 
 // QueryComments finds documents using a declarative JSON querying syntax
-func (s *service) QueryComments(query map[string]interface{}, channelID, assetType string) (QueryResult, error) {
-	return s.r.QueryComments(query, channelID, assetType)
+func (s *service) QueryComments(ctx context.Context,query map[string]interface{}, channelID, assetType string) (QueryResult, error) {
+	return s.r.QueryComments(ctx, query, channelID, assetType)
 }

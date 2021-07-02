@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"io"
 	"log"
 	"time"
@@ -24,7 +25,7 @@ type Storage struct {
 }
 
 // AddComment saves the given asset to the repository and returns it's ID
-func (m *Storage) AddComment(c comment.Comment, channelID, assetType string) (string, error) {
+func (m *Storage) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (*comment.Comment, error) {
 	id, err := repository.GenerateUUID(m.Rand)
 	if err != nil {
 		log.Fatal(err)
@@ -46,11 +47,15 @@ func (m *Storage) AddComment(c comment.Comment, channelID, assetType string) (st
 	}
 	m.comments = append(m.comments, newC)
 
-	return id, nil
+	//extend original comment with generated stuff
+	c.UUID = id
+	c.CreatedAt = newC.CreatedAt
+
+	return &c, nil
 }
 
 // GetComment returns a comment with the specified ID
-func (m *Storage) GetComment(id, channelID, assetType string) (comment.Comment, error) {
+func (m *Storage) GetComment(ctx context.Context, id, channelID, assetType string) (comment.Comment, error) {
 	var c comment.Comment
 
 	for i := range m.comments {
@@ -114,7 +119,7 @@ func (m *Storage) GetAllComments() []comment.Comment {
 }
 
 // MarkAsReadByUser adds user info to read_by array to comment with specified ID
-func (m *Storage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
+func (m *Storage) MarkAsReadByUser(ctx context.Context, id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
 	for i := range m.comments {
 		if m.comments[i].ID == id {
 			sc := m.comments[i] // stored comment
@@ -147,6 +152,6 @@ func (m *Storage) MarkAsReadByUser(id string, readBy comment.ReadBy, channelID, 
 }
 
 // QueryComments is not implemented
-func (m *Storage) QueryComments(_ map[string]interface{}, _, _ string) (listing.QueryResult, error) {
+func (m *Storage) QueryComments(ctx context.Context, _ map[string]interface{}, _, _ string) (listing.QueryResult, error) {
 	panic("not implemented")
 }

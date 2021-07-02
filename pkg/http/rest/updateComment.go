@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// swagger:route POST /comments/{uuid}/read_by comments MarkAsReadByUser
+// swagger:route POST /comments/{uuid}/read_by comments MarkCommentAsReadByUser
 // Marks specified comment as read by user
 // responses:
 //	201: createdResponse
@@ -23,8 +24,28 @@ import (
 //  403: errorResponse403
 //	404: errorResponse404
 
-// MarkAsReadBy returns handler for POST /comments/:id/read_by requests
-func (s *Server) MarkAsReadBy(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+// MarkCommentAsReadBy returns handler for POST /comments/:id/read_by requests
+func (s *Server) MarkCommentAsReadBy() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	return s.markAsReadBy(assetTypeComment)
+}
+
+// swagger:route POST /worknotes/{uuid}/read_by worknotes MarkWorknoteAsReadByUser
+// Marks specified worknote as read by user
+// responses:
+//	201: createdResponse
+//	204: noContentResponse
+//	400: errorResponse400
+//	401: errorResponse401
+//  403: errorResponse403
+//	404: errorResponse404
+
+// MarkWorknoteAsReadBy returns handler for POST /worknotes/:id/read_by requests
+func (s *Server) MarkWorknoteAsReadBy() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+ return s.markAsReadBy(assetTypeWorknote)
+}
+
+// markAsReadBy returns handler for POST /comments/:id/read_by requests
+func (s *Server) markAsReadBy(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		s.logger.Info("MarkAsReadBy handler called")
 
@@ -65,7 +86,7 @@ func (s *Server) MarkAsReadBy(assetType string) func(w http.ResponseWriter, r *h
 			},
 		}
 
-		alreadyMarked, err := s.updater.MarkAsReadByUser(id, readBy, channelID, assetType)
+		alreadyMarked, err := s.updater.MarkAsReadByUser(context.Background(), id, readBy, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
@@ -79,7 +100,7 @@ func (s *Server) MarkAsReadBy(assetType string) func(w http.ResponseWriter, r *h
 			return
 		}
 
-		assetURI := fmt.Sprintf("%s%s/%s/%s", s.URISchema, s.Addr, pluralize(assetType), id)
+		assetURI := fmt.Sprintf("%s/%s/%s", s.ExternalLocationAddress, pluralize(assetType), id)
 
 		w.Header().Set("Location", assetURI)
 
