@@ -132,6 +132,7 @@ func (s *Server) addComment(assetType string) func(w http.ResponseWriter, r *htt
 		assetURI := fmt.Sprintf("%s/%s/%s", s.ExternalLocationAddress, pluralize(assetType), storedComment.UUID)
 
 		w.Header().Set("Location", assetURI)
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		w.Write(commentBytes)
 	}
