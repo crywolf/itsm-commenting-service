@@ -67,6 +67,10 @@ type createdResponseWrapper struct {
 	// URI of the resource
 	// example: http://localhost:8080/comments/2af4f493-0bd5-4513-b440-6cbb465feadb
 	Location string
+	// in: body
+	Body struct {
+		Result comment.Comment `json:"result"`
+	}
 }
 
 // No content

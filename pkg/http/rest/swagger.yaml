@@ -539,6 +539,11 @@ responses:
         description: URI of the resource
         example: http://localhost:8080/comments/2af4f493-0bd5-4513-b440-6cbb465feadb
         type: string
+    schema:
+      properties:
+        result:
+          $ref: '#/definitions/Comment'
+      type: object
   databasesCreatedResponse:
     description: Created
   databasesNoContentResponse:
