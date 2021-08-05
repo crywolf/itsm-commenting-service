@@ -93,12 +93,12 @@ func (s userService) UserBasicInfo(r *http.Request) (user.BasicInfo, error) {
 	var err error
 
 	if onBehalf := r.Header.Get("on_behalf"); onBehalf != "" {
-		resp, err = s.client.GetUserInfo(ctx, &pb.UserRequest{Uuid: onBehalf})
+		resp, err = s.client.UserGet(ctx, &pb.UserRequest{Uuid: onBehalf})
 		if err != nil {
 			return user.BasicInfo{}, err
 		}
 	} else {
-		resp, err = s.client.GetMyUserPersonalDetails(ctx, &emptypb.Empty{})
+		resp, err = s.client.UserGetMyPersonalDetails(ctx, &emptypb.Empty{})
 		if err != nil {
 			return user.BasicInfo{}, err
 		}

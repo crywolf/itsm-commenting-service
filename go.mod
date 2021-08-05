@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/KompiTech/go-toolkit/natswatcher v0.0.0-20210625125653-41a586a51354
-	github.com/KompiTech/itsm-user-service v0.0.0-20210507075950-94a3e7503efd
+	github.com/KompiTech/itsm-user-service v0.0.0-20210805112613-189dd580c109
 	github.com/go-kivik/couchdb/v3 v3.2.8
 	github.com/go-kivik/kivik/v3 v3.2.3
 	github.com/go-kivik/kivikmock/v3 v3.2.0
