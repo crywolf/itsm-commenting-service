@@ -4,7 +4,10 @@ import (
 	"embed"
 	"net/http"
 
+	"github.com/KompiTech/go-toolkit/common"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/justinas/alice"
+	"github.com/opentracing/opentracing-go"
 )
 
 const (
@@ -17,6 +20,18 @@ var swaggerFS embed.FS
 
 func (s *Server) routes() {
 	router := s.router
+
+	// tracing handler
+	var (
+		traceMW = common.Trace{
+			Tracer: opentracing.GlobalTracer(),
+		}
+		rIDMW common.RequestID
+	)
+
+	chain := alice.New(rIDMW.RequestIDMiddleware, traceMW.TraceMiddleware)
+
+	chain.Then(router)
 
 	// comments
 	router.GET("/comments/:id", s.GetComment())
