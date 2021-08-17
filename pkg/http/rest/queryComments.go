@@ -12,6 +12,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
@@ -45,6 +46,10 @@ func (s *Server) QueryWorknotes() func(w http.ResponseWriter, r *http.Request, _
 func (s *Server) queryComments(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("QueryComments handler called")
+		span, ctx := opentracing.StartSpanFromContext(r.Context(), "itsm-commenting-service-query")
+		defer span.Finish()
+
+		r = r.WithContext(ctx)
 
 		if err := s.authorize("QueryComments", assetType, auth.ReadAction, w, r); err != nil {
 			return
@@ -101,8 +106,6 @@ func (s *Server) queryComments(assetType string) func(w http.ResponseWriter, r *
 		if err != nil {
 			return
 		}
-
-		ctx := r.Context()
 
 		qResult, err := s.lister.QueryComments(ctx, query, channelID, assetType)
 		if err != nil {

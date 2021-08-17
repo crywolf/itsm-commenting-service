@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/KompiTech/go-toolkit/common"
 	"github.com/KompiTech/go-toolkit/natswatcher"
+	"github.com/KompiTech/go-toolkit/tracing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/updating"
@@ -15,6 +17,9 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"github.com/google/uuid"
+	"github.com/julienschmidt/httprouter"
+	"github.com/opentracing/opentracing-go"
+	zipkinot "github.com/openzipkin-contrib/zipkin-go-opentracing"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
@@ -95,6 +100,35 @@ func main() {
 
 	// TODO add graceful shutdown
 
+	{
+		tracer, err := tracing.NewZipkinTracer(viper.GetString("TracingCollectorEndpoint"),
+			"blits-itsm-commenting-service",
+			viper.GetString("HTTPBindPort"),
+			"1", 3)
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
+
+		openTracer := zipkinot.Wrap(tracer)
+		opentracing.SetGlobalTracer(openTracer)
+	}
+
+
 	logger.Info(fmt.Sprintf("starting server at %s...", server.Addr))
 	logger.Fatal("server start failed", zap.Error(http.ListenAndServe(server.Addr, server)))
+}
+
+func Handler(next http.Handler) httprouter.Handle  {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		// tracing
+		var (
+			traceMW = common.Trace{
+				Tracer: opentracing.GlobalTracer(),
+			}
+			rIDMW common.RequestID
+		)
+
+		rIDMW.RequestIDMiddleware(traceMW.TraceMiddleware(next))
+		next.ServeHTTP(w, r)
+	}
 }

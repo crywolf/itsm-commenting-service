@@ -8,6 +8,9 @@ func loadEnvConfiguration() {
 	viper.SetDefault("HTTPBindAddress", "localhost:8080")
 	_ = viper.BindEnv("HTTPBindAddress", "HTTP_BIND_ADDRESS")
 
+	viper.SetDefault("HTTPBindPort", "8080")
+	_ = viper.BindEnv("HTTPBindPort", "HTTP_BIND_PORT")
+
 	viper.SetDefault("ExternalLocationAddress", "http://localhost:8080")
 	_ = viper.BindEnv("ExternalLocationAddress", "EXTERNAL_LOCATION_ADDRESS")
 
@@ -44,4 +47,8 @@ func loadEnvConfiguration() {
 	// Authorization service
 	viper.SetDefault("AuthServiceAddress", "localhost:8081")
 	_ = viper.BindEnv("AuthServiceAddress", "AUTH_SERVICE_ADDRESS")
+
+	// Tracing service
+	viper.SetDefault("TracingCollectorEndpoint", "http://zipkin.tracing:9411/api/v2/spans")
+	_ = viper.BindEnv("TracingCollectorEndpoint", "TRACING_COLLECTOR_ENDPOINT")
 }

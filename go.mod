@@ -3,7 +3,9 @@ module github.com/KompiTech/itsm-commenting-service
 go 1.16
 
 require (
+	github.com/KompiTech/go-toolkit/common v0.0.0-20210625125653-41a586a51354
 	github.com/KompiTech/go-toolkit/natswatcher v0.0.0-20210625125653-41a586a51354
+	github.com/KompiTech/go-toolkit/tracing v0.0.0-20210625125653-41a586a51354
 	github.com/KompiTech/itsm-user-service v0.0.0-20210806122238-47e757c7f176
 	github.com/go-kivik/couchdb/v3 v3.2.8
 	github.com/go-kivik/kivik/v3 v3.2.3
@@ -13,9 +15,12 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20210406100015-1e088ea4ee04 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/justinas/alice v1.2.0
 	github.com/nats-io/stan.go v0.10.0
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.15.0
+	github.com/opentracing/opentracing-go v1.2.0
+	github.com/openzipkin-contrib/zipkin-go-opentracing v0.4.5
 	github.com/pkg/errors v0.9.1
 	github.com/qri-io/jsonschema v0.2.1
 	github.com/spf13/pflag v1.0.5

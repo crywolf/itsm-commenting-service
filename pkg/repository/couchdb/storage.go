@@ -19,6 +19,7 @@ import (
 	"github.com/go-kivik/couchdb/v3" // The CouchDB driver
 	"github.com/go-kivik/couchdb/v3/chttp"
 	"github.com/go-kivik/kivik/v3"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
@@ -228,6 +229,8 @@ func (s *DBStorage) GetComment(ctx context.Context, id, channelID, assetType str
 
 // QueryComments finds documents using a declarative JSON querying syntax
 func (s *DBStorage) QueryComments(ctx context.Context, query map[string]interface{}, channelID, assetType string) (listing.QueryResult, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "itsm-commenting-service-query-dbstorage")
+	defer span.Finish()
 	dbName := databaseName(channelID, assetType)
 
 	var docs []map[string]interface{}
