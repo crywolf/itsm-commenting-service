@@ -14,6 +14,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
@@ -163,6 +164,11 @@ func (s Server) assertAuthToken(w http.ResponseWriter, r *http.Request) (string,
 // authorize checks if user is authorized to perform action on asset,
 // otherwise it writes error message to response and returns error to notify calling handler to stop execution
 func (s *Server) authorize(handlerName, assetType string, action auth.Action, w http.ResponseWriter, r *http.Request) error {
+	span, ctx := opentracing.StartSpanFromContext(r.Context(), "itsm-commenting-service-authorize")
+	defer span.Finish()
+
+	r = r.WithContext(ctx)
+
 	authToken, err := s.assertAuthToken(w, r)
 	if err != nil {
 		return err
