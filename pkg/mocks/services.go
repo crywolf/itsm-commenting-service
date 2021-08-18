@@ -36,7 +36,7 @@ type AddingMock struct {
 }
 
 // AddComment saves a given comment to the repository
-func (a *AddingMock) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (*comment.Comment, error) {
+func (a *AddingMock) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string, origin string) (*comment.Comment, error) {
 	args := a.Called(c, channelID, assetType)
 	return &comment.Comment{UUID:args.String(0)}, args.Error(1)
 }
@@ -124,7 +124,7 @@ type QueueMock struct {
 }
 
 // AddCreateEvent prepares new event of type CREATE
-func (q *QueueMock) AddCreateEvent(c comment.Comment, assetType string) error {
+func (q *QueueMock) AddCreateEvent(c comment.Comment, assetType string, origin string) error {
 	args := q.Called(c, assetType)
 	return args.Error(0)
 }

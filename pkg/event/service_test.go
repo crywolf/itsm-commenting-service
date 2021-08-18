@@ -23,7 +23,8 @@ func Test_Events_Publishing(t *testing.T) {
 					"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
 					"event":"CREATED",
 					"text":"Test comment 1",
-					"uuid":"8de32c9d-8578-45a9-ab4b-32dd5c3008c7"
+					"uuid":"8de32c9d-8578-45a9-ab4b-32dd5c3008c7",
+					"origin":""
 				}
 			],
 			"source":"itsm",
@@ -56,7 +57,7 @@ func Test_Events_Publishing(t *testing.T) {
 		// the rest is omitted
 	}
 
-	err = q.AddCreateEvent(c, "worknote")
+	err = q.AddCreateEvent(c, "worknote", "")
 	require.NoError(t, err)
 
 	err = q.PublishEvents()

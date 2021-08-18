@@ -37,15 +37,16 @@ func TestAddCommentService(t *testing.T) {
 
 	adder := adding.NewService(mockStorage)
 	assetType := "comment"
+	origin := ""
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
 	ctx := context.Background()
 
-	_, err := adder.AddComment(ctx, c1, channelID, assetType)
+	_, err := adder.AddComment(ctx, c1, channelID, assetType, origin)
 	require.NoError(t, err)
 
-	_, err = adder.AddComment(ctx, c2, channelID, assetType)
+	_, err = adder.AddComment(ctx, c2, channelID, assetType, origin)
 	require.NoError(t, err)
 
 	comments := mockStorage.GetAllComments()
