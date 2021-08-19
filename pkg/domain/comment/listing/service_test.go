@@ -39,10 +39,10 @@ func TestGetCommentService(t *testing.T) {
 
 	ctx := context.Background()
 
-	storedComment1, err := mockStorage.AddComment(ctx, c1, channelID, assetType)
+	storedComment1, err := mockStorage.AddComment(ctx, c1, channelID, assetType, "")
 	require.NoError(t, err)
 
-	storedComment2, err := mockStorage.AddComment(ctx, c2, channelID, assetType)
+	storedComment2, err := mockStorage.AddComment(ctx, c2, channelID, assetType, "")
 	require.NoError(t, err)
 
 	com1, err := lister.GetComment(ctx, storedComment1.UUID, channelID, assetType)

@@ -25,7 +25,7 @@ type Storage struct {
 }
 
 // AddComment saves the given asset to the repository and returns it's ID
-func (m *Storage) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (*comment.Comment, error) {
+func (m *Storage) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string, origin string) (*comment.Comment, error) {
 	id, err := repository.GenerateUUID(m.Rand)
 	if err != nil {
 		log.Fatal(err)

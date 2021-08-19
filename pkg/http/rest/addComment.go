@@ -108,7 +108,9 @@ func (s *Server) addComment(assetType string) func(w http.ResponseWriter, r *htt
 
 		ctx := r.Context()
 
-		storedComment, err := s.adder.AddComment(ctx, newComment, channelID, assetType)
+		origin := r.Header.Get("X-Origin")
+
+		storedComment, err := s.adder.AddComment(ctx, newComment, channelID, assetType, origin)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
