@@ -108,7 +108,7 @@ func (q *queue) PublishEvents() error {
 	}
 
 	err = q.client.Publish(natswatcher.Message{
-		Subject: "consumer",
+		Subject: "service",
 		Data:    mEvents,
 	})
 	if err != nil {

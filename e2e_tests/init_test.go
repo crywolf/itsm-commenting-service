@@ -49,7 +49,7 @@ type MsgQueue struct {
 // NewMsgQueue returns new queue that is subscribed to NATS and collects messages published by the application
 func NewMsgQueue(nc *natswatcher.Watcher) (*MsgQueue, error) {
 	q := &MsgQueue{nc: nc}
-	err := q.nc.Subscribe(natswatcher.Subscription{Subject: "consumer", Handler: q.msgHandler})
+	err := q.nc.Subscribe(natswatcher.Subscription{Subject: "service", Handler: q.msgHandler})
 	return q, err
 }
 
