@@ -38,7 +38,7 @@ func Test_Events_Publishing(t *testing.T) {
 		msg := msgs[0]
 
 		// test JSON event message data
-		assert.Equalf(t, "consumer", msg.Subject, "event queue message subject is not correct")
+		assert.Equalf(t, "service", msg.Subject, "event queue message subject is not correct")
 		assert.JSONEqf(t, string(expectedData), string(msg.Data), "event queue message data is not correct")
 	}).Once()
 
