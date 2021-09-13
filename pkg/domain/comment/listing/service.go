@@ -24,7 +24,7 @@ type QueryResult struct {
 // Repository provides access to the comment storage
 type Repository interface {
 	// GetComment returns the comment with given ID
-	GetComment(ctx context.Context,id, channelID, assetType string) (comment.Comment, error)
+	GetComment(ctx context.Context, id, channelID, assetType string) (comment.Comment, error)
 
 	// QueryComments finds documents using a declarative JSON querying syntax
 	QueryComments(ctx context.Context, query map[string]interface{}, channelID, assetType string) (QueryResult, error)
@@ -40,11 +40,11 @@ type service struct {
 }
 
 // GetComment returns the comment with given ID
-func (s *service) GetComment(ctx context.Context,id, channelID, assetType string) (comment.Comment, error) {
+func (s *service) GetComment(ctx context.Context, id, channelID, assetType string) (comment.Comment, error) {
 	return s.r.GetComment(ctx, id, channelID, assetType)
 }
 
 // QueryComments finds documents using a declarative JSON querying syntax
-func (s *service) QueryComments(ctx context.Context,query map[string]interface{}, channelID, assetType string) (QueryResult, error) {
+func (s *service) QueryComments(ctx context.Context, query map[string]interface{}, channelID, assetType string) (QueryResult, error) {
 	return s.r.QueryComments(ctx, query, channelID, assetType)
 }

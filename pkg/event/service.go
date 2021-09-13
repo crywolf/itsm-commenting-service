@@ -19,7 +19,7 @@ type Service interface {
 // Queue provides event publishing operations
 type Queue interface {
 	// AddCreateEvent prepares new event of type CREATE
-	AddCreateEvent(c comment.Comment, assetType string, origin string) error
+	AddCreateEvent(c comment.Comment, assetType, origin string) error
 	// PublishEvents publishes all prepared events not published yet
 	PublishEvents() error
 }
@@ -74,7 +74,7 @@ func (q *queue) AddCreateEvent(c comment.Comment, assetType string, origin strin
 		EventType: eventCreated,
 		Entity:    c.Entity,
 		Text:      c.Text,
-		Origin: origin,
+		Origin:    origin,
 	}
 
 	q.events = append(q.events, e)
@@ -134,5 +134,5 @@ type event struct {
 	EventType string        `json:"event"`
 	Entity    entity.Entity `json:"entity"`
 	Text      string        `json:"text"`
-	Origin	  string		`json:"origin"`
+	Origin    string        `json:"origin"`
 }

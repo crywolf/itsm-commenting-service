@@ -20,32 +20,32 @@ import (
 
 // Server is a http.Handler with dependencies
 type Server struct {
-	Addr              string
-	URISchema         string
-	router            *httprouter.Router
-	logger            *zap.Logger
-	authService       auth.Service
-	userService       UserService
-	adder             adding.Service
-	lister            listing.Service
-	updater           updating.Service
-	repositoryService repository.Service
-	payloadValidator  validation.PayloadValidator
+	Addr                    string
+	URISchema               string
+	router                  *httprouter.Router
+	logger                  *zap.Logger
+	authService             auth.Service
+	userService             UserService
+	adder                   adding.Service
+	lister                  listing.Service
+	updater                 updating.Service
+	repositoryService       repository.Service
+	payloadValidator        validation.PayloadValidator
 	ExternalLocationAddress string
 }
 
 // Config contains server configuration and dependencies
 type Config struct {
-	Addr              string
-	URISchema         string
-	Logger            *zap.Logger
-	AuthService       auth.Service
-	UserService       UserService
-	AddingService     adding.Service
-	ListingService    listing.Service
-	UpdatingService   updating.Service
-	RepositoryService repository.Service
-	PayloadValidator  validation.PayloadValidator
+	Addr                    string
+	URISchema               string
+	Logger                  *zap.Logger
+	AuthService             auth.Service
+	UserService             UserService
+	AddingService           adding.Service
+	ListingService          listing.Service
+	UpdatingService         updating.Service
+	RepositoryService       repository.Service
+	PayloadValidator        validation.PayloadValidator
 	ExternalLocationAddress string
 }
 
@@ -59,17 +59,17 @@ func NewServer(cfg Config) *Server {
 	}
 
 	s := &Server{
-		Addr:              cfg.Addr,
-		URISchema:         URISchema,
-		router:            r,
-		logger:            cfg.Logger,
-		authService:       cfg.AuthService,
-		userService:       cfg.UserService,
-		adder:             cfg.AddingService,
-		lister:            cfg.ListingService,
-		updater:           cfg.UpdatingService,
-		repositoryService: cfg.RepositoryService,
-		payloadValidator:  cfg.PayloadValidator,
+		Addr:                    cfg.Addr,
+		URISchema:               URISchema,
+		router:                  r,
+		logger:                  cfg.Logger,
+		authService:             cfg.AuthService,
+		userService:             cfg.UserService,
+		adder:                   cfg.AddingService,
+		lister:                  cfg.ListingService,
+		updater:                 cfg.UpdatingService,
+		repositoryService:       cfg.RepositoryService,
+		payloadValidator:        cfg.PayloadValidator,
 		ExternalLocationAddress: cfg.ExternalLocationAddress,
 	}
 	s.routes()

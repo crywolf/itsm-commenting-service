@@ -57,7 +57,7 @@ func main() {
 	}
 
 	// Couch DB
-	s := couchdb.NewStorage(context.Background(),logger, couchdb.Config{
+	s := couchdb.NewStorage(context.Background(), logger, couchdb.Config{
 		CaPath:       viper.GetString("CouchDBCaPath"),
 		Host:         viper.GetString("CouchDBHost"),
 		Port:         viper.GetString("CouchDBPort"),
@@ -85,16 +85,16 @@ func main() {
 
 	// HTTP server
 	server := rest.NewServer(rest.Config{
-		Addr:              viper.GetString("HTTPBindAddress"),
-		URISchema:         "http://",
-		Logger:            logger,
-		AuthService:       auth.NewService(logger),
-		UserService:       userService,
-		AddingService:     adder,
-		ListingService:    lister,
-		UpdatingService:   updater,
-		RepositoryService: s,
-		PayloadValidator:  pv,
+		Addr:                    viper.GetString("HTTPBindAddress"),
+		URISchema:               "http://",
+		Logger:                  logger,
+		AuthService:             auth.NewService(logger),
+		UserService:             userService,
+		AddingService:           adder,
+		ListingService:          lister,
+		UpdatingService:         updater,
+		RepositoryService:       s,
+		PayloadValidator:        pv,
 		ExternalLocationAddress: viper.GetString("ExternalLocationAddress"),
 	})
 
@@ -113,12 +113,11 @@ func main() {
 		opentracing.SetGlobalTracer(openTracer)
 	}
 
-
 	logger.Info(fmt.Sprintf("starting server at %s...", server.Addr))
 	logger.Fatal("server start failed", zap.Error(http.ListenAndServe(server.Addr, server)))
 }
 
-func Handler(next http.Handler) httprouter.Handle  {
+func Handler(next http.Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		// tracing
 		var (

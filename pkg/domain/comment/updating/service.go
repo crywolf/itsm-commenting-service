@@ -29,6 +29,6 @@ type service struct {
 
 // MarkAsReadByUser adds user info to 'read_by' array in the comment in the storage
 // It returns true if comment was already marked before to notify that resource was not changed.
-func (s *service) MarkAsReadByUser(ctx context.Context,id string, readBy comment.ReadBy, channelID, assetType string) (alreadyMarked bool, error error) {
+func (s *service) MarkAsReadByUser(ctx context.Context, id string, readBy comment.ReadBy, channelID, assetType string) (alreadyMarked bool, error error) {
 	return s.r.MarkAsReadByUser(ctx, id, readBy, channelID, assetType)
 }
