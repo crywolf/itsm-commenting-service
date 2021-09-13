@@ -87,14 +87,13 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
-		createdBy := &comment.UserInfo{
+		newComment.CreatedBy = &comment.UserInfo{
 			UUID:           user.UUID,
 			Name:           user.Name,
 			Surname:        user.Surname,
 			OrgName:        user.OrgName,
 			OrgDisplayName: user.OrgDisplayName,
 		}
-		newComment.CreatedBy = createdBy
 
 		ctx := r.Context()
 
@@ -114,19 +113,19 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
-		commentBytes, err := json.Marshal(storedComment)
-		if err != nil {
-			s.logger.Error("AddComment handler failed", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
 		assetURI := fmt.Sprintf("%s/%s/%s", s.ExternalLocationAddress, pluralize(assetType), storedComment.UUID)
 
 		w.Header().Set("Location", assetURI)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		w.Write(commentBytes)
+
+		err = json.NewEncoder(w).Encode(storedComment)
+		if err != nil {
+			eMsg := "could not encode JSON response"
+			s.logger.Error(eMsg, zap.Error(err))
+			s.JSONError(w, eMsg, http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
