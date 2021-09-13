@@ -10,6 +10,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 )
+
 // swagger:route GET /comments/{uuid} comments GetComment
 // Returns a single comment from the repository
 // responses:
@@ -18,11 +19,6 @@ import (
 //  401: errorResponse401
 //  403: errorResponse403
 //	404: errorResponse404
-
-// GetComment returns handler for GET /comments/:id requests
-func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	return s.getComment(assetTypeComment)
-}
 
 // swagger:route GET /worknotes/{uuid} worknotes GetWorknote
 // Returns a single worknote from the repository
@@ -33,13 +29,8 @@ func (s *Server) GetComment() func(w http.ResponseWriter, r *http.Request, _ htt
 //  403: errorResponse403
 //	404: errorResponse404
 
-// GetWorknote returns handler for GET /worknotes/:id requests
-func (s *Server) GetWorknote() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	return s.getComment(assetTypeWorknote)
-}
-
-// getComment returns handler for GET  requests
-func (s *Server) getComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+// GetComment returns handler for getting single comment|worknote
+func (s *Server) GetComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		s.logger.Info("GetComment handler called")
 

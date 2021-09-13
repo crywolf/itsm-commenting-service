@@ -18,33 +18,23 @@ import (
 // swagger:route POST /comments comments AddComment
 // Creates a new comment
 // responses:
-//	201: createdResponse
+//	201: commentCreatedResponse
 //	400: errorResponse400
 //	401: errorResponse401
 //  403: errorResponse403
 //	409: errorResponse409
 
-// AddComment returns handler for POST /comments requests
-func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	return s.addComment(assetTypeComment)
-}
-
 // swagger:route POST /worknotes worknotes AddWorknote
 // Creates a new worknote
 // responses:
-//	201: createdResponse
+//	201: commentCreatedResponse
 //	400: errorResponse400
 //	401: errorResponse401
 //	403: errorResponse403
 //	409: errorResponse409
 
-// AddWorknote returns handler for POST /worknotes requests
-func (s *Server) AddWorknote() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	return s.addComment(assetTypeWorknote)
-}
-
-// addComment returns handler for POST requests
-func (s *Server) addComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+// AddComment returns handler for creating single comment|worknote
+func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("AddComment handler called")
 

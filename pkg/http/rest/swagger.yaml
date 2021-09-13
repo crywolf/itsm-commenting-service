@@ -178,7 +178,7 @@ paths:
         name: on_behalf
         type: string
         x-go-name: OnBehalf
-      - description: Comment/Worknote data structure to Create.
+      - description: Comment/Worknote data structure to create
         in: body
         name: Body
         schema:
@@ -194,7 +194,7 @@ paths:
               type: string
               x-go-name: ExternalID
             text:
-              description: Content of the comment
+              description: Content of the comment/worknote
               type: string
               x-go-name: Text
           required:
@@ -203,7 +203,7 @@ paths:
           type: object
       responses:
         "201":
-          $ref: '#/responses/createdResponse'
+          $ref: '#/responses/commentCreatedResponse'
         "400":
           $ref: '#/responses/errorResponse400'
         "401":
@@ -231,7 +231,7 @@ paths:
         required: true
         type: string
         x-go-name: ChannelID
-      - description: ID of the comment
+      - description: ID of the comment/worknote
         format: uuid
         in: path
         name: uuid
@@ -268,7 +268,7 @@ paths:
         required: true
         type: string
         x-go-name: ChannelID
-      - description: ID of the comment
+      - description: ID of the comment/worknote
         format: uuid
         in: path
         name: uuid
@@ -397,7 +397,7 @@ paths:
         name: on_behalf
         type: string
         x-go-name: OnBehalf
-      - description: Comment/Worknote data structure to Create.
+      - description: Comment/Worknote data structure to create
         in: body
         name: Body
         schema:
@@ -413,7 +413,7 @@ paths:
               type: string
               x-go-name: ExternalID
             text:
-              description: Content of the comment
+              description: Content of the comment/worknote
               type: string
               x-go-name: Text
           required:
@@ -422,7 +422,7 @@ paths:
           type: object
       responses:
         "201":
-          $ref: '#/responses/createdResponse'
+          $ref: '#/responses/commentCreatedResponse'
         "400":
           $ref: '#/responses/errorResponse400'
         "401":
@@ -450,7 +450,7 @@ paths:
         required: true
         type: string
         x-go-name: ChannelID
-      - description: ID of the comment
+      - description: ID of the comment/worknote
         format: uuid
         in: path
         name: uuid
@@ -487,7 +487,7 @@ paths:
         required: true
         type: string
         x-go-name: ChannelID
-      - description: ID of the comment
+      - description: ID of the comment/worknote
         format: uuid
         in: path
         name: uuid
@@ -512,6 +512,15 @@ paths:
 produces:
 - application/json
 responses:
+  commentCreatedResponse:
+    description: Created
+    headers:
+      Location:
+        description: URI of the resource
+        example: http://localhost:8080/comments/2af4f493-0bd5-4513-b440-6cbb465feadb
+        type: string
+    schema:
+      $ref: '#/definitions/Comment'
   commentResponse:
     description: Data structure representing a single comment or worknote
     schema:
@@ -539,40 +548,6 @@ responses:
         description: URI of the resource
         example: http://localhost:8080/comments/2af4f493-0bd5-4513-b440-6cbb465feadb
         type: string
-      created_at:
-        description: |-
-          Time when the resource was created
-          required: true
-        format: date-time
-        type: string
-      created_by:
-        description: |-
-          CreatedBy represents user who created this comment
-          required: true
-      entity:
-        description: Entity represents some external entity reference in the form
-          "&lt;entity&gt;:&lt;UUID&gt;"
-        example: incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444
-        format: string
-        type: string
-      external_id:
-        description: ID in external system
-        type: string
-      read_by:
-        description: ReadBy is a list of users who read this comment
-      text:
-        description: |-
-          Content of the comment
-          required: true
-        type: string
-      uuid:
-        description: |-
-          Read Only: true
-          required: true
-        format: uuid
-        type: string
-    schema:
-      $ref: '#/definitions/UserInfo'
   databasesCreatedResponse:
     description: Created
   databasesNoContentResponse:
