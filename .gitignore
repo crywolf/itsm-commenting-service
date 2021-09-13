@@ -1,3 +1,9 @@
 .idea/
 certs/
 build/
+
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
