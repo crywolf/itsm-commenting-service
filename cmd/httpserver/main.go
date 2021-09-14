@@ -14,6 +14,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/usersvc"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"github.com/google/uuid"
@@ -68,7 +69,7 @@ func main() {
 	})
 
 	// User service fetches user data from external service
-	userService, err := rest.NewUserService()
+	userService, err := usersvc.NewService()
 	if err != nil {
 		logger.Fatal("could not create user service", zap.Error(err))
 	}

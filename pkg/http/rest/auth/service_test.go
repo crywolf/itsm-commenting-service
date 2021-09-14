@@ -12,6 +12,8 @@ func TestAction_String(t *testing.T) {
 	}{
 		{name: "read", a: ReadAction, want: "read"},
 		{name: "read_on_behalf", a: ReadOnBehalfAction, want: "read_on_behalf"},
+		{name: "create", a: CreateAction, want: "create"},
+		{name: "create_on_behalf", a: CreateOnBehalfAction, want: "create_on_behalf"},
 		{name: "update", a: UpdateAction, want: "update"},
 		{name: "update_on_behalf", a: UpdateOnBehalfAction, want: "update_on_behalf"},
 		{name: "delete", a: DeleteAction, want: "delete"},

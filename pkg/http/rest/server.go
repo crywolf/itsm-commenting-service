@@ -11,6 +11,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/updating"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/usersvc"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
@@ -25,7 +26,7 @@ type Server struct {
 	router                  *httprouter.Router
 	logger                  *zap.Logger
 	authService             auth.Service
-	userService             UserService
+	userService             usersvc.Service
 	adder                   adding.Service
 	lister                  listing.Service
 	updater                 updating.Service
@@ -40,7 +41,7 @@ type Config struct {
 	URISchema               string
 	Logger                  *zap.Logger
 	AuthService             auth.Service
-	UserService             UserService
+	UserService             usersvc.Service
 	AddingService           adding.Service
 	ListingService          listing.Service
 	UpdatingService         updating.Service
@@ -180,8 +181,7 @@ func (s *Server) authorize(handlerName, assetType string, action auth.Action, w 
 	}
 
 	if onBehalf := r.Header.Get("on_behalf"); onBehalf != "" {
-		action, err = action.OnBehalf()
-		if err != nil {
+		if action, err = action.OnBehalf(); err != nil {
 			eMsg := fmt.Sprintf("Authorization failed: %v", err)
 			s.JSONError(w, eMsg, http.StatusInternalServerError)
 			return err
