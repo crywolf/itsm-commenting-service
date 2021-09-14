@@ -57,7 +57,7 @@ func TestAddComment(t *testing.T) {
 			},
 		}
 
-		newC, err := s.AddComment(context.Background(), c, channelID, "comment", "")
+		newC, err := s.AddComment(context.Background(), c, channelID, "comment")
 		assert.Nil(t, err)
 		assert.Equal(t, "38316161-3035-4864-ad30-6231392d3433", newC.UUID)
 
@@ -80,7 +80,7 @@ func TestAddComment(t *testing.T) {
 			Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 		}
 
-		newC, err := s.AddComment(context.Background(), c, channelID, "comment", "")
+		newC, err := s.AddComment(context.Background(), c, channelID, "comment")
 		assert.Error(t, err)
 		assert.EqualErrorf(t, err, "invalid comment", "errors are not equal")
 
@@ -109,7 +109,7 @@ func TestAddComment(t *testing.T) {
 			Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 		}
 
-		newC, err := s.AddComment(context.Background(), c, channelID, "comment", "serviceflow")
+		newC, err := s.AddComment(context.Background(), c, channelID, "comment")
 		assert.Error(t, err)
 		assert.EqualErrorf(t, err, "Comment could not be added: Comment already exists", "errors are not equal")
 		assert.Nil(t, newC)

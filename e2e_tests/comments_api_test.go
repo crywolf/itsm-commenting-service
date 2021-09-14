@@ -24,6 +24,7 @@ var _ = Describe("Comments API calls", func() {
 
 		BeforeEach(func() {
 			createTestDatabases()
+			originHeader = false
 		})
 
 		JustBeforeEach(func() {
@@ -34,7 +35,7 @@ var _ = Describe("Comments API calls", func() {
 			req.Header.Set("grpc-metadata-space", testChannelID)
 			req.Header.Set("authorization", bearerToken)
 			if originHeader {
-				req.Header.Set("X-Origin", "someOrigin")
+				req.Header.Set("X-Origin", "ServiceNow")
 			}
 
 			By("calling the endpoint")
@@ -85,7 +86,7 @@ var _ = Describe("Comments API calls", func() {
 					Expect(event).To(HaveKey("uuid"))
 					Expect(event).To(HaveKeyWithValue("entity", "incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"))
 					Expect(event).To(HaveKeyWithValue("text", "Test Comment 1"))
-					Expect(event).To(HaveKeyWithValue("origin", "someOrigin"))
+					Expect(event).To(HaveKeyWithValue("origin", "ServiceNow"))
 				})
 			})
 
@@ -120,6 +121,7 @@ var _ = Describe("Comments API calls", func() {
 					Expect(bodyMap).To(HaveKeyWithValue("uuid", uuid))
 					Expect(bodyMap).To(HaveKeyWithValue("text", "Test Comment 1"))
 					Expect(bodyMap).To(HaveKeyWithValue("entity", "incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"))
+					Expect(bodyMap).ToNot(HaveKey("origin"))
 					Expect(bodyMap).To(HaveKey("created_at"))
 
 					createdBy, err := json.Marshal(bodyMap["created_by"])

@@ -27,6 +27,9 @@ type Comment struct {
 	// ID in external system
 	ExternalID string `json:"external_id,omitempty"`
 
+	// Origin of the request
+	Origin string `json:"-"`
+
 	// ReadBy is a list of users who read this comment
 	ReadBy ReadByList `json:"read_by,omitempty"`
 

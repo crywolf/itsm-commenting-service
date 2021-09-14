@@ -178,6 +178,12 @@ paths:
         name: on_behalf
         type: string
         x-go-name: OnBehalf
+      - description: Origin of the request (will be present in event message)
+        example: ServiceNow
+        in: header
+        name: X-Origin
+        type: string
+        x-go-name: XOrigin
       - description: Comment/Worknote data structure to create
         in: body
         name: Body
@@ -397,6 +403,12 @@ paths:
         name: on_behalf
         type: string
         x-go-name: OnBehalf
+      - description: Origin of the request (will be present in event message)
+        example: ServiceNow
+        in: header
+        name: X-Origin
+        type: string
+        x-go-name: XOrigin
       - description: Comment/Worknote data structure to create
         in: body
         name: Body

@@ -19,7 +19,7 @@ type Service interface {
 // Queue provides event publishing operations
 type Queue interface {
 	// AddCreateEvent prepares new event of type CREATE
-	AddCreateEvent(c comment.Comment, assetType, origin string) error
+	AddCreateEvent(c comment.Comment, assetType string) error
 	// PublishEvents publishes all prepared events not published yet
 	PublishEvents() error
 }
@@ -67,14 +67,14 @@ func (s *service) NewQueue(channelID, orgID UUID) (Queue, error) {
 }
 
 // AddCreateEvent prepares new event of type CREATE
-func (q *queue) AddCreateEvent(c comment.Comment, assetType string, origin string) error {
+func (q *queue) AddCreateEvent(c comment.Comment, assetType string) error {
 	e := event{
 		DocType:   assetType,
 		UUID:      UUID(c.UUID),
 		EventType: eventCreated,
 		Entity:    c.Entity,
 		Text:      c.Text,
-		Origin:    origin,
+		Origin:    c.Origin,
 	}
 
 	q.events = append(q.events, e)

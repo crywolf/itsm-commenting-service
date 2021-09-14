@@ -168,7 +168,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
-	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType, "")
+	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)
@@ -291,7 +291,7 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
-	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType, "")
+	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType)
 	require.NoError(t, err)
 
 	lister := listing.NewService(s)

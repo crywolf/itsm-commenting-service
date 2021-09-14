@@ -115,7 +115,7 @@ func (s *DBStorage) Client() *kivik.Client {
 }
 
 // AddComment saves the given comment to the database and returns it's ID
-func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID, assetType, origin string) (*comment.Comment, error) {
+func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (*comment.Comment, error) {
 	dbName := databaseName(channelID, assetType)
 
 	db := s.client.DB(ctx, dbName)
@@ -165,7 +165,7 @@ func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID
 		return nil, fmt.Errorf("%s: %v", msg, err)
 	}
 
-	if err = q.AddCreateEvent(c, assetType, origin); err != nil {
+	if err = q.AddCreateEvent(c, assetType); err != nil {
 		msg := "could not create event"
 		s.logger.Error(msg, zap.Error(err))
 		s.rollback(ctx, db, uuid, rev, assetType)

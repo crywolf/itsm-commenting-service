@@ -87,6 +87,8 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
+		newComment.Origin = r.Header.Get("X-Origin")
+
 		newComment.CreatedBy = &comment.UserInfo{
 			UUID:           user.UUID,
 			Name:           user.Name,
@@ -97,9 +99,7 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 
 		ctx := r.Context()
 
-		origin := r.Header.Get("X-Origin")
-
-		storedComment, err := s.adder.AddComment(ctx, newComment, channelID, assetType, origin)
+		storedComment, err := s.adder.AddComment(ctx, newComment, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {

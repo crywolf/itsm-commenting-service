@@ -180,6 +180,11 @@ type commentParamWrapper struct {
 	// swagger:strfmt uuid
 	OnBehalf string `json:"on_behalf"`
 
+	// Origin of the request (will be present in event message)
+	// in: header
+	// example: ServiceNow
+	XOrigin string `json:"X-Origin"`
+
 	// Comment/Worknote data structure to create
 	// in: body
 	Body struct {
