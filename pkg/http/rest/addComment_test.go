@@ -49,11 +49,11 @@ func TestAddCommentHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		server := NewServer(Config{
-			Addr:             "service.url",
-			Logger:           logger,
-			AuthService:      as,
-			UserService:      us,
-			PayloadValidator: pv,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			PayloadValidator:        pv,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -98,11 +98,11 @@ func TestAddCommentHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		server := NewServer(Config{
-			Addr:             "service.url",
-			Logger:           logger,
-			AuthService:      as,
-			UserService:      us,
-			PayloadValidator: pv,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			PayloadValidator:        pv,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -144,11 +144,11 @@ func TestAddCommentHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		server := NewServer(Config{
-			Addr:             "service.url",
-			Logger:           logger,
-			AuthService:      as,
-			UserService:      us,
-			PayloadValidator: pv,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			PayloadValidator:        pv,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -195,11 +195,11 @@ func TestAddCommentHandler(t *testing.T) {
 			Return(pvalidation.NewErrGeneral(errors.New("could not open schema file")))
 
 		server := NewServer(Config{
-			Addr:             "service.url",
-			Logger:           logger,
-			AuthService:      as,
-			UserService:      us,
-			PayloadValidator: pv,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			PayloadValidator:        pv,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -249,12 +249,12 @@ func TestAddCommentHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		server := NewServer(Config{
-			Addr:             "service.url",
-			Logger:           logger,
-			AuthService:      as,
-			UserService:      us,
-			AddingService:    adder,
-			PayloadValidator: pv,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			AddingService:           adder,
+			PayloadValidator:        pv,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -295,12 +295,12 @@ func TestAddCommentHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		server := NewServer(Config{
-			Addr:             "service.url",
-			Logger:           logger,
-			AuthService:      as,
-			UserService:      us,
-			AddingService:    adder,
-			PayloadValidator: pv,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			AddingService:           adder,
+			PayloadValidator:        pv,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -349,12 +349,12 @@ func TestAddCommentHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		server := NewServer(Config{
-			Addr:             "service.url",
-			Logger:           logger,
-			AuthService:      as,
-			UserService:      us,
-			AddingService:    adder,
-			PayloadValidator: pv,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			AddingService:           adder,
+			PayloadValidator:        pv,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -420,12 +420,12 @@ func TestAddCommentHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		server := NewServer(Config{
-			Addr:             "service.url",
-			Logger:           logger,
-			AuthService:      as,
-			UserService:      us,
-			AddingService:    adder,
-			PayloadValidator: pv,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			AddingService:           adder,
+			PayloadValidator:        pv,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -465,10 +465,10 @@ func TestAddCommentHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		server := NewServer(Config{
-			Addr:             "service.url",
-			Logger:           logger,
-			UserService:      us,
-			PayloadValidator: pv,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			UserService:             us,
+			PayloadValidator:        pv,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -516,12 +516,12 @@ func TestAddCommentHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		server := NewServer(Config{
-			Addr:             "service.url",
-			Logger:           logger,
-			AuthService:      as,
-			UserService:      us,
-			AddingService:    adder,
-			PayloadValidator: pv,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			AddingService:           adder,
+			PayloadValidator:        pv,
 			ExternalLocationAddress: "http://service.url",
 		})
 

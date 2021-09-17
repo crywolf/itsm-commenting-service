@@ -11,6 +11,7 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/updating"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/usersvc"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
@@ -20,32 +21,32 @@ import (
 
 // Server is a http.Handler with dependencies
 type Server struct {
-	Addr              string
-	URISchema         string
-	router            *httprouter.Router
-	logger            *zap.Logger
-	authService       auth.Service
-	userService       UserService
-	adder             adding.Service
-	lister            listing.Service
-	updater           updating.Service
-	repositoryService repository.Service
-	payloadValidator  validation.PayloadValidator
+	Addr                    string
+	URISchema               string
+	router                  *httprouter.Router
+	logger                  *zap.Logger
+	authService             auth.Service
+	userService             usersvc.Service
+	adder                   adding.Service
+	lister                  listing.Service
+	updater                 updating.Service
+	repositoryService       repository.Service
+	payloadValidator        validation.PayloadValidator
 	ExternalLocationAddress string
 }
 
 // Config contains server configuration and dependencies
 type Config struct {
-	Addr              string
-	URISchema         string
-	Logger            *zap.Logger
-	AuthService       auth.Service
-	UserService       UserService
-	AddingService     adding.Service
-	ListingService    listing.Service
-	UpdatingService   updating.Service
-	RepositoryService repository.Service
-	PayloadValidator  validation.PayloadValidator
+	Addr                    string
+	URISchema               string
+	Logger                  *zap.Logger
+	AuthService             auth.Service
+	UserService             usersvc.Service
+	AddingService           adding.Service
+	ListingService          listing.Service
+	UpdatingService         updating.Service
+	RepositoryService       repository.Service
+	PayloadValidator        validation.PayloadValidator
 	ExternalLocationAddress string
 }
 
@@ -59,17 +60,17 @@ func NewServer(cfg Config) *Server {
 	}
 
 	s := &Server{
-		Addr:              cfg.Addr,
-		URISchema:         URISchema,
-		router:            r,
-		logger:            cfg.Logger,
-		authService:       cfg.AuthService,
-		userService:       cfg.UserService,
-		adder:             cfg.AddingService,
-		lister:            cfg.ListingService,
-		updater:           cfg.UpdatingService,
-		repositoryService: cfg.RepositoryService,
-		payloadValidator:  cfg.PayloadValidator,
+		Addr:                    cfg.Addr,
+		URISchema:               URISchema,
+		router:                  r,
+		logger:                  cfg.Logger,
+		authService:             cfg.AuthService,
+		userService:             cfg.UserService,
+		adder:                   cfg.AddingService,
+		lister:                  cfg.ListingService,
+		updater:                 cfg.UpdatingService,
+		repositoryService:       cfg.RepositoryService,
+		payloadValidator:        cfg.PayloadValidator,
 		ExternalLocationAddress: cfg.ExternalLocationAddress,
 	}
 	s.routes()
@@ -180,8 +181,7 @@ func (s *Server) authorize(handlerName, assetType string, action auth.Action, w 
 	}
 
 	if onBehalf := r.Header.Get("on_behalf"); onBehalf != "" {
-		action, err = action.OnBehalf()
-		if err != nil {
+		if action, err = action.OnBehalf(); err != nil {
 			eMsg := fmt.Sprintf("Authorization failed: %v", err)
 			s.JSONError(w, eMsg, http.StatusInternalServerError)
 			return err

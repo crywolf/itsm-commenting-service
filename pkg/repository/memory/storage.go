@@ -16,16 +16,15 @@ type Clock interface {
 	Now() time.Time
 }
 
-// Storage storage keeps data in memory
+// Storage keeps data in memory
 type Storage struct {
 	Rand     io.Reader
 	Clock    Clock
 	comments []Comment
-	//	worknotes []Comment
 }
 
 // AddComment saves the given asset to the repository and returns it's ID
-func (m *Storage) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string, origin string) (*comment.Comment, error) {
+func (m *Storage) AddComment(_ context.Context, c comment.Comment, _, _ string) (*comment.Comment, error) {
 	id, err := repository.GenerateUUID(m.Rand)
 	if err != nil {
 		log.Fatal(err)
@@ -119,7 +118,7 @@ func (m *Storage) GetAllComments() []comment.Comment {
 }
 
 // MarkAsReadByUser adds user info to read_by array to comment with specified ID
-func (m *Storage) MarkAsReadByUser(ctx context.Context, id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
+func (m *Storage) MarkAsReadByUser(_ context.Context, id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
 	for i := range m.comments {
 		if m.comments[i].ID == id {
 			sc := m.comments[i] // stored comment
@@ -152,6 +151,6 @@ func (m *Storage) MarkAsReadByUser(ctx context.Context, id string, readBy commen
 }
 
 // QueryComments is not implemented
-func (m *Storage) QueryComments(ctx context.Context, _ map[string]interface{}, _, _ string) (listing.QueryResult, error) {
+func (m *Storage) QueryComments(_ context.Context, _ map[string]interface{}, _, _ string) (listing.QueryResult, error) {
 	panic("not implemented")
 }

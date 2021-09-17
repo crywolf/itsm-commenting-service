@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/KompiTech/go-toolkit/common"
 	"github.com/KompiTech/go-toolkit/natswatcher"
 	"github.com/KompiTech/go-toolkit/tracing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
@@ -14,10 +13,10 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/event"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
+	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/usersvc"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/validation"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository/couchdb"
 	"github.com/google/uuid"
-	"github.com/julienschmidt/httprouter"
 	"github.com/opentracing/opentracing-go"
 	zipkinot "github.com/openzipkin-contrib/zipkin-go-opentracing"
 	"github.com/spf13/viper"
@@ -57,7 +56,7 @@ func main() {
 	}
 
 	// Couch DB
-	s := couchdb.NewStorage(context.Background(),logger, couchdb.Config{
+	s := couchdb.NewStorage(context.Background(), logger, couchdb.Config{
 		CaPath:       viper.GetString("CouchDBCaPath"),
 		Host:         viper.GetString("CouchDBHost"),
 		Port:         viper.GetString("CouchDBPort"),
@@ -68,7 +67,7 @@ func main() {
 	})
 
 	// User service fetches user data from external service
-	userService, err := rest.NewUserService()
+	userService, err := usersvc.NewService()
 	if err != nil {
 		logger.Fatal("could not create user service", zap.Error(err))
 	}
@@ -85,16 +84,16 @@ func main() {
 
 	// HTTP server
 	server := rest.NewServer(rest.Config{
-		Addr:              viper.GetString("HTTPBindAddress"),
-		URISchema:         "http://",
-		Logger:            logger,
-		AuthService:       auth.NewService(logger),
-		UserService:       userService,
-		AddingService:     adder,
-		ListingService:    lister,
-		UpdatingService:   updater,
-		RepositoryService: s,
-		PayloadValidator:  pv,
+		Addr:                    viper.GetString("HTTPBindAddress"),
+		URISchema:               "http://",
+		Logger:                  logger,
+		AuthService:             auth.NewService(logger),
+		UserService:             userService,
+		AddingService:           adder,
+		ListingService:          lister,
+		UpdatingService:         updater,
+		RepositoryService:       s,
+		PayloadValidator:        pv,
 		ExternalLocationAddress: viper.GetString("ExternalLocationAddress"),
 	})
 
@@ -113,22 +112,6 @@ func main() {
 		opentracing.SetGlobalTracer(openTracer)
 	}
 
-
 	logger.Info(fmt.Sprintf("starting server at %s...", server.Addr))
 	logger.Fatal("server start failed", zap.Error(http.ListenAndServe(server.Addr, server)))
-}
-
-func Handler(next http.Handler) httprouter.Handle  {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		// tracing
-		var (
-			traceMW = common.Trace{
-				Tracer: opentracing.GlobalTracer(),
-			}
-			rIDMW common.RequestID
-		)
-
-		rIDMW.RequestIDMiddleware(traceMW.TraceMiddleware(next))
-		next.ServeHTTP(w, r)
-	}
 }

@@ -18,33 +18,23 @@ import (
 // swagger:route POST /comments comments AddComment
 // Creates a new comment
 // responses:
-//	201: createdResponse
+//	201: commentCreatedResponse
 //	400: errorResponse400
 //	401: errorResponse401
 //  403: errorResponse403
 //	409: errorResponse409
 
-// AddComment returns handler for POST /comments requests
-func (s *Server) AddComment() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	return s.addComment(assetTypeComment)
-}
-
 // swagger:route POST /worknotes worknotes AddWorknote
 // Creates a new worknote
 // responses:
-//	201: createdResponse
+//	201: commentCreatedResponse
 //	400: errorResponse400
 //	401: errorResponse401
 //	403: errorResponse403
 //	409: errorResponse409
 
-// AddWorknote returns handler for POST /worknotes requests
-func (s *Server) AddWorknote() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	return s.addComment(assetTypeWorknote)
-}
-
-// addComment returns handler for POST requests
-func (s *Server) addComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+// AddComment returns handler for creating single comment|worknote
+func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("AddComment handler called")
 
@@ -97,20 +87,19 @@ func (s *Server) addComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
-		createdBy := &comment.UserInfo{
+		newComment.Origin = r.Header.Get("X-Origin")
+
+		newComment.CreatedBy = &comment.UserInfo{
 			UUID:           user.UUID,
 			Name:           user.Name,
 			Surname:        user.Surname,
 			OrgName:        user.OrgName,
 			OrgDisplayName: user.OrgDisplayName,
 		}
-		newComment.CreatedBy = createdBy
 
 		ctx := r.Context()
 
-		origin := r.Header.Get("X-Origin")
-
-		storedComment, err := s.adder.AddComment(ctx, newComment, channelID, assetType, origin)
+		storedComment, err := s.adder.AddComment(ctx, newComment, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
@@ -124,19 +113,19 @@ func (s *Server) addComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
-		commentBytes, err := json.Marshal(storedComment)
-		if err != nil {
-			s.logger.Error("AddComment handler failed", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
 		assetURI := fmt.Sprintf("%s/%s/%s", s.ExternalLocationAddress, pluralize(assetType), storedComment.UUID)
 
 		w.Header().Set("Location", assetURI)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		w.Write(commentBytes)
+
+		err = json.NewEncoder(w).Encode(storedComment)
+		if err != nil {
+			eMsg := "could not encode JSON response"
+			s.logger.Error(eMsg, zap.Error(err))
+			s.JSONError(w, eMsg, http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

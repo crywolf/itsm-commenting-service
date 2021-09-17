@@ -44,10 +44,10 @@ func TestMarkAsReadByUserService(t *testing.T) {
 
 	adder := adding.NewService(mockStorage)
 
-	com1ID, err := adder.AddComment(ctx, c1, channelID, assetType, "")
+	com1ID, err := adder.AddComment(ctx, c1, channelID, assetType)
 	require.NoError(t, err)
 
-	com2ID, err := adder.AddComment(ctx, c2, channelID, assetType, "")
+	com2ID, err := adder.AddComment(ctx, c2, channelID, assetType)
 	require.NoError(t, err)
 
 	updater := updating.NewService(mockStorage)

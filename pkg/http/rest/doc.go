@@ -68,8 +68,17 @@ type createdResponseWrapper struct {
 	// example: http://localhost:8080/comments/2af4f493-0bd5-4513-b440-6cbb465feadb
 	// in: header
 	Location string
+}
+
+// Created
+// swagger:response commentCreatedResponse
+type commentCreatedResponseWrapper struct {
+	// URI of the resource
+	// example: http://localhost:8080/comments/2af4f493-0bd5-4513-b440-6cbb465feadb
+	// in: header
+	Location string
 	// in: body
-	comment.Comment
+	Body comment.Comment
 }
 
 // No content
@@ -77,6 +86,7 @@ type createdResponseWrapper struct {
 type noContentResponseWrapper struct {
 	// URI of the resource
 	// example: http://localhost:8080/comments/2af4f493-0bd5-4513-b440-6cbb465feadb
+	// in: header
 	Location string
 }
 
@@ -107,7 +117,7 @@ type commentResponseWrapper struct {
 	Body comment.Comment
 }
 
-// swagger:parameters GetComment GetWorknote MarkAsReadByUser MarkCommentAsReadByUser MarkWorknoteAsReadByUser
+// swagger:parameters GetComment GetWorknote MarkCommentAsReadByUser MarkWorknoteAsReadByUser
 type commentIDParameterWrapper struct {
 	// Bearer token
 	// in: header
@@ -119,7 +129,7 @@ type commentIDParameterWrapper struct {
 	// swagger:strfmt uuid
 	ChannelID string `json:"grpc-metadata-space"`
 
-	// ID of the comment
+	// ID of the comment/worknote
 	// in: path
 	// required: true
 	// swagger:strfmt uuid
@@ -139,8 +149,8 @@ type listCommentsParameterWrapper struct {
 	ChannelID string `json:"grpc-metadata-space"`
 
 	// Entity represents some external entity reference in the form "&lt;entity&gt;:&lt;UUID&gt;"
-	// in: query
 	// example: incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444
+	// in: query
 	// swagger:strfmt string
 	Entity entity.Entity `json:"entity"`
 
@@ -170,7 +180,12 @@ type commentParamWrapper struct {
 	// swagger:strfmt uuid
 	OnBehalf string `json:"on_behalf"`
 
-	// Comment/Worknote data structure to Create.
+	// Origin of the request (will be present in event message)
+	// in: header
+	// example: ServiceNow
+	XOrigin string `json:"X-Origin"`
+
+	// Comment/Worknote data structure to create
 	// in: body
 	Body struct {
 		// Entity represents some external entity reference in the form "&lt;entity&gt;:&lt;UUID&gt;"
@@ -182,7 +197,7 @@ type commentParamWrapper struct {
 		// required: false
 		ExternalID string `json:"external_id"`
 
-		// Content of the comment
+		// Content of the comment/worknote
 		// required: true
 		Text string `json:"text"`
 	}

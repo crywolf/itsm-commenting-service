@@ -71,10 +71,10 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		server := NewServer(Config{
-			Addr:        "service.url",
-			Logger:      logger,
-			AuthService: as,
-			UserService: us,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -118,11 +118,11 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			Return(false, nil)
 
 		server := NewServer(Config{
-			Addr:            "service.url",
-			Logger:          logger,
-			AuthService:     as,
-			UserService:     us,
-			UpdatingService: updater,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			UpdatingService:         updater,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -157,11 +157,11 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			Return(true, nil)
 
 		server := NewServer(Config{
-			Addr:            "service.url",
-			Logger:          logger,
-			AuthService:     as,
-			UserService:     us,
-			UpdatingService: updater,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			UpdatingService:         updater,
 			ExternalLocationAddress: "http://service.url",
 		})
 
@@ -197,11 +197,11 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			Return(false, nil)
 
 		server := NewServer(Config{
-			Addr:            "service.url",
-			Logger:          logger,
-			AuthService:     as,
-			UserService:     us,
-			UpdatingService: updater,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			UserService:             us,
+			UpdatingService:         updater,
 			ExternalLocationAddress: "http://service.url",
 		})
 

@@ -25,7 +25,7 @@ func (l *ListingMock) GetComment(ctx context.Context, id, channelID, assetType s
 }
 
 // QueryComments finds documents using a declarative JSON querying syntax
-func (l *ListingMock) QueryComments(ctx context.Context,query map[string]interface{}, channelID, assetType string) (listing.QueryResult, error) {
+func (l *ListingMock) QueryComments(ctx context.Context, query map[string]interface{}, channelID, assetType string) (listing.QueryResult, error) {
 	args := l.Called(query, channelID, assetType)
 	return args.Get(0).(listing.QueryResult), args.Error(1)
 }
@@ -36,9 +36,9 @@ type AddingMock struct {
 }
 
 // AddComment saves a given comment to the repository
-func (a *AddingMock) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string, origin string) (*comment.Comment, error) {
+func (a *AddingMock) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (*comment.Comment, error) {
 	args := a.Called(c, channelID, assetType)
-	return &comment.Comment{UUID:args.String(0)}, args.Error(1)
+	return &comment.Comment{UUID: args.String(0)}, args.Error(1)
 }
 
 // UpdatingMock is a mock of adding service
@@ -124,7 +124,7 @@ type QueueMock struct {
 }
 
 // AddCreateEvent prepares new event of type CREATE
-func (q *QueueMock) AddCreateEvent(c comment.Comment, assetType string, origin string) error {
+func (q *QueueMock) AddCreateEvent(c comment.Comment, assetType string) error {
 	args := q.Called(c, assetType)
 	return args.Error(0)
 }

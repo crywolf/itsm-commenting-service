@@ -24,11 +24,6 @@ import (
 //  401: errorResponse401
 //  403: errorResponse403
 
-// QueryComments returns handler for POST /comments/query requests
-func (s *Server) QueryComments() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	return s.queryComments(assetTypeComment)
-}
-
 // swagger:route GET /worknotes worknotes ListWorknotes
 // Returns a list of worknotes from the repository filtered by some parameters
 // responses:
@@ -37,13 +32,8 @@ func (s *Server) QueryComments() func(w http.ResponseWriter, r *http.Request, _ 
 //  401: errorResponse401
 //  403: errorResponse403
 
-// QueryWorknotes returns handler for POST /worknotes/query requests
-func (s *Server) QueryWorknotes() func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	return s.queryComments(assetTypeWorknote)
-}
-
-// queryComments returns handler for POST /comments/query requests
-func (s *Server) queryComments(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+// QueryComments returns handler for listing or querying comments|worknotes
+func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("QueryComments handler called")
 		span, ctx := opentracing.StartSpanFromContext(r.Context(), "itsm-commenting-service-query")

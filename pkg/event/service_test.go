@@ -57,7 +57,7 @@ func Test_Events_Publishing(t *testing.T) {
 		// the rest is omitted
 	}
 
-	err = q.AddCreateEvent(c, "worknote", "")
+	err = q.AddCreateEvent(c, "worknote")
 	require.NoError(t, err)
 
 	err = q.PublishEvents()

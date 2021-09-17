@@ -34,18 +34,18 @@ func (s *Server) routes() {
 	chain.Then(router)
 
 	// comments
-	router.GET("/comments/:id", s.GetComment())
-	router.GET("/comments", s.QueryComments())
+	router.GET("/comments/:id", s.GetComment(assetTypeComment))
+	router.GET("/comments", s.QueryComments(assetTypeComment))
 
-	router.POST("/comments", s.AddUserInfo(s.AddComment(), s.userService))
-	router.POST("/comments/:id/read_by", s.AddUserInfo(s.MarkCommentAsReadBy(), s.userService))
+	router.POST("/comments", s.AddUserInfo(s.AddComment(assetTypeComment), s.userService))
+	router.POST("/comments/:id/read_by", s.AddUserInfo(s.MarkCommentAsReadBy(assetTypeComment), s.userService))
 
 	// worknotes
-	router.GET("/worknotes/:id", s.GetWorknote())
-	router.GET("/worknotes", s.QueryWorknotes())
+	router.GET("/worknotes/:id", s.GetComment(assetTypeWorknote))
+	router.GET("/worknotes", s.QueryComments(assetTypeWorknote))
 
-	router.POST("/worknotes", s.AddUserInfo(s.AddWorknote(), s.userService))
-	router.POST("/worknotes/:id/read_by", s.AddUserInfo(s.MarkWorknoteAsReadBy(), s.userService))
+	router.POST("/worknotes", s.AddUserInfo(s.AddComment(assetTypeWorknote), s.userService))
+	router.POST("/worknotes/:id/read_by", s.AddUserInfo(s.MarkCommentAsReadBy(assetTypeWorknote), s.userService))
 
 	// databases creation
 	router.POST("/databases", s.CreateDatabases())

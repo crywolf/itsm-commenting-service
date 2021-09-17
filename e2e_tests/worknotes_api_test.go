@@ -20,9 +20,11 @@ var _ = Describe("Worknotes API calls", func() {
 	Describe("POST /worknotes", func() {
 		var payload []byte
 		var resp *http.Response
+		var originHeader bool
 
 		BeforeEach(func() {
 			createTestDatabases()
+			originHeader = false
 		})
 
 		JustBeforeEach(func() {
@@ -32,6 +34,9 @@ var _ = Describe("Worknotes API calls", func() {
 			Expect(err).To(BeNil())
 			req.Header.Set("grpc-metadata-space", testChannelID)
 			req.Header.Set("authorization", bearerToken)
+			if originHeader {
+				req.Header.Set("X-Origin", "internal")
+			}
 
 			By("calling the endpoint")
 			c := http.Client{}
@@ -42,9 +47,9 @@ var _ = Describe("Worknotes API calls", func() {
 		Context("with valid payload", func() {
 			BeforeEach(func() {
 				payload = []byte(`{
-					"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
-					"text": "Test Worknote 1"
-				}`)
+						"entity":"incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
+						"text": "Test Worknote 1"
+					}`)
 			})
 
 			It("should return 'Created' response", func() {
@@ -53,15 +58,36 @@ var _ = Describe("Worknotes API calls", func() {
 				Expect(ioutil.ReadAll(resp.Body)).NotTo(BeEmpty())
 			})
 
-			It("should publish correct event", func() {
-				events := msgQueue.LastEvents()
-				Expect(events).To(HaveLen(1))
-				event := events[0]
-				Expect(event).To(HaveKeyWithValue("docType", "worknote"))
-				Expect(event).To(HaveKeyWithValue("event", "CREATED"))
-				Expect(event).To(HaveKey("uuid"))
-				Expect(event).To(HaveKeyWithValue("entity", "incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"))
-				Expect(event).To(HaveKeyWithValue("text", "Test Worknote 1"))
+			Context("without 'X-Origin' header set", func() {
+				It("should publish correct event", func() {
+					events := msgQueue.LastEvents()
+					Expect(events).To(HaveLen(1))
+					event := events[0]
+					Expect(event).To(HaveKeyWithValue("docType", "worknote"))
+					Expect(event).To(HaveKeyWithValue("event", "CREATED"))
+					Expect(event).To(HaveKey("uuid"))
+					Expect(event).To(HaveKeyWithValue("entity", "incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"))
+					Expect(event).To(HaveKeyWithValue("text", "Test Worknote 1"))
+					Expect(event).To(HaveKeyWithValue("origin", ""))
+				})
+			})
+
+			Context("with 'X-Origin' header set", func() {
+				BeforeEach(func() {
+					originHeader = true
+				})
+
+				It("should publish correct event", func() {
+					events := msgQueue.LastEvents()
+					Expect(events).To(HaveLen(1))
+					event := events[0]
+					Expect(event).To(HaveKeyWithValue("docType", "worknote"))
+					Expect(event).To(HaveKeyWithValue("event", "CREATED"))
+					Expect(event).To(HaveKey("uuid"))
+					Expect(event).To(HaveKeyWithValue("entity", "incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"))
+					Expect(event).To(HaveKeyWithValue("text", "Test Worknote 1"))
+					Expect(event).To(HaveKeyWithValue("origin", "internal"))
+				})
 			})
 
 			When("calling GET on returned Location header", func() {
@@ -95,6 +121,7 @@ var _ = Describe("Worknotes API calls", func() {
 					Expect(bodyMap).To(HaveKeyWithValue("uuid", uuid))
 					Expect(bodyMap).To(HaveKeyWithValue("text", "Test Worknote 1"))
 					Expect(bodyMap).To(HaveKeyWithValue("entity", "incident:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"))
+					Expect(bodyMap).ToNot(HaveKey("origin"))
 					Expect(bodyMap).To(HaveKey("created_at"))
 
 					createdBy, err := json.Marshal(bodyMap["created_by"])
