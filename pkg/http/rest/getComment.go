@@ -72,14 +72,6 @@ func (s *Server) GetComment(assetType string) func(w http.ResponseWriter, r *htt
 			return
 		}
 
-		var action ActionType
-		switch assetType {
-		case assetTypeComment:
-			action = GetComment
-		case assetTypeWorknote:
-			action = GetWorknote
-		}
-
-		s.presenter.WriteGetResponse(r, w, asset, action)
+		s.presenter.WriteGetResponse(r, w, asset, assetType)
 	}
 }

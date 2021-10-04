@@ -117,14 +117,6 @@ func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *
 			return
 		}
 
-		var action ActionType
-		switch assetType {
-		case assetTypeComment:
-			action = ListComments
-		case assetTypeWorknote:
-			action = ListWorknotes
-		}
-
-		s.presenter.WriteListResponse(r, w, qResult, action)
+		s.presenter.WriteListResponse(r, w, qResult, assetType)
 	}
 }

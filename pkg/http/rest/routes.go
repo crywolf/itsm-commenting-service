@@ -10,6 +10,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 )
 
+// Asset types definitions
 const (
 	assetTypeComment  = "comment"
 	assetTypeWorknote = "worknote"

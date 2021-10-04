@@ -55,6 +55,7 @@ var _ = Describe("Comments API calls", func() {
 			It("should return 'Created' response", func() {
 				Expect(resp).To(HaveHTTPStatus(http.StatusCreated))
 				Expect(resp.Header.Get("Location")).To(ContainSubstring(server.URL + "/comments/"))
+				Expect(resp.Header.Get("Content-Type")).To(Equal("application/json"))
 				Expect(ioutil.ReadAll(resp.Body)).NotTo(BeEmpty())
 			})
 
