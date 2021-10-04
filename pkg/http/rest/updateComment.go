@@ -41,12 +41,12 @@ const MarkWorknoteAsReadByUser ActionType = "/worknotes/{uuid}/read_by"
 //	404: errorResponse404
 
 // MarkCommentAsReadBy returns handler for marking comment|worknote as read by user
-func (s *Server) MarkCommentAsReadBy(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) MarkCommentAsReadBy(assetType comment.AssetType) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		s.logger.Info("MarkAsReadBy handler called")
 
 		// use can update comment if he is allowed to read it!
-		if err := s.authorize("MarkAsReadBy", assetType, auth.ReadAction, w, r); err != nil {
+		if err := s.authorize("MarkAsReadBy", assetType.String(), auth.ReadAction, w, r); err != nil {
 			return
 		}
 

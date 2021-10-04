@@ -34,11 +34,11 @@ import (
 //	409: errorResponse409
 
 // AddComment returns handler for creating single comment|worknote
-func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) AddComment(assetType comment.AssetType) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("AddComment handler called")
 
-		if err := s.authorize("AddComment", assetType, auth.CreateAction, w, r); err != nil {
+		if err := s.authorize("AddComment", assetType.String(), auth.CreateAction, w, r); err != nil {
 			return
 		}
 
@@ -129,6 +129,6 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 	}
 }
 
-func pluralize(assetType string) string {
+func pluralize(assetType comment.AssetType) string {
 	return fmt.Sprintf("%ss", assetType)
 }

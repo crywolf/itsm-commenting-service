@@ -15,10 +15,14 @@ import (
 // ActionType represents the name of the API action (e.g. GetComment)
 type ActionType string
 
+func (a ActionType) String() string {
+	return string(a)
+}
+
 // Presenter provides REST responses
 type Presenter interface {
-	WriteGetResponse(r *http.Request, w http.ResponseWriter, comment comment.Comment, assetType string)
-	WriteListResponse(r *http.Request, w http.ResponseWriter, list listing.QueryResult, assetType string)
+	WriteGetResponse(r *http.Request, w http.ResponseWriter, comment comment.Comment, assetType comment.AssetType)
+	WriteListResponse(r *http.Request, w http.ResponseWriter, list listing.QueryResult, assetType comment.AssetType)
 	WriteError(w http.ResponseWriter, error string, code int)
 }
 
@@ -35,34 +39,30 @@ type presenter struct {
 	serverAddr string
 }
 
-func (p presenter) WriteGetResponse(_ *http.Request, w http.ResponseWriter, c comment.Comment, assetType string) {
+func (p presenter) WriteGetResponse(_ *http.Request, w http.ResponseWriter, c comment.Comment, assetType comment.AssetType) {
 	var action ActionType
 	switch assetType {
-	case assetTypeComment:
+	case comment.AssetTypeComment:
 		action = GetComment
-	case assetTypeWorknote:
+	case comment.AssetTypeWorknote:
 		action = GetWorknote
 	}
 
-	resourceURI := fmt.Sprintf("%s%s", p.serverAddr, strings.ReplaceAll(string(action), "{uuid}", c.UUID))
+	resourceURI := fmt.Sprintf("%s%s", p.serverAddr, strings.ReplaceAll(action.String(), "{uuid}", c.UUID))
 
 	links := []map[string]interface{}{
 		{"rel": "self", "href": resourceURI},
 	}
 
-	allowedLinks := hypermedia.AllowedLinksForComment(c)
+	allowedLinks := hypermedia.AllowedLinksForComment(c, assetType)
 	for _, allowedLink := range allowedLinks {
-		if assetType == assetTypeWorknote {
-			allowedLink = strings.Replace(allowedLink, "Comment", "Worknote", 1)
-		}
-
 		rel := allowedLink
 		action, err := p.mapLinkNameToAction(allowedLink)
 		if err != nil {
 			p.WriteError(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		href := fmt.Sprintf("%s%s", p.serverAddr, strings.ReplaceAll(string(action), "{uuid}", c.UUID))
+		href := fmt.Sprintf("%s%s", p.serverAddr, strings.ReplaceAll(action.String(), "{uuid}", c.UUID))
 
 		links = append(links, map[string]interface{}{
 			"rel": rel, "href": href,
@@ -72,15 +72,15 @@ func (p presenter) WriteGetResponse(_ *http.Request, w http.ResponseWriter, c co
 	p.encodeJSON(w, resourceContainer{Comment: c, Links: links})
 }
 
-func (p presenter) WriteListResponse(r *http.Request, w http.ResponseWriter, list listing.QueryResult, assetType string) {
+func (p presenter) WriteListResponse(r *http.Request, w http.ResponseWriter, list listing.QueryResult, assetType comment.AssetType) {
 	var action ActionType
 	switch assetType {
-	case assetTypeComment:
+	case comment.AssetTypeComment:
 		action = ListComments
-	case assetTypeWorknote:
+	case comment.AssetTypeWorknote:
 		action = ListWorknotes
 	}
-	resourceURI := fmt.Sprintf("%s%s", p.serverAddr, string(action))
+	resourceURI := fmt.Sprintf("%s%s", p.serverAddr, action)
 
 	delimiter := "?"
 

@@ -115,7 +115,7 @@ func (s *DBStorage) Client() *kivik.Client {
 }
 
 // AddComment saves the given comment to the database and returns it's ID
-func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID, assetType string) (*comment.Comment, error) {
+func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID string, assetType comment.AssetType) (*comment.Comment, error) {
 	dbName := databaseName(channelID, assetType)
 
 	db := s.client.DB(ctx, dbName)
@@ -131,7 +131,7 @@ func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID
 
 	err = s.validator.Validate(c)
 	if err != nil {
-		s.logger.Error("invalid "+assetType, zap.Error(err))
+		s.logger.Error(fmt.Sprintf("invalid %s", assetType), zap.Error(err))
 		return nil, err
 	}
 
@@ -142,19 +142,19 @@ func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID
 		var httpError *chttp.HTTPError
 		if errors.As(err, &httpError) {
 			if httpError.StatusCode() == http.StatusConflict {
-				reason := fmt.Sprintf("%s already exists", strings.Title(assetType))
-				eMsg := fmt.Sprintf("%s could not be added: %s", strings.Title(assetType), reason)
+				reason := fmt.Sprintf("%s already exists", strings.Title(assetType.String()))
+				eMsg := fmt.Sprintf("%s could not be added: %s", strings.Title(assetType.String()), reason)
 				return nil, ErrorConflict(eMsg)
 			}
 
-			eMsg := fmt.Sprintf("%s could not be added: %s", strings.Title(assetType), httpError.Reason)
+			eMsg := fmt.Sprintf("%s could not be added: %s", strings.Title(assetType.String()), httpError.Reason)
 			return nil, repository.NewError(eMsg, http.StatusInternalServerError)
 		}
 
 		return nil, err
 	}
 
-	s.logger.Info(fmt.Sprintf("%s inserted with revision %s", strings.Title(assetType), rev))
+	s.logger.Info(fmt.Sprintf("%s inserted with revision %s", strings.Title(assetType.String()), rev))
 
 	q, err := s.events.NewQueue(event.UUID(channelID), event.UUID(c.CreatedBy.OrgID()))
 	if err != nil {
@@ -184,7 +184,7 @@ func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID
 	return &c, nil
 }
 
-func (s *DBStorage) rollback(ctx context.Context, db *kivik.DB, uuid string, rev string, assetType string) {
+func (s *DBStorage) rollback(ctx context.Context, db *kivik.DB, uuid string, rev string, assetType comment.AssetType) {
 	_, err := db.Delete(ctx, uuid, rev)
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("could not delete %s:%s (rollback)", assetType, uuid), zap.Error(err))
@@ -195,7 +195,7 @@ func (s *DBStorage) rollback(ctx context.Context, db *kivik.DB, uuid string, rev
 }
 
 // GetComment returns comment with the specified ID
-func (s *DBStorage) GetComment(ctx context.Context, id, channelID, assetType string) (comment.Comment, error) {
+func (s *DBStorage) GetComment(ctx context.Context, id, channelID string, assetType comment.AssetType) (comment.Comment, error) {
 	dbName := databaseName(channelID, assetType)
 
 	var c comment.Comment
@@ -210,25 +210,25 @@ func (s *DBStorage) GetComment(ctx context.Context, id, channelID, assetType str
 		var httpError *chttp.HTTPError
 		if errors.As(err, &httpError) {
 			if httpError.StatusCode() == http.StatusNotFound {
-				reason := fmt.Sprintf("%s with uuid='%s' does not exist", strings.Title(assetType), id)
-				eMsg := fmt.Sprintf("%s could not be retrieved: %s", strings.Title(assetType), reason)
+				reason := fmt.Sprintf("%s with uuid='%s' does not exist", strings.Title(assetType.String()), id)
+				eMsg := fmt.Sprintf("%s could not be retrieved: %s", strings.Title(assetType.String()), reason)
 				return c, ErrorNorFound(eMsg)
 			}
 
-			eMsg := fmt.Sprintf("%s could not be retrieved: %s", strings.Title(assetType), httpError.Reason)
+			eMsg := fmt.Sprintf("%s could not be retrieved: %s", strings.Title(assetType.String()), httpError.Reason)
 			return c, repository.NewError(eMsg, http.StatusInternalServerError)
 		}
 
 		return c, err
 	}
 
-	s.logger.Info(fmt.Sprintf("%s fetched %v", strings.Title(assetType), c))
+	s.logger.Info(fmt.Sprintf("%s fetched %v", strings.Title(assetType.String()), c))
 
 	return c, nil
 }
 
 // QueryComments finds documents using a declarative JSON querying syntax
-func (s *DBStorage) QueryComments(ctx context.Context, query map[string]interface{}, channelID, assetType string) (listing.QueryResult, error) {
+func (s *DBStorage) QueryComments(ctx context.Context, query map[string]interface{}, channelID string, assetType comment.AssetType) (listing.QueryResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "itsm-commenting-service-query-dbstorage")
 	defer span.Finish()
 	dbName := databaseName(channelID, assetType)
@@ -289,7 +289,7 @@ func (s *DBStorage) QueryComments(ctx context.Context, query map[string]interfac
 
 // MarkAsReadByUser adds user info to read_by array in the comment with specified ID.
 // It returns true if comment was already marked before to notify that resource was not changed.
-func (s *DBStorage) MarkAsReadByUser(ctx context.Context, id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
+func (s *DBStorage) MarkAsReadByUser(ctx context.Context, id string, readBy comment.ReadBy, channelID string, assetType comment.AssetType) (bool, error) {
 	dbName := databaseName(channelID, assetType)
 
 	var c comment.Comment
@@ -306,7 +306,7 @@ func (s *DBStorage) MarkAsReadByUser(ctx context.Context, id string, readBy comm
 			reason := httpError.Reason
 
 			if httpError.StatusCode() == http.StatusNotFound {
-				reason = fmt.Sprintf("%s with uuid='%s' does not exist", strings.Title(assetType), id)
+				reason = fmt.Sprintf("%s with uuid='%s' does not exist", strings.Title(assetType.String()), id)
 			}
 
 			return false, ErrorNorFound(reason)
@@ -350,7 +350,7 @@ func (s *DBStorage) MarkAsReadByUser(ctx context.Context, id string, readBy comm
 			reason := httpError.Reason
 
 			if httpError.StatusCode() == http.StatusConflict {
-				reason = fmt.Sprintf("%s could not be mark as read", strings.Title(assetType))
+				reason = fmt.Sprintf("%s could not be mark as read", strings.Title(assetType.String()))
 			}
 
 			return false, ErrorConflict(reason)
@@ -359,13 +359,13 @@ func (s *DBStorage) MarkAsReadByUser(ctx context.Context, id string, readBy comm
 		return false, err
 	}
 
-	s.logger.Info(fmt.Sprintf("%s updated %#v", strings.Title(assetType), c))
+	s.logger.Info(fmt.Sprintf("%s updated %#v", strings.Title(assetType.String()), c))
 
 	return false, nil
 }
 
 // CreateDatabase creates new DB if it does not exist. It returns true if database already existed.
-func (s *DBStorage) CreateDatabase(ctx context.Context, channelID, assetType string) (bool, error) {
+func (s *DBStorage) CreateDatabase(ctx context.Context, channelID string, assetType comment.AssetType) (bool, error) {
 	dbName := databaseName(channelID, assetType)
 
 	dbExists, err := s.client.DBExists(ctx, dbName)
@@ -398,11 +398,11 @@ func (s *DBStorage) CreateDatabase(ctx context.Context, channelID, assetType str
 	return false, nil
 }
 
-func databaseName(channelID, assetType string) string {
+func databaseName(channelID string, assetType comment.AssetType) string {
 	return fmt.Sprintf("p_%s_%s", channelID, pluralize(assetType))
 }
 
-func pluralize(assetType string) string {
+func pluralize(assetType comment.AssetType) string {
 	return fmt.Sprintf("%ss", assetType)
 }
 

@@ -5,15 +5,10 @@ import (
 	"net/http"
 
 	"github.com/KompiTech/go-toolkit/common"
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/justinas/alice"
 	"github.com/opentracing/opentracing-go"
-)
-
-// Asset types definitions
-const (
-	assetTypeComment  = "comment"
-	assetTypeWorknote = "worknote"
 )
 
 //go:embed swagger.yaml
@@ -35,18 +30,18 @@ func (s *Server) routes() {
 	chain.Then(router)
 
 	// comments
-	router.GET("/comments/:id", s.GetComment(assetTypeComment))
-	router.GET("/comments", s.QueryComments(assetTypeComment))
+	router.GET("/comments/:id", s.GetComment(comment.AssetTypeComment))
+	router.GET("/comments", s.QueryComments(comment.AssetTypeComment))
 
-	router.POST("/comments", s.AddUserInfo(s.AddComment(assetTypeComment), s.userService))
-	router.POST("/comments/:id/read_by", s.AddUserInfo(s.MarkCommentAsReadBy(assetTypeComment), s.userService))
+	router.POST("/comments", s.AddUserInfo(s.AddComment(comment.AssetTypeComment), s.userService))
+	router.POST("/comments/:id/read_by", s.AddUserInfo(s.MarkCommentAsReadBy(comment.AssetTypeComment), s.userService))
 
 	// worknotes
-	router.GET("/worknotes/:id", s.GetComment(assetTypeWorknote))
-	router.GET("/worknotes", s.QueryComments(assetTypeWorknote))
+	router.GET("/worknotes/:id", s.GetComment(comment.AssetTypeWorknote))
+	router.GET("/worknotes", s.QueryComments(comment.AssetTypeWorknote))
 
-	router.POST("/worknotes", s.AddUserInfo(s.AddComment(assetTypeWorknote), s.userService))
-	router.POST("/worknotes/:id/read_by", s.AddUserInfo(s.MarkCommentAsReadBy(assetTypeWorknote), s.userService))
+	router.POST("/worknotes", s.AddUserInfo(s.AddComment(comment.AssetTypeWorknote), s.userService))
+	router.POST("/worknotes/:id/read_by", s.AddUserInfo(s.MarkCommentAsReadBy(comment.AssetTypeWorknote), s.userService))
 
 	// databases creation
 	router.POST("/databases", s.CreateDatabases())

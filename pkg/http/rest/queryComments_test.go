@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
@@ -75,9 +76,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 			t.Fatalf("could not marshall moc result: %v", err)
 		}
 
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -140,9 +141,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 			t.Fatalf("could not marshall moc result: %v", err)
 		}
 
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -225,9 +226,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 	})
 
 	t.Run("when repository returns Bad Request error", func(t *testing.T) {
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -269,9 +270,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 	})
 
 	t.Run("when repository returns some other error", func(t *testing.T) {
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -332,9 +333,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 			t.Fatalf("could not marshall moc result: %v", err)
 		}
 
-		assetType := "worknote"
+		assetType := comment.AssetTypeWorknote
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 		lister := new(mocks.ListingMock)
 

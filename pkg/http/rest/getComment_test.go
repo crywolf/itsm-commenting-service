@@ -52,8 +52,8 @@ func TestGetCommentHandler(t *testing.T) {
 
 	t.Run("when authorization service returns error", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		assetType := "comment"
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		assetType := comment.AssetTypeComment
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(false, errors.New("some authorization service error"))
 
 		server := NewServer(Config{
@@ -132,9 +132,9 @@ func TestGetCommentHandler(t *testing.T) {
 			CreatedAt: "2021-04-01T12:34:56+02:00",
 		}
 
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -189,10 +189,10 @@ func TestGetCommentHandler(t *testing.T) {
 
 	t.Run("when comment does not exist", func(t *testing.T) {
 		uuid := "someNonexistentUUID"
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -230,10 +230,10 @@ func TestGetCommentHandler(t *testing.T) {
 
 	t.Run("when repository returns some other error", func(t *testing.T) {
 		uuid := "someNonexistentUUID"
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -286,10 +286,10 @@ func TestGetCommentHandler(t *testing.T) {
 			CreatedAt: "2021-04-01T12:34:56+02:00",
 		}
 
-		assetType := "worknote"
+		assetType := comment.AssetTypeWorknote
 
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)

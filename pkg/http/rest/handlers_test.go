@@ -41,7 +41,7 @@ func TestAddCommentDBMock(t *testing.T) {
 	bearerToken := "some valid Bearer token"
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 	orgID := "a897a407-e41b-4b14-924a-39f5d5a8038f"
-	assetType := "comment"
+	assetType := comment.AssetTypeComment
 
 	validator := new(mocks.ValidatorMock)
 	validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
@@ -59,7 +59,7 @@ func TestAddCommentDBMock(t *testing.T) {
 	db.ExpectPut()
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
+	as.On("Enforce", assetType.String(), auth.CreateAction, channelID, bearerToken).
 		Return(true, nil)
 
 	us := new(mocks.UserServiceMock)
@@ -114,7 +114,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	bearerToken := "some valid Bearer token"
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 	orgID := "a897a407-e41b-4b14-924a-39f5d5a8038f"
-	assetType := "comment"
+	assetType := comment.AssetTypeComment
 
 	validator := new(mocks.ValidatorMock)
 	validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
@@ -165,7 +165,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	}
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+	as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
 	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType)
@@ -290,10 +290,10 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 
 	bearerToken := "some valid Bearer token"
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
-	assetType := "comment"
+	assetType := comment.AssetTypeComment
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+	as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
 	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType)

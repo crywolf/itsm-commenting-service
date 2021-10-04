@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
@@ -39,7 +40,7 @@ const ListWorknotes ActionType = "/worknotes"
 //  403: errorResponse403
 
 // QueryComments returns handler for listing or querying comments|worknotes
-func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) QueryComments(assetType comment.AssetType) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("QueryComments handler called")
 		span, ctx := opentracing.StartSpanFromContext(r.Context(), "itsm-commenting-service-query")
@@ -47,7 +48,7 @@ func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *
 
 		r = r.WithContext(ctx)
 
-		if err := s.authorize("QueryComments", assetType, auth.ReadAction, w, r); err != nil {
+		if err := s.authorize("QueryComments", assetType.String(), auth.ReadAction, w, r); err != nil {
 			return
 		}
 

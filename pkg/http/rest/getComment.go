@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
@@ -35,11 +36,11 @@ const GetWorknote ActionType = "/worknotes/{uuid}"
 //	404: errorResponse404
 
 // GetComment returns handler for getting single comment|worknote
-func (s *Server) GetComment(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) GetComment(assetType comment.AssetType) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		s.logger.Info("GetComment handler called")
 
-		if err := s.authorize("GetComment", assetType, auth.ReadAction, w, r); err != nil {
+		if err := s.authorize("GetComment", assetType.String(), auth.ReadAction, w, r); err != nil {
 			return
 		}
 

@@ -40,7 +40,7 @@ func TestMarkAsReadByUserService(t *testing.T) {
 		Clock: clock,
 	}
 
-	assetType := "comment"
+	assetType := comment.AssetTypeComment
 
 	adder := adding.NewService(mockStorage)
 

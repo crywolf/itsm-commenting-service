@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/KompiTech/itsm-commenting-service/pkg/validation"
@@ -68,7 +69,7 @@ func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, 
 			return
 		}
 
-		assetTypes := [2]string{"comment", "worknote"}
+		assetTypes := [2]comment.AssetType{comment.AssetTypeComment, comment.AssetTypeWorknote}
 
 		bothExisted := true
 
@@ -79,12 +80,12 @@ func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, 
 			if err != nil {
 				var httpError *repository.Error
 				if errors.As(err, &httpError) {
-					s.logger.Error("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType))
+					s.logger.Error("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType.String()))
 					s.presenter.WriteError(w, err.Error(), httpError.StatusCode())
 					return
 				}
 
-				s.logger.Error("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType))
+				s.logger.Error("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType.String()))
 				s.presenter.WriteError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}

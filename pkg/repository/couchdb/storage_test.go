@@ -36,13 +36,13 @@ func TestAddComment(t *testing.T) {
 		events := new(mocks.EventServiceMock)
 		queue := new(mocks.QueueMock)
 		events.On("NewQueue", event.UUID(channelID), event.UUID(orgID)).Return(queue, nil)
-		queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), "comment").Return(nil)
+		queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), comment.AssetTypeComment).Return(nil)
 		queue.On("PublishEvents").Return(nil)
 
 		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, events)
 
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 		db.ExpectPut()
 
 		c := comment.Comment{
@@ -57,7 +57,7 @@ func TestAddComment(t *testing.T) {
 			},
 		}
 
-		newC, err := s.AddComment(context.Background(), c, channelID, "comment")
+		newC, err := s.AddComment(context.Background(), c, channelID, comment.AssetTypeComment)
 		assert.Nil(t, err)
 		assert.Equal(t, "38316161-3035-4864-ad30-6231392d3433", newC.UUID)
 
@@ -73,14 +73,14 @@ func TestAddComment(t *testing.T) {
 		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, nil)
 
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 
 		c := comment.Comment{
 			Text:   "Test comment 1",
 			Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 		}
 
-		newC, err := s.AddComment(context.Background(), c, channelID, "comment")
+		newC, err := s.AddComment(context.Background(), c, channelID, comment.AssetTypeComment)
 		assert.Error(t, err)
 		assert.EqualErrorf(t, err, "invalid comment", "errors are not equal")
 
@@ -96,7 +96,7 @@ func TestAddComment(t *testing.T) {
 		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, nil)
 
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 
 		db.ExpectPut().WillReturnError(&chttp.HTTPError{
 			Response: &http.Response{
@@ -109,7 +109,7 @@ func TestAddComment(t *testing.T) {
 			Entity: entity.NewEntity("incident", "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"),
 		}
 
-		newC, err := s.AddComment(context.Background(), c, channelID, "comment")
+		newC, err := s.AddComment(context.Background(), c, channelID, comment.AssetTypeComment)
 		assert.Error(t, err)
 		assert.EqualErrorf(t, err, "Comment could not be added: Comment already exists", "errors are not equal")
 		assert.Nil(t, newC)
@@ -130,7 +130,7 @@ func TestGetComment(t *testing.T) {
 		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
 
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 
 		db.ExpectGet().WithDocID(uuid).WillExecute(func(ctx context.Context, arg0 string, options map[string]interface{}) (*driver.Document, error) {
 			return &driver.Document{}, &chttp.HTTPError{
@@ -140,7 +140,7 @@ func TestGetComment(t *testing.T) {
 			}
 		})
 
-		c, err := s.GetComment(context.Background(), uuid, channelID, "comment")
+		c, err := s.GetComment(context.Background(), uuid, channelID, comment.AssetTypeComment)
 		assert.Error(t, err)
 		assert.EqualErrorf(t, err, "Comment could not be retrieved: Comment with uuid='cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0' does not exist", "errors are not equal")
 		assert.Equal(t, comment.Comment{}, c)
@@ -165,12 +165,12 @@ func TestGetComment(t *testing.T) {
 		}
 
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 		row, err := kivikmock.Document(dbC)
 		assert.Nil(t, err)
 		db.ExpectGet().WithDocID(uuid).WillReturn(row)
 
-		res, err := s.GetComment(context.Background(), uuid, channelID, "comment")
+		res, err := s.GetComment(context.Background(), uuid, channelID, comment.AssetTypeComment)
 		assert.NoError(t, err)
 		assert.Equal(t, dbC, res)
 	})
@@ -186,7 +186,7 @@ func TestQueryComments(t *testing.T) {
 		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
 
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 
 		query := map[string]interface{}{"invalid query": ""}
 		db.ExpectFind().WithQuery(query).WillReturnError(&chttp.HTTPError{
@@ -196,7 +196,7 @@ func TestQueryComments(t *testing.T) {
 			Reason: "invalid query",
 		})
 
-		res, err := s.QueryComments(context.Background(), query, channelID, "comment")
+		res, err := s.QueryComments(context.Background(), query, channelID, comment.AssetTypeComment)
 		assert.Error(t, err)
 		assert.EqualErrorf(t, err, "invalid query", "errors are not equal")
 		assert.Equal(t, listing.QueryResult{}, res)
@@ -206,7 +206,7 @@ func TestQueryComments(t *testing.T) {
 		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
 
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 
 		query := map[string]interface{}{"valid": "query"}
 
@@ -247,7 +247,7 @@ func TestQueryComments(t *testing.T) {
 			AddRow(&driver.Row{ID: uuid, Doc: doc}).
 			AddRow(&driver.Row{ID: uuid, Doc: doc}))
 
-		res, err := s.QueryComments(context.Background(), query, channelID, "comment")
+		res, err := s.QueryComments(context.Background(), query, channelID, comment.AssetTypeComment)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, res)
 		assert.Equal(t, listing.QueryResult{Result: []map[string]interface{}{cMap, cMap}}, res)
@@ -283,7 +283,7 @@ func TestMarkAsReadByUser(t *testing.T) {
 		}
 
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 		row, err := kivikmock.Document(dbC)
 		assert.Nil(t, err)
 		db.ExpectGet().WithDocID(uuid).WillReturn(row)
@@ -301,7 +301,7 @@ func TestMarkAsReadByUser(t *testing.T) {
 
 		db.ExpectPut().WithDocID(uuid)
 
-		res, err := s.MarkAsReadByUser(context.Background(), uuid, readBy, channelID, "comment")
+		res, err := s.MarkAsReadByUser(context.Background(), uuid, readBy, channelID, comment.AssetTypeComment)
 		assert.NoError(t, err)
 		assert.False(t, res)
 	})
@@ -312,7 +312,7 @@ func TestMarkAsReadByUser(t *testing.T) {
 		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
 
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 
 		db.ExpectGet().WithDocID(uuid).WillExecute(func(ctx context.Context, arg0 string, options map[string]interface{}) (*driver.Document, error) {
 			return &driver.Document{}, &chttp.HTTPError{
@@ -333,7 +333,7 @@ func TestMarkAsReadByUser(t *testing.T) {
 			},
 		}
 
-		res, err := s.MarkAsReadByUser(context.Background(), uuid, readBy, channelID, "comment")
+		res, err := s.MarkAsReadByUser(context.Background(), uuid, readBy, channelID, comment.AssetTypeComment)
 		assert.Error(t, err)
 		assert.EqualErrorf(t, err, "Comment with uuid='cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0' does not exist", "errors are not equal")
 		assert.False(t, res)
@@ -374,7 +374,7 @@ func TestMarkAsReadByUser(t *testing.T) {
 		}
 
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 		row, err := kivikmock.Document(dbC)
 		assert.Nil(t, err)
 		db.ExpectGet().WithDocID(commentUUID).WillReturn(row)
@@ -384,7 +384,7 @@ func TestMarkAsReadByUser(t *testing.T) {
 			User: userInfo,
 		}
 
-		res, err := s.MarkAsReadByUser(context.Background(), commentUUID, readBy, channelID, "comment")
+		res, err := s.MarkAsReadByUser(context.Background(), commentUUID, readBy, channelID, comment.AssetTypeComment)
 		assert.NoError(t, err)
 		assert.True(t, res)
 	})
@@ -399,9 +399,9 @@ func TestCreateDatabase(t *testing.T) {
 	t.Run("when database already exists", func(t *testing.T) {
 		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
 
-		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(true)
+		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(true)
 
-		existed, err := s.CreateDatabase(context.Background(), channelID, "comment")
+		existed, err := s.CreateDatabase(context.Background(), channelID, comment.AssetTypeComment)
 		assert.Nil(t, err)
 		assert.Equal(t, true, existed)
 	})
@@ -409,13 +409,13 @@ func TestCreateDatabase(t *testing.T) {
 	t.Run("when database does not exist", func(t *testing.T) {
 		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
 
-		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(false)
-		couchMock.ExpectCreateDB().WithName(testutils.DatabaseName(channelID, "comment"))
+		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(false)
+		couchMock.ExpectCreateDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment))
 		db := couchMock.NewDB()
-		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
+		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 		db.ExpectCreateIndex()
 
-		existed, err := s.CreateDatabase(context.Background(), channelID, "comment")
+		existed, err := s.CreateDatabase(context.Background(), channelID, comment.AssetTypeComment)
 		assert.Nil(t, err)
 		assert.Equal(t, false, existed)
 	})
