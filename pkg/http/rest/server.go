@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -32,6 +31,7 @@ type Server struct {
 	updater                 updating.Service
 	repositoryService       repository.Service
 	payloadValidator        validation.PayloadValidator
+	presenter               Presenter
 	ExternalLocationAddress string
 }
 
@@ -71,6 +71,7 @@ func NewServer(cfg Config) *Server {
 		updater:                 cfg.UpdatingService,
 		repositoryService:       cfg.RepositoryService,
 		payloadValidator:        cfg.PayloadValidator,
+		presenter:               NewPresenter(cfg.Logger, cfg.ExternalLocationAddress),
 		ExternalLocationAddress: cfg.ExternalLocationAddress,
 	}
 	s.routes()
@@ -87,17 +88,6 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx = context.WithValue(ctx, authKey, authToken)
 
 	s.router.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// JSONError replies to the request with the specified error message and HTTP code.
-// It encode error string as JSON object {"error":"error_string"} and sets correct header.
-// It does not otherwise end the request; the caller should ensure no further  writes are done to w.
-// The error message should be plain text.
-func (s Server) JSONError(w http.ResponseWriter, error string, code int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	errorJSON, _ := json.Marshal(error)
-	_, _ = fmt.Fprintf(w, `{"error":%s}`+"\n", errorJSON)
 }
 
 type channelIDType int
@@ -117,14 +107,14 @@ func (s Server) assertChannelID(w http.ResponseWriter, r *http.Request) (string,
 	if !ok {
 		eMsg := "could not get channel ID from context"
 		s.logger.Error(eMsg)
-		s.JSONError(w, eMsg, http.StatusInternalServerError)
+		s.presenter.WriteError(w, eMsg, http.StatusInternalServerError)
 		return "", errors.New(eMsg)
 	}
 
 	if channelID == "" {
 		eMsg := "empty channel ID in context"
 		s.logger.Error(eMsg)
-		s.JSONError(w, "'grpc-metadata-space' header missing or invalid", http.StatusUnauthorized)
+		s.presenter.WriteError(w, "'grpc-metadata-space' header missing or invalid", http.StatusUnauthorized)
 		return "", errors.New(eMsg)
 	}
 
@@ -148,14 +138,14 @@ func (s Server) assertAuthToken(w http.ResponseWriter, r *http.Request) (string,
 	if !ok {
 		eMsg := "could not get authorization token from context"
 		s.logger.Error(eMsg)
-		s.JSONError(w, eMsg, http.StatusInternalServerError)
+		s.presenter.WriteError(w, eMsg, http.StatusInternalServerError)
 		return "", errors.New(eMsg)
 	}
 
 	if authToken == "" {
 		eMsg := "empty authorization token in context"
 		s.logger.Error(eMsg)
-		s.JSONError(w, "'authorization' header missing or invalid", http.StatusUnauthorized)
+		s.presenter.WriteError(w, "'authorization' header missing or invalid", http.StatusUnauthorized)
 		return "", errors.New(eMsg)
 	}
 
@@ -183,7 +173,7 @@ func (s *Server) authorize(handlerName, assetType string, action auth.Action, w 
 	if onBehalf := r.Header.Get("on_behalf"); onBehalf != "" {
 		if action, err = action.OnBehalf(); err != nil {
 			eMsg := fmt.Sprintf("Authorization failed: %v", err)
-			s.JSONError(w, eMsg, http.StatusInternalServerError)
+			s.presenter.WriteError(w, eMsg, http.StatusInternalServerError)
 			return err
 		}
 	}
@@ -192,14 +182,14 @@ func (s *Server) authorize(handlerName, assetType string, action auth.Action, w 
 	if err != nil {
 		s.logger.Error(fmt.Sprintf("%s handler failed", handlerName), zap.Error(err))
 		eMsg := fmt.Sprintf("Authorization failed: %v", err)
-		s.JSONError(w, eMsg, http.StatusInternalServerError)
+		s.presenter.WriteError(w, eMsg, http.StatusInternalServerError)
 		return err
 	}
 
 	if !authorized {
 		eMsg := fmt.Sprintf("Authorization failed, action forbidden (%s, %s)", assetType, action)
 		s.logger.Warn(fmt.Sprintf("%s handler failed", handlerName), zap.String("msg", eMsg))
-		s.JSONError(w, eMsg, http.StatusForbidden)
+		s.presenter.WriteError(w, eMsg, http.StatusForbidden)
 		return errors.New(eMsg)
 	}
 

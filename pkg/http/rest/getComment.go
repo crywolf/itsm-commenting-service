@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -11,6 +10,9 @@ import (
 	"go.uber.org/zap"
 )
 
+// GetComment route
+const GetComment ActionType = "/comments/{uuid}"
+
 // swagger:route GET /comments/{uuid} comments GetComment
 // Returns a single comment from the repository
 // responses:
@@ -19,6 +21,9 @@ import (
 //  401: errorResponse401
 //  403: errorResponse403
 //	404: errorResponse404
+
+// GetWorknote route
+const GetWorknote ActionType = "/worknotes/{uuid}"
 
 // swagger:route GET /worknotes/{uuid} worknotes GetWorknote
 // Returns a single worknote from the repository
@@ -42,7 +47,7 @@ func (s *Server) GetComment(assetType string) func(w http.ResponseWriter, r *htt
 		if id == "" {
 			eMsg := "malformed URL: missing resource ID param"
 			s.logger.Warn("GetComment handler failed", zap.String("error", eMsg))
-			s.JSONError(w, eMsg, http.StatusBadRequest)
+			s.presenter.WriteError(w, eMsg, http.StatusBadRequest)
 			return
 		}
 
@@ -58,22 +63,23 @@ func (s *Server) GetComment(assetType string) func(w http.ResponseWriter, r *htt
 			s.logger.Warn("GetComment handler failed", zap.Error(err))
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
-				s.JSONError(w, err.Error(), httpError.StatusCode())
+				s.presenter.WriteError(w, err.Error(), httpError.StatusCode())
 				return
 			}
 
 			s.logger.Error("GetComment handler failed", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusInternalServerError)
+			s.presenter.WriteError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(asset)
-		if err != nil {
-			eMsg := "could not encode JSON response"
-			s.logger.Error(eMsg, zap.Error(err))
-			s.JSONError(w, eMsg, http.StatusInternalServerError)
-			return
+		var action ActionType
+		switch assetType {
+		case assetTypeComment:
+			action = GetComment
+		case assetTypeWorknote:
+			action = GetWorknote
 		}
+
+		s.presenter.WriteGetResponse(r, w, asset, action)
 	}
 }

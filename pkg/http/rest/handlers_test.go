@@ -174,10 +174,11 @@ func TestGetCommentDBMock(t *testing.T) {
 	lister := listing.NewService(s)
 
 	server := rest.NewServer(rest.Config{
-		Addr:           "service.url",
-		Logger:         logger,
-		AuthService:    as,
-		ListingService: lister,
+		Addr:                    "service.url",
+		Logger:                  logger,
+		AuthService:             as,
+		ListingService:          lister,
+		ExternalLocationAddress: "http://service.url",
 	})
 
 	req := httptest.NewRequest("GET", "/comments/"+storedComment.UUID, nil)
@@ -208,7 +209,11 @@ func TestGetCommentDBMock(t *testing.T) {
 			"org_name":"a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
 			"org_display_name":"Kompitech"
 		},
-		"created_at":"2021-04-01T12:34:56+02:00"
+		"created_at":"2021-04-01T12:34:56+02:00",
+		"_links":[
+			{"rel":"self", "href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"},
+			{"rel":"MarkCommentAsReadByUser", "href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433/read_by"}
+		]
 	}`
 	require.JSONEq(t, expectedJSON, string(b), "response does not match")
 }
@@ -297,10 +302,11 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 	lister := listing.NewService(s)
 
 	server := rest.NewServer(rest.Config{
-		Addr:           "service.url",
-		Logger:         logger,
-		AuthService:    as,
-		ListingService: lister,
+		Addr:                    "service.url",
+		Logger:                  logger,
+		AuthService:             as,
+		ListingService:          lister,
+		ExternalLocationAddress: "http://service.url",
 	})
 
 	req := httptest.NewRequest("GET", "/comments/"+storedComment.UUID, nil)
@@ -324,7 +330,11 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 		"uuid":"38316161-3035-4864-ad30-6231392d3433",
 		"text":"Test comment 1",
 		"entity":"incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444",
-		"created_at":"2021-04-01T12:34:56+02:00"
+		"created_at":"2021-04-01T12:34:56+02:00",
+		"_links":[
+			{"rel":"self", "href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"},
+			{"rel":"MarkCommentAsReadByUser", "href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433/read_by"}
+		]
 	}`
 	require.JSONEq(t, expectedJSON, string(b), "response does not match")
 }

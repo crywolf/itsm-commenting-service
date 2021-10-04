@@ -14,6 +14,9 @@ import (
 	"go.uber.org/zap"
 )
 
+// MarkCommentAsReadByUser route
+const MarkCommentAsReadByUser ActionType = "/comments/{uuid}/read_by"
+
 // swagger:route POST /comments/{uuid}/read_by comments MarkCommentAsReadByUser
 // Marks specified comment as read by user
 // responses:
@@ -23,6 +26,9 @@ import (
 //	401: errorResponse401
 //  403: errorResponse403
 //	404: errorResponse404
+
+// MarkWorknoteAsReadByUser route
+const MarkWorknoteAsReadByUser ActionType = "/worknotes/{uuid}/read_by"
 
 // swagger:route POST /worknotes/{uuid}/read_by worknotes MarkWorknoteAsReadByUser
 // Marks specified worknote as read by user
@@ -48,7 +54,7 @@ func (s *Server) MarkCommentAsReadBy(assetType string) func(w http.ResponseWrite
 		if id == "" {
 			eMsg := "malformed URL: missing resource ID param"
 			s.logger.Warn("MarkAsReadBy handler failed", zap.String("error", eMsg))
-			s.JSONError(w, eMsg, http.StatusBadRequest)
+			s.presenter.WriteError(w, eMsg, http.StatusBadRequest)
 			return
 		}
 
@@ -61,7 +67,7 @@ func (s *Server) MarkCommentAsReadBy(assetType string) func(w http.ResponseWrite
 		if !ok {
 			eMsg := "could not get invoking user info from context"
 			s.logger.Error(eMsg)
-			s.JSONError(w, eMsg, http.StatusInternalServerError)
+			s.presenter.WriteError(w, eMsg, http.StatusInternalServerError)
 			return
 		}
 
@@ -81,12 +87,12 @@ func (s *Server) MarkCommentAsReadBy(assetType string) func(w http.ResponseWrite
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
 				s.logger.Warn("MarkAsReadBy handler failed", zap.Error(err))
-				s.JSONError(w, err.Error(), httpError.StatusCode())
+				s.presenter.WriteError(w, err.Error(), httpError.StatusCode())
 				return
 			}
 
 			s.logger.Error("MarkAsReadBy handler failed", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusInternalServerError)
+			s.presenter.WriteError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 

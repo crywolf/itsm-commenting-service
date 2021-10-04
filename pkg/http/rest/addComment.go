@@ -46,7 +46,7 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 		payload, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			s.logger.Error("could not read request body", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusInternalServerError)
+			s.presenter.WriteError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -57,12 +57,12 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 			var errGeneral *validation.ErrGeneral
 			if errors.As(err, &errGeneral) {
 				s.logger.Error("payload validation", zap.Error(err))
-				s.JSONError(w, err.Error(), http.StatusInternalServerError)
+				s.presenter.WriteError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
 			s.logger.Warn("invalid payload", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusBadRequest)
+			s.presenter.WriteError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -70,7 +70,7 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 		if err != nil {
 			eMsg := "could not decode JSON from request"
 			s.logger.Warn(eMsg, zap.Error(err))
-			s.JSONError(w, fmt.Sprintf("%s: %s", eMsg, err.Error()), http.StatusBadRequest)
+			s.presenter.WriteError(w, fmt.Sprintf("%s: %s", eMsg, err.Error()), http.StatusBadRequest)
 			return
 		}
 
@@ -83,7 +83,7 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 		if !ok {
 			eMsg := "could not get invoking user from context"
 			s.logger.Error(eMsg)
-			s.JSONError(w, eMsg, http.StatusInternalServerError)
+			s.presenter.WriteError(w, eMsg, http.StatusInternalServerError)
 			return
 		}
 
@@ -104,12 +104,12 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
 				s.logger.Warn("AddComment handler failed", zap.Error(err))
-				s.JSONError(w, err.Error(), httpError.StatusCode())
+				s.presenter.WriteError(w, err.Error(), httpError.StatusCode())
 				return
 			}
 
 			s.logger.Error("AddComment handler failed", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusInternalServerError)
+			s.presenter.WriteError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -123,7 +123,7 @@ func (s *Server) AddComment(assetType string) func(w http.ResponseWriter, r *htt
 		if err != nil {
 			eMsg := "could not encode JSON response"
 			s.logger.Error(eMsg, zap.Error(err))
-			s.JSONError(w, eMsg, http.StatusInternalServerError)
+			s.presenter.WriteError(w, eMsg, http.StatusInternalServerError)
 			return
 		}
 	}

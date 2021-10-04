@@ -142,10 +142,11 @@ func TestGetCommentHandler(t *testing.T) {
 			Return(retC, nil)
 
 		server := NewServer(Config{
-			Addr:           "service.url",
-			Logger:         logger,
-			AuthService:    as,
-			ListingService: lister,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			ListingService:          lister,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
@@ -177,7 +178,11 @@ func TestGetCommentHandler(t *testing.T) {
 				"org_name":"a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
 				"org_display_name":"Kompitech"
 			},
-			"created_at":"2021-04-01T12:34:56+02:00"
+			"created_at":"2021-04-01T12:34:56+02:00",
+			"_links":[
+				{"rel":"self", "href":"http://service.url/comments/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"},
+				{"rel":"MarkCommentAsReadByUser", "href":"http://service.url/comments/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0/read_by"}
+			]
 		}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
@@ -292,10 +297,11 @@ func TestGetCommentHandler(t *testing.T) {
 			Return(retC, nil)
 
 		server := NewServer(Config{
-			Addr:           "service.url",
-			AuthService:    as,
-			Logger:         logger,
-			ListingService: lister,
+			Addr:                    "service.url",
+			AuthService:             as,
+			Logger:                  logger,
+			ListingService:          lister,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		req := httptest.NewRequest("GET", "/worknotes/"+uuid, nil)
@@ -327,7 +333,12 @@ func TestGetCommentHandler(t *testing.T) {
 				"org_name":"a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
 				"org_display_name":"Kompitech"
 			},
-			"created_at":"2021-04-01T12:34:56+02:00"
+			"created_at":"2021-04-01T12:34:56+02:00",
+			"_links":[
+				{"rel":"self", "href":"http://service.url/worknotes/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"},
+				{"rel":"MarkWorknoteAsReadByUser", "href":"http://service.url/worknotes/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0/read_by"}
+			]
+
 		}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})

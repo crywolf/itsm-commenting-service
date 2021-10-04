@@ -27,7 +27,7 @@ func (s Server) AddUserInfo(next httprouter.Handle, us usersvc.Service) httprout
 			s.logger.Error("AddUserInfo middleware: UserBasicInfo service failed:", zap.Error(err))
 			errMsg := errors.WithMessage(err, "could not retrieve correct user info from user service").Error()
 			statusCode := grpc2http.HTTPStatusFromCode(status.Code(err))
-			s.JSONError(w, errMsg, statusCode)
+			s.presenter.WriteError(w, errMsg, statusCode)
 			return
 		}
 
@@ -35,7 +35,7 @@ func (s Server) AddUserInfo(next httprouter.Handle, us usersvc.Service) httprout
 			s.logger.Error(fmt.Sprintf("AddUserInfo middleware: UserBasicInfo service returned invalid data: %v", userData))
 			errMsg := errors.WithMessage(err, "could not retrieve correct user info from user service").Error()
 			statusCode := grpc2http.HTTPStatusFromCode(status.Code(err))
-			s.JSONError(w, errMsg, statusCode)
+			s.presenter.WriteError(w, errMsg, statusCode)
 			return
 		}
 
