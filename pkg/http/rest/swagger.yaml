@@ -46,6 +46,19 @@ definitions:
     title: Entity represents some external entity reference in the form "<entity>:<UUID>"
     type: object
     x-go-package: github.com/KompiTech/itsm-commenting-service/pkg/domain/entity
+  HypermediaLinks:
+    description: HypermediaLinks contain links to other API calls
+    properties:
+      self:
+        properties:
+          href:
+            format: uri
+            type: string
+            x-go-name: Href
+        type: object
+        x-go-name: Rel
+    type: object
+    x-go-package: github.com/KompiTech/itsm-commenting-service/pkg/http/rest
   ReadBy:
     description: ReadBy stores info when some user read this comment
     properties:
@@ -536,11 +549,51 @@ responses:
   commentResponse:
     description: Data structure representing a single comment or worknote
     schema:
-      $ref: '#/definitions/Comment'
+      properties:
+        _links:
+          $ref: '#/definitions/HypermediaLinks'
+        created_at:
+          description: Time when the resource was created
+          format: date-time
+          type: string
+          x-go-name: CreatedAt
+        created_by:
+          $ref: '#/definitions/UserInfo'
+        entity:
+          description: Entity represents some external entity reference in the form
+            "&lt;entity&gt;:&lt;UUID&gt;"
+          example: incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444
+          format: string
+          type: string
+          x-go-name: Entity
+        external_id:
+          description: ID in external system
+          type: string
+          x-go-name: ExternalID
+        read_by:
+          $ref: '#/definitions/ReadByList'
+        text:
+          description: Content of the comment
+          type: string
+          x-go-name: Text
+        uuid:
+          format: uuid
+          readOnly: true
+          type: string
+          x-go-name: UUID
+      required:
+      - uuid
+      - entity
+      - text
+      - created_at
+      - created_by
+      type: object
   commentsListResponse:
     description: A list of comments or worknotes
     schema:
       properties:
+        _links:
+          $ref: '#/definitions/HypermediaLinks'
         bookmark:
           description: Pagination bookmark
           type: string
