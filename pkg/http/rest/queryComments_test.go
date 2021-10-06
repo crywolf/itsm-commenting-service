@@ -112,7 +112,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		expectedJSON := `{
 			"result":` + string(resultJSON) + `,
-			"_links": [{"rel":"self", "href":"http://service.url/comments?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"}]
+			"_links":{
+				"self":{"href":"http://service.url/comments?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"}
+			}
 		}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
@@ -182,10 +184,10 @@ func TestQueryCommentsHandler(t *testing.T) {
 		expectedJSON := `{
 			"result":` + string(resultJSON) + `,
 			"bookmark":"` + bookmark + `",
-			"_links": [
-				{"rel":"self", "href":"http://service.url/comments"},
-				{"rel":"next", "href":"http://service.url/comments?bookmark=` + bookmark + `"}
-			]
+			"_links":{
+				"self":{"href":"http://service.url/comments"},
+				"next":{"href":"http://service.url/comments?bookmark=` + bookmark + `"}
+			}
 		}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
@@ -369,7 +371,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		expectedJSON := `{
 			"result":` + string(resultJSON) + `,
-			"_links": [{"rel":"self", "href":"http://service.url/worknotes?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"}]
+			"_links":{
+				"self":{"href":"http://service.url/worknotes?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"}
+			}
 		}`
 
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")

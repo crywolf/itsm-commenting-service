@@ -179,10 +179,10 @@ func TestGetCommentHandler(t *testing.T) {
 				"org_display_name":"Kompitech"
 			},
 			"created_at":"2021-04-01T12:34:56+02:00",
-			"_links":[
-				{"rel":"self", "href":"http://service.url/comments/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"},
-				{"rel":"MarkCommentAsReadByUser", "href":"http://service.url/comments/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0/read_by"}
-			]
+			"_links":{
+				"self":{"href":"http://service.url/comments/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"},
+				"MarkCommentAsReadByUser":{"href":"http://service.url/comments/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0/read_by"}
+			}
 		}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
@@ -334,11 +334,10 @@ func TestGetCommentHandler(t *testing.T) {
 				"org_display_name":"Kompitech"
 			},
 			"created_at":"2021-04-01T12:34:56+02:00",
-			"_links":[
-				{"rel":"self", "href":"http://service.url/worknotes/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"},
-				{"rel":"MarkWorknoteAsReadByUser", "href":"http://service.url/worknotes/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0/read_by"}
-			]
-
+			"_links":{
+				"self":{"href":"http://service.url/worknotes/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"},
+				"MarkWorknoteAsReadByUser":{"href":"http://service.url/worknotes/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0/read_by"}
+			}
 		}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})

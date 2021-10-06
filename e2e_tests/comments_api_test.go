@@ -185,7 +185,7 @@ var _ = Describe("Comments API calls", func() {
 
 				body, err := ioutil.ReadAll(resp.Body)
 				Expect(err).To(BeNil())
-				Expect(body).To(MatchJSON(`{"result": [], "_links":[{"rel":"self", "href":"/comments"}]}`))
+				Expect(body).To(MatchJSON(`{"result": [], "_links":{"self":{"href":"/comments"}}}`))
 			})
 		})
 
@@ -244,10 +244,10 @@ var _ = Describe("Comments API calls", func() {
 
 				// hypermedia
 				Expect(bodyMap).To(HaveKey("_links"))
-				links := bodyMap["_links"].([]interface{})
+				links := bodyMap["_links"].(map[string]interface{})
 				Expect(links).To(HaveLen(1))
-				Expect(links[0]).To(HaveKeyWithValue("rel", "self"))
-				Expect(links[0]).To(HaveKeyWithValue("href", "/comments"))
+				Expect(links).To(HaveKey("self"))
+				Expect(links["self"]).To(HaveKeyWithValue("href", "/comments"))
 			})
 		})
 
@@ -320,10 +320,10 @@ var _ = Describe("Comments API calls", func() {
 
 				// hypermedia
 				Expect(bodyMap).To(HaveKey("_links"))
-				links := bodyMap["_links"].([]interface{})
+				links := bodyMap["_links"].(map[string]interface{})
 				Expect(links).To(HaveLen(1))
-				Expect(links[0]).To(HaveKeyWithValue("rel", "self"))
-				Expect(links[0]).To(HaveKeyWithValue("href", "/comments"+query))
+				Expect(links).To(HaveKey("self"))
+				Expect(links["self"]).To(HaveKeyWithValue("href", "/comments"+query))
 			})
 
 			Context("with also 'limit' param in query", func() {
@@ -363,13 +363,13 @@ var _ = Describe("Comments API calls", func() {
 
 					// hypermedia
 					Expect(bodyMap).To(HaveKey("_links"))
-					links := bodyMap["_links"].([]interface{})
+					links := bodyMap["_links"].(map[string]interface{})
 					Expect(links).To(HaveLen(2))
-					Expect(links[0]).To(HaveKeyWithValue("rel", "self"))
-					Expect(links[0]).To(HaveKeyWithValue("href", "/comments"+query))
+					Expect(links).To(HaveKey("self"))
+					Expect(links["self"]).To(HaveKeyWithValue("href", "/comments"+query))
 
-					Expect(links[1]).To(HaveKeyWithValue("rel", "next"))
-					Expect(links[1]).To(HaveKeyWithValue("href", "/comments"+query+"&bookmark="+bookmark))
+					Expect(links).To(HaveKey("next"))
+					Expect(links["next"]).To(HaveKeyWithValue("href", "/comments"+query+"&bookmark="+bookmark))
 				})
 
 				When("called again with returned bookmark", func() {
@@ -406,10 +406,10 @@ var _ = Describe("Comments API calls", func() {
 
 						// hypermedia
 						Expect(bodyMap).To(HaveKey("_links"))
-						links := bodyMap["_links"].([]interface{})
+						links := bodyMap["_links"].(map[string]interface{})
 						Expect(links).To(HaveLen(1))
-						Expect(links[0]).To(HaveKeyWithValue("rel", "self"))
-						Expect(links[0]).To(HaveKeyWithValue("href", "/comments"+query))
+						Expect(links).To(HaveKey("self"))
+						Expect(links["self"]).To(HaveKeyWithValue("href", "/comments"+query))
 					})
 				})
 			})
@@ -488,13 +488,13 @@ var _ = Describe("Comments API calls", func() {
 
 				// hypermedia
 				Expect(bodyMap).To(HaveKey("_links"))
-				links := bodyMap["_links"].([]interface{})
+				links := bodyMap["_links"].(map[string]interface{})
 				Expect(links).To(HaveLen(2))
-				Expect(links[0]).To(HaveKeyWithValue("rel", "self"))
-				Expect(links[0]).To(HaveKeyWithValue("href", "/comments/"+uuid))
+				Expect(links).To(HaveKey("self"))
+				Expect(links["self"]).To(HaveKeyWithValue("href", "/comments/"+uuid))
 
-				Expect(links[1]).To(HaveKeyWithValue("rel", "MarkCommentAsReadByUser"))
-				Expect(links[1]).To(HaveKeyWithValue("href", "/comments/"+uuid+"/read_by"))
+				Expect(links).To(HaveKey("MarkCommentAsReadByUser"))
+				Expect(links["MarkCommentAsReadByUser"]).To(HaveKeyWithValue("href", "/comments/"+uuid+"/read_by"))
 			})
 		})
 	})

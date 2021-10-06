@@ -210,10 +210,10 @@ func TestGetCommentDBMock(t *testing.T) {
 			"org_display_name":"Kompitech"
 		},
 		"created_at":"2021-04-01T12:34:56+02:00",
-		"_links":[
-			{"rel":"self", "href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"},
-			{"rel":"MarkCommentAsReadByUser", "href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433/read_by"}
-		]
+		"_links":{
+			"self":{"href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"},
+			"MarkCommentAsReadByUser":{"href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433/read_by"}
+		}
 	}`
 	require.JSONEq(t, expectedJSON, string(b), "response does not match")
 }
@@ -331,10 +331,10 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 		"text":"Test comment 1",
 		"entity":"incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444",
 		"created_at":"2021-04-01T12:34:56+02:00",
-		"_links":[
-			{"rel":"self", "href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"},
-			{"rel":"MarkCommentAsReadByUser", "href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433/read_by"}
-		]
+		"_links":{
+			"self":{"href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"},
+			"MarkCommentAsReadByUser":{"href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433/read_by"}
+		}
 	}`
 	require.JSONEq(t, expectedJSON, string(b), "response does not match")
 }

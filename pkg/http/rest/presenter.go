@@ -50,23 +50,22 @@ func (p presenter) WriteGetResponse(_ *http.Request, w http.ResponseWriter, c co
 
 	resourceURI := fmt.Sprintf("%s%s", p.serverAddr, strings.ReplaceAll(action.String(), "{uuid}", c.UUID))
 
-	links := []map[string]interface{}{
-		{"rel": "self", "href": resourceURI},
+	links := map[string]interface{}{
+		"self": map[string]string{"href": resourceURI},
 	}
 
 	allowedLinks := hypermedia.AllowedLinksForComment(c, assetType)
-	for _, allowedLink := range allowedLinks {
-		rel := allowedLink
-		action, err := p.mapLinkNameToAction(allowedLink)
+	for _, linkName := range allowedLinks {
+		action, err := p.mapLinkNameToAction(linkName)
 		if err != nil {
 			p.WriteError(w, err.Error(), http.StatusInternalServerError)
 		}
 
 		href := fmt.Sprintf("%s%s", p.serverAddr, strings.ReplaceAll(action.String(), "{uuid}", c.UUID))
 
-		links = append(links, map[string]interface{}{
-			"rel": rel, "href": href,
-		})
+		links[linkName] = map[string]string{
+			"href": href,
+		}
 	}
 
 	p.encodeJSON(w, resourceContainer{Comment: c, Links: links})
@@ -89,14 +88,15 @@ func (p presenter) WriteListResponse(r *http.Request, w http.ResponseWriter, lis
 		resourceURI = fmt.Sprintf("%s?%s", resourceURI, r.URL.RawQuery)
 	}
 
-	links := []map[string]interface{}{
-		{"rel": "self", "href": resourceURI},
+	links := map[string]interface{}{
+		"self": map[string]string{"href": resourceURI},
 	}
 
 	if list.Bookmark != "" {
 		bookmark := fmt.Sprintf("%sbookmark=%s", delimiter, list.Bookmark)
-		next := map[string]interface{}{"rel": "next", "href": resourceURI + bookmark}
-		links = append(links, next)
+		links["next"] = map[string]string{
+			"href": resourceURI + bookmark,
+		}
 	}
 
 	p.encodeJSON(w, listContainer{QueryResult: list, Links: links})
@@ -149,10 +149,10 @@ func (p presenter) mapLinkNameToAction(name string) (ActionType, error) {
 
 type resourceContainer struct {
 	comment.Comment
-	Links []map[string]interface{} `json:"_links"`
+	Links map[string]interface{} `json:"_links"`
 }
 
 type listContainer struct {
 	listing.QueryResult
-	Links []map[string]interface{} `json:"_links"`
+	Links map[string]interface{} `json:"_links"`
 }
