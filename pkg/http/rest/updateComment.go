@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -63,7 +62,7 @@ func (s *Server) MarkCommentAsReadBy(assetType comment.AssetType) func(w http.Re
 			return
 		}
 
-		user, ok := s.UserInfoFromContext(r.Context())
+		user, ok := s.UserInfoFromRequest(r)
 		if !ok {
 			eMsg := "could not get invoking user info from context"
 			s.logger.Error(eMsg)
@@ -82,7 +81,7 @@ func (s *Server) MarkCommentAsReadBy(assetType comment.AssetType) func(w http.Re
 			},
 		}
 
-		alreadyMarked, err := s.updater.MarkAsReadByUser(context.Background(), id, readBy, channelID, assetType)
+		alreadyMarked, err := s.updater.MarkAsReadByUser(r.Context(), id, readBy, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {

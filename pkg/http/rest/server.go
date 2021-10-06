@@ -94,16 +94,16 @@ type channelIDType int
 
 var channelIDKey channelIDType
 
-// channelIDFromContext returns channelID stored in ctx, if any.
-func channelIDFromContext(ctx context.Context) (string, bool) {
-	ch, ok := ctx.Value(channelIDKey).(string)
+// channelIDFromRequest returns channelID stored in request's context, if any.
+func channelIDFromRequest(r *http.Request) (string, bool) {
+	ch, ok := r.Context().Value(channelIDKey).(string)
 	return ch, ok
 }
 
 // assertChannelID writes error message to response and returns error if channelID cannot be determined,
 // otherwise it returns channelID
 func (s Server) assertChannelID(w http.ResponseWriter, r *http.Request) (string, error) {
-	channelID, ok := channelIDFromContext(r.Context())
+	channelID, ok := channelIDFromRequest(r)
 	if !ok {
 		eMsg := "could not get channel ID from context"
 		s.logger.Error(eMsg)
@@ -125,16 +125,16 @@ type authType int
 
 var authKey authType
 
-// authTokenFromContext returns authorization token stored in ctx, if any.
-func authTokenFromContext(ctx context.Context) (string, bool) {
-	ch, ok := ctx.Value(authKey).(string)
+// authTokenFromRequest returns authorization token stored in request's context, if any.
+func authTokenFromRequest(r *http.Request) (string, bool) {
+	ch, ok := r.Context().Value(authKey).(string)
 	return ch, ok
 }
 
 // assertAuthToken writes error message to response and returns error if authorization token cannot be determined,
 // otherwise it returns authorization token
 func (s Server) assertAuthToken(w http.ResponseWriter, r *http.Request) (string, error) {
-	authToken, ok := authTokenFromContext(r.Context())
+	authToken, ok := authTokenFromRequest(r)
 	if !ok {
 		eMsg := "could not get authorization token from context"
 		s.logger.Error(eMsg)

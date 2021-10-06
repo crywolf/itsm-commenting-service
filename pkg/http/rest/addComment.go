@@ -79,7 +79,7 @@ func (s *Server) AddComment(assetType comment.AssetType) func(w http.ResponseWri
 			return
 		}
 
-		user, ok := s.UserInfoFromContext(r.Context())
+		user, ok := s.UserInfoFromRequest(r)
 		if !ok {
 			eMsg := "could not get invoking user from context"
 			s.logger.Error(eMsg)
@@ -97,9 +97,7 @@ func (s *Server) AddComment(assetType comment.AssetType) func(w http.ResponseWri
 			OrgDisplayName: user.OrgDisplayName,
 		}
 
-		ctx := r.Context()
-
-		storedComment, err := s.adder.AddComment(ctx, newComment, channelID, assetType)
+		storedComment, err := s.adder.AddComment(r.Context(), newComment, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {

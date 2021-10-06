@@ -57,9 +57,7 @@ func (s *Server) GetComment(assetType comment.AssetType) func(w http.ResponseWri
 			return
 		}
 
-		ctx := r.Context()
-
-		asset, err := s.lister.GetComment(ctx, id, channelID, assetType)
+		asset, err := s.lister.GetComment(r.Context(), id, channelID, assetType)
 		if err != nil {
 			s.logger.Warn("GetComment handler failed", zap.Error(err))
 			var httpError *repository.Error

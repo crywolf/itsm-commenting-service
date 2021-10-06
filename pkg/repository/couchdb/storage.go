@@ -114,7 +114,7 @@ func (s *DBStorage) Client() *kivik.Client {
 	return s.client
 }
 
-// AddComment saves the given comment to the database and returns it's ID
+// AddComment saves the given comment to the database and returns it
 func (s *DBStorage) AddComment(ctx context.Context, c comment.Comment, channelID string, assetType comment.AssetType) (*comment.Comment, error) {
 	dbName := databaseName(channelID, assetType)
 

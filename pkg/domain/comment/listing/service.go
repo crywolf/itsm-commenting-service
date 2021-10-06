@@ -8,10 +8,10 @@ import (
 
 // Service provides comment listing operations
 type Service interface {
-	// GetComment returns the comment with given ID
+	// GetComment returns the comment with given ID from the repository
 	GetComment(ctx context.Context, id, channelID string, assetType comment.AssetType) (comment.Comment, error)
 
-	// QueryComments finds documents using a declarative JSON querying syntax
+	// QueryComments finds documents in the repository using a declarative JSON querying syntax
 	QueryComments(ctx context.Context, query map[string]interface{}, channelID string, assetType comment.AssetType) (QueryResult, error)
 }
 
@@ -21,7 +21,7 @@ type QueryResult struct {
 	Result   []map[string]interface{} `json:"result"`
 }
 
-// Repository provides access to the comment storage
+// Repository provides reading access to the comments repository
 type Repository interface {
 	// GetComment returns the comment with given ID
 	GetComment(ctx context.Context, id, channelID string, assetType comment.AssetType) (comment.Comment, error)
@@ -39,12 +39,10 @@ type service struct {
 	r Repository
 }
 
-// GetComment returns the comment with given ID
 func (s *service) GetComment(ctx context.Context, id, channelID string, assetType comment.AssetType) (comment.Comment, error) {
 	return s.r.GetComment(ctx, id, channelID, assetType)
 }
 
-// QueryComments finds documents using a declarative JSON querying syntax
 func (s *service) QueryComments(ctx context.Context, query map[string]interface{}, channelID string, assetType comment.AssetType) (QueryResult, error) {
 	return s.r.QueryComments(ctx, query, channelID, assetType)
 }

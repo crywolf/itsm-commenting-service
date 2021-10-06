@@ -73,10 +73,8 @@ func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, 
 
 		bothExisted := true
 
-		ctx := r.Context()
-
 		for _, assetType := range assetTypes {
-			alreadyExisted, err := s.repositoryService.CreateDatabase(ctx, request.ChannelID, assetType)
+			alreadyExisted, err := s.repositoryService.CreateDatabase(r.Context(), request.ChannelID, assetType)
 			if err != nil {
 				var httpError *repository.Error
 				if errors.As(err, &httpError) {
