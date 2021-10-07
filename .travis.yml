@@ -10,5 +10,6 @@ env:
   - GOPRIVATE=github.com/KompiTech/*
 before_install:
   - git config --global url."git@github.com:KompiTech/".insteadOf "https://github.com/KompiTech/"
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 script:
   - make test-all
