@@ -55,6 +55,7 @@ var _ = Describe("Comments API calls", func() {
 			It("should return 'Created' response", func() {
 				Expect(resp).To(HaveHTTPStatus(http.StatusCreated))
 				Expect(resp.Header.Get("Location")).To(ContainSubstring(server.URL + "/comments/"))
+				Expect(resp.Header.Get("Content-Type")).To(Equal("application/json"))
 				Expect(ioutil.ReadAll(resp.Body)).NotTo(BeEmpty())
 			})
 
@@ -184,7 +185,7 @@ var _ = Describe("Comments API calls", func() {
 
 				body, err := ioutil.ReadAll(resp.Body)
 				Expect(err).To(BeNil())
-				Expect(body).To(MatchJSON(`{"result": []}`))
+				Expect(body).To(MatchJSON(`{"result": [], "_links":{"self":{"href":"/comments"}}}`))
 			})
 		})
 
@@ -240,6 +241,13 @@ var _ = Describe("Comments API calls", func() {
 
 					Expect(createdBy).To(MatchJSON(expectedMockUserJSON))
 				}
+
+				// hypermedia
+				Expect(bodyMap).To(HaveKey("_links"))
+				links := bodyMap["_links"].(map[string]interface{})
+				Expect(links).To(HaveLen(1))
+				Expect(links).To(HaveKey("self"))
+				Expect(links["self"]).To(HaveKeyWithValue("href", "/comments"))
 			})
 		})
 
@@ -250,6 +258,7 @@ var _ = Describe("Comments API calls", func() {
 				if skipDBReset {
 					return
 				}
+				skipDBReset = true
 
 				destroyTestDatabases(storage)
 				createTestDatabases()
@@ -260,6 +269,7 @@ var _ = Describe("Comments API calls", func() {
 				}`)
 				createComment(payload1)
 
+				// this one is for other entity
 				payload2 := []byte(`{
 					"entity":"request:cdfe52ca-0b7a-4afe-ae8d-ccb1446eae4a",
 					"text": "Comment 2"
@@ -307,6 +317,13 @@ var _ = Describe("Comments API calls", func() {
 
 					Expect(createdBy).To(MatchJSON(expectedMockUserJSON))
 				}
+
+				// hypermedia
+				Expect(bodyMap).To(HaveKey("_links"))
+				links := bodyMap["_links"].(map[string]interface{})
+				Expect(links).To(HaveLen(1))
+				Expect(links).To(HaveKey("self"))
+				Expect(links["self"]).To(HaveKeyWithValue("href", "/comments"+query))
 			})
 
 			Context("with also 'limit' param in query", func() {
@@ -343,11 +360,19 @@ var _ = Describe("Comments API calls", func() {
 
 					Expect(bodyMap).To(HaveKey("bookmark"))
 					bookmark = bodyMap["bookmark"].(string)
+
+					// hypermedia
+					Expect(bodyMap).To(HaveKey("_links"))
+					links := bodyMap["_links"].(map[string]interface{})
+					Expect(links).To(HaveLen(2))
+					Expect(links).To(HaveKey("self"))
+					Expect(links["self"]).To(HaveKeyWithValue("href", "/comments"+query))
+
+					Expect(links).To(HaveKey("next"))
+					Expect(links["next"]).To(HaveKeyWithValue("href", "/comments"+query+"&bookmark="+bookmark))
 				})
 
 				When("called again with returned bookmark", func() {
-					skipDBReset = true
-
 					BeforeEach(func() {
 						query = query + "&bookmark=" + bookmark
 					})
@@ -378,6 +403,13 @@ var _ = Describe("Comments API calls", func() {
 						}
 
 						Expect(bodyMap).ToNot(HaveKey("bookmark")) // last page
+
+						// hypermedia
+						Expect(bodyMap).To(HaveKey("_links"))
+						links := bodyMap["_links"].(map[string]interface{})
+						Expect(links).To(HaveLen(1))
+						Expect(links).To(HaveKey("self"))
+						Expect(links["self"]).To(HaveKeyWithValue("href", "/comments"+query))
 					})
 				})
 			})
@@ -453,6 +485,16 @@ var _ = Describe("Comments API calls", func() {
 				Expect(err).To(BeNil())
 
 				Expect(createdBy).To(MatchJSON(expectedMockUserJSON))
+
+				// hypermedia
+				Expect(bodyMap).To(HaveKey("_links"))
+				links := bodyMap["_links"].(map[string]interface{})
+				Expect(links).To(HaveLen(2))
+				Expect(links).To(HaveKey("self"))
+				Expect(links["self"]).To(HaveKeyWithValue("href", "/comments/"+uuid))
+
+				Expect(links).To(HaveKey("MarkCommentAsReadByUser"))
+				Expect(links["MarkCommentAsReadByUser"]).To(HaveKeyWithValue("href", "/comments/"+uuid+"/read_by"))
 			})
 		})
 	})

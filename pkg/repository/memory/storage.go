@@ -24,7 +24,7 @@ type Storage struct {
 }
 
 // AddComment saves the given asset to the repository and returns it's ID
-func (m *Storage) AddComment(_ context.Context, c comment.Comment, _, _ string) (*comment.Comment, error) {
+func (m *Storage) AddComment(_ context.Context, c comment.Comment, _ string, _ comment.AssetType) (*comment.Comment, error) {
 	id, err := repository.GenerateUUID(m.Rand)
 	if err != nil {
 		log.Fatal(err)
@@ -54,7 +54,7 @@ func (m *Storage) AddComment(_ context.Context, c comment.Comment, _, _ string) 
 }
 
 // GetComment returns a comment with the specified ID
-func (m *Storage) GetComment(ctx context.Context, id, channelID, assetType string) (comment.Comment, error) {
+func (m *Storage) GetComment(ctx context.Context, id, _ string, _ comment.AssetType) (comment.Comment, error) {
 	var c comment.Comment
 
 	for i := range m.comments {
@@ -118,7 +118,7 @@ func (m *Storage) GetAllComments() []comment.Comment {
 }
 
 // MarkAsReadByUser adds user info to read_by array to comment with specified ID
-func (m *Storage) MarkAsReadByUser(_ context.Context, id string, readBy comment.ReadBy, channelID, assetType string) (bool, error) {
+func (m *Storage) MarkAsReadByUser(_ context.Context, id string, readBy comment.ReadBy, _ string, _ comment.AssetType) (bool, error) {
 	for i := range m.comments {
 		if m.comments[i].ID == id {
 			sc := m.comments[i] // stored comment
@@ -151,6 +151,6 @@ func (m *Storage) MarkAsReadByUser(_ context.Context, id string, readBy comment.
 }
 
 // QueryComments is not implemented
-func (m *Storage) QueryComments(_ context.Context, _ map[string]interface{}, _, _ string) (listing.QueryResult, error) {
+func (m *Storage) QueryComments(_ context.Context, _ map[string]interface{}, _ string, _ comment.AssetType) (listing.QueryResult, error) {
 	panic("not implemented")
 }

@@ -55,6 +55,7 @@ var _ = Describe("Worknotes API calls", func() {
 			It("should return 'Created' response", func() {
 				Expect(resp).To(HaveHTTPStatus(http.StatusCreated))
 				Expect(resp.Header.Get("Location")).To(ContainSubstring(server.URL + "/worknotes/"))
+				Expect(resp.Header.Get("Content-Type")).To(Equal("application/json"))
 				Expect(ioutil.ReadAll(resp.Body)).NotTo(BeEmpty())
 			})
 
@@ -184,7 +185,7 @@ var _ = Describe("Worknotes API calls", func() {
 
 				body, err := ioutil.ReadAll(resp.Body)
 				Expect(err).To(BeNil())
-				Expect(body).To(MatchJSON(`{"result": []}`))
+				Expect(body).To(MatchJSON(`{"result": [], "_links":{"self":{"href":"/worknotes"}}}`))
 			})
 		})
 
@@ -240,6 +241,13 @@ var _ = Describe("Worknotes API calls", func() {
 
 					Expect(createdBy).To(MatchJSON(expectedMockUserJSON))
 				}
+
+				// hypermedia
+				Expect(bodyMap).To(HaveKey("_links"))
+				links := bodyMap["_links"].(map[string]interface{})
+				Expect(links).To(HaveLen(1))
+				Expect(links).To(HaveKey("self"))
+				Expect(links["self"]).To(HaveKeyWithValue("href", "/worknotes"))
 			})
 		})
 
@@ -250,6 +258,7 @@ var _ = Describe("Worknotes API calls", func() {
 				if skipDBReset {
 					return
 				}
+				skipDBReset = true
 
 				destroyTestDatabases(storage)
 				createTestDatabases()
@@ -260,6 +269,7 @@ var _ = Describe("Worknotes API calls", func() {
 				}`)
 				createWorknote(payload1)
 
+				// this one is for other entity
 				payload2 := []byte(`{
 					"entity":"request:cdfe52ca-0b7a-4afe-ae8d-ccb1446eae4a",
 					"text": "Worknote 2"
@@ -307,6 +317,13 @@ var _ = Describe("Worknotes API calls", func() {
 
 					Expect(createdBy).To(MatchJSON(expectedMockUserJSON))
 				}
+
+				// hypermedia
+				Expect(bodyMap).To(HaveKey("_links"))
+				links := bodyMap["_links"].(map[string]interface{})
+				Expect(links).To(HaveLen(1))
+				Expect(links).To(HaveKey("self"))
+				Expect(links["self"]).To(HaveKeyWithValue("href", "/worknotes"+query))
 			})
 
 			Context("with also 'limit' param in query", func() {
@@ -343,11 +360,19 @@ var _ = Describe("Worknotes API calls", func() {
 
 					Expect(bodyMap).To(HaveKey("bookmark"))
 					bookmark = bodyMap["bookmark"].(string)
+
+					// hypermedia
+					Expect(bodyMap).To(HaveKey("_links"))
+					links := bodyMap["_links"].(map[string]interface{})
+					Expect(links).To(HaveLen(2))
+					Expect(links).To(HaveKey("self"))
+					Expect(links["self"]).To(HaveKeyWithValue("href", "/worknotes"+query))
+
+					Expect(links).To(HaveKey("next"))
+					Expect(links["next"]).To(HaveKeyWithValue("href", "/worknotes"+query+"&bookmark="+bookmark))
 				})
 
 				When("called again with returned bookmark", func() {
-					skipDBReset = true
-
 					BeforeEach(func() {
 						query = query + "&bookmark=" + bookmark
 					})
@@ -378,6 +403,13 @@ var _ = Describe("Worknotes API calls", func() {
 						}
 
 						Expect(bodyMap).ToNot(HaveKey("bookmark")) // last page
+
+						// hypermedia
+						Expect(bodyMap).To(HaveKey("_links"))
+						links := bodyMap["_links"].(map[string]interface{})
+						Expect(links).To(HaveLen(1))
+						Expect(links).To(HaveKey("self"))
+						Expect(links["self"]).To(HaveKeyWithValue("href", "/worknotes"+query))
 					})
 				})
 			})
@@ -453,6 +485,16 @@ var _ = Describe("Worknotes API calls", func() {
 				Expect(err).To(BeNil())
 
 				Expect(createdBy).To(MatchJSON(expectedMockUserJSON))
+
+				// hypermedia
+				Expect(bodyMap).To(HaveKey("_links"))
+				links := bodyMap["_links"].(map[string]interface{})
+				Expect(links).To(HaveLen(2))
+				Expect(links).To(HaveKey("self"))
+				Expect(links["self"]).To(HaveKeyWithValue("href", "/worknotes/"+uuid))
+
+				Expect(links).To(HaveKey("MarkWorknoteAsReadByUser"))
+				Expect(links["MarkWorknoteAsReadByUser"]).To(HaveKeyWithValue("href", "/worknotes/"+uuid+"/read_by"))
 			})
 		})
 	})

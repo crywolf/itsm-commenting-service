@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/adding"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/KompiTech/itsm-commenting-service/pkg/event"
@@ -86,8 +87,8 @@ func TestAddCommentHandler(t *testing.T) {
 
 	t.Run("when request is not valid JSON", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		assetType := "comment"
-		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
+		assetType := comment.AssetTypeComment
+		as.On("Enforce", assetType.String(), auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -132,8 +133,8 @@ func TestAddCommentHandler(t *testing.T) {
 
 	t.Run("when request is not valid ('uuid' key present, empty 'text' key)", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		assetType := "comment"
-		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
+		assetType := comment.AssetTypeComment
+		as.On("Enforce", assetType.String(), auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -182,8 +183,8 @@ func TestAddCommentHandler(t *testing.T) {
 
 	t.Run("when validator fails (ie. returns general error", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		assetType := "comment"
-		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
+		assetType := comment.AssetTypeComment
+		as.On("Enforce", assetType.String(), auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -232,9 +233,9 @@ func TestAddCommentHandler(t *testing.T) {
 	})
 
 	t.Run("when request is valid", func(t *testing.T) {
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -278,9 +279,9 @@ func TestAddCommentHandler(t *testing.T) {
 	})
 
 	t.Run("when repository returns conflict error (ie. trying to add already stored comment)", func(t *testing.T) {
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -332,9 +333,9 @@ func TestAddCommentHandler(t *testing.T) {
 	})
 
 	t.Run("when repository returns some other general error", func(t *testing.T) {
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -388,9 +389,9 @@ func TestAddCommentHandler(t *testing.T) {
 	t.Run("when event could not be published (event service returns error)", func(t *testing.T) {
 		orgID := "a897a407-e41b-4b14-924a-39f5d5a8038f"
 
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)
@@ -499,9 +500,9 @@ func TestAddCommentHandler(t *testing.T) {
 
 	// worknote
 	t.Run("when worknote was not stored yet", func(t *testing.T) {
-		assetType := "worknote"
+		assetType := comment.AssetTypeWorknote
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.CreateAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)

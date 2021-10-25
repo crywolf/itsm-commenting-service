@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment/listing"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
@@ -75,9 +76,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 			t.Fatalf("could not marshall moc result: %v", err)
 		}
 
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -85,10 +86,11 @@ func TestQueryCommentsHandler(t *testing.T) {
 			Return(listing.QueryResult{Result: result}, nil)
 
 		server := NewServer(Config{
-			Addr:           "service.url",
-			Logger:         logger,
-			AuthService:    as,
-			ListingService: lister,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			ListingService:          lister,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		req := httptest.NewRequest("GET", "/comments?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", nil)
@@ -108,7 +110,12 @@ func TestQueryCommentsHandler(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode, "Status code")
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
-		expectedJSON := `{"result":` + string(resultJSON) + `}`
+		expectedJSON := `{
+			"result":` + string(resultJSON) + `,
+			"_links":{
+				"self":{"href":"http://service.url/comments?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"}
+			}
+		}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 
@@ -136,9 +143,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 			t.Fatalf("could not marshall moc result: %v", err)
 		}
 
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -150,10 +157,11 @@ func TestQueryCommentsHandler(t *testing.T) {
 			}, nil)
 
 		server := NewServer(Config{
-			Addr:           "service.url",
-			Logger:         logger,
-			AuthService:    as,
-			ListingService: lister,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			ListingService:          lister,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		req := httptest.NewRequest("GET", "/comments", nil)
@@ -175,7 +183,11 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		expectedJSON := `{
 			"result":` + string(resultJSON) + `,
-			"bookmark":"` + bookmark + `"
+			"bookmark":"` + bookmark + `",
+			"_links":{
+				"self":{"href":"http://service.url/comments"},
+				"next":{"href":"http://service.url/comments?bookmark=` + bookmark + `"}
+			}
 		}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
@@ -216,9 +228,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 	})
 
 	t.Run("when repository returns Bad Request error", func(t *testing.T) {
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -260,9 +272,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 	})
 
 	t.Run("when repository returns some other error", func(t *testing.T) {
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -323,9 +335,9 @@ func TestQueryCommentsHandler(t *testing.T) {
 			t.Fatalf("could not marshall moc result: %v", err)
 		}
 
-		assetType := "worknote"
+		assetType := comment.AssetTypeWorknote
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 		lister := new(mocks.ListingMock)
 
@@ -333,10 +345,11 @@ func TestQueryCommentsHandler(t *testing.T) {
 			Return(listing.QueryResult{Result: result}, nil)
 
 		server := NewServer(Config{
-			Addr:           "service.url",
-			Logger:         logger,
-			AuthService:    as,
-			ListingService: lister,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			ListingService:          lister,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		req := httptest.NewRequest("GET", "/worknotes?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e", nil)
@@ -356,7 +369,13 @@ func TestQueryCommentsHandler(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode, "Status code")
 		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"), "Content-Type header")
 
-		expectedJSON := `{"result":` + string(resultJSON) + `}`
+		expectedJSON := `{
+			"result":` + string(resultJSON) + `,
+			"_links":{
+				"self":{"href":"http://service.url/worknotes?entity=request:7e0d38d1-e5f5-4211-b2aa-3b142e4da80e"}
+			}
+		}`
+
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 }

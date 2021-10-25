@@ -9,12 +9,16 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/julienschmidt/httprouter"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
+
+// ListComments route
+const ListComments ActionType = "/comments"
 
 // swagger:route GET /comments comments ListComments
 // Returns a list of comments from the repository filtered by some parameters
@@ -23,6 +27,9 @@ import (
 //	400: errorResponse400
 //  401: errorResponse401
 //  403: errorResponse403
+
+// ListWorknotes route
+const ListWorknotes ActionType = "/worknotes"
 
 // swagger:route GET /worknotes worknotes ListWorknotes
 // Returns a list of worknotes from the repository filtered by some parameters
@@ -33,7 +40,7 @@ import (
 //  403: errorResponse403
 
 // QueryComments returns handler for listing or querying comments|worknotes
-func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (s *Server) QueryComments(assetType comment.AssetType) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		s.logger.Info("QueryComments handler called")
 		span, ctx := opentracing.StartSpanFromContext(r.Context(), "itsm-commenting-service-query")
@@ -41,7 +48,7 @@ func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *
 
 		r = r.WithContext(ctx)
 
-		if err := s.authorize("QueryComments", assetType, auth.ReadAction, w, r); err != nil {
+		if err := s.authorize("QueryComments", assetType.String(), auth.ReadAction, w, r); err != nil {
 			return
 		}
 
@@ -54,7 +61,7 @@ func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *
 			if err != nil {
 				msg := "could not unescape JSON query from request"
 				s.logger.Warn(msg, zap.Error(err))
-				s.JSONError(w, fmt.Sprintf("%s: %v", msg, err.Error()), http.StatusBadRequest)
+				s.presenter.WriteError(w, fmt.Sprintf("%s: %v", msg, err.Error()), http.StatusBadRequest)
 				return
 			}
 
@@ -63,7 +70,7 @@ func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *
 			if err != nil {
 				msg := "could not decode JSON query from request"
 				s.logger.Warn(msg, zap.Error(err))
-				s.JSONError(w, fmt.Sprintf("%s: %v", msg, err.Error()), http.StatusBadRequest)
+				s.presenter.WriteError(w, fmt.Sprintf("%s: %v", msg, err.Error()), http.StatusBadRequest)
 				return
 			}
 		}
@@ -97,26 +104,20 @@ func (s *Server) QueryComments(assetType string) func(w http.ResponseWriter, r *
 			return
 		}
 
-		qResult, err := s.lister.QueryComments(ctx, query, channelID, assetType)
+		qResult, err := s.lister.QueryComments(r.Context(), query, channelID, assetType)
 		if err != nil {
 			var httpError *repository.Error
 			if errors.As(err, &httpError) {
 				s.logger.Error("Repository error", zap.Error(err))
-				s.JSONError(w, err.Error(), httpError.StatusCode())
+				s.presenter.WriteError(w, err.Error(), httpError.StatusCode())
 				return
 			}
 
 			s.logger.Error("GetComment handler failed", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusInternalServerError)
+			s.presenter.WriteError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(qResult)
-		if err != nil {
-			s.logger.Error("could not encode JSON response", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		s.presenter.WriteListResponse(r, w, qResult, assetType)
 	}
 }

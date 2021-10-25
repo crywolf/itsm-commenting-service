@@ -35,7 +35,7 @@ func TestGetCommentService(t *testing.T) {
 	}
 
 	lister := listing.NewService(mockStorage)
-	assetType := "comment"
+	assetType := comment.AssetTypeComment
 
 	ctx := context.Background()
 

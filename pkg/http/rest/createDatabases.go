@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/repository"
 	"github.com/KompiTech/itsm-commenting-service/pkg/validation"
@@ -41,7 +42,7 @@ func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, 
 		payload, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			s.logger.Error("could not read request body", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusInternalServerError)
+			s.presenter.WriteError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -50,12 +51,12 @@ func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, 
 			var errGeneral *validation.ErrGeneral
 			if errors.As(err, &errGeneral) {
 				s.logger.Error("payload validation", zap.Error(err))
-				s.JSONError(w, err.Error(), http.StatusInternalServerError)
+				s.presenter.WriteError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
 			s.logger.Warn("invalid payload", zap.Error(err))
-			s.JSONError(w, err.Error(), http.StatusBadRequest)
+			s.presenter.WriteError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -64,28 +65,26 @@ func (s *Server) CreateDatabases() func(w http.ResponseWriter, r *http.Request, 
 		if err != nil {
 			eMsg := "could not decode JSON from request"
 			s.logger.Warn(eMsg, zap.Error(err))
-			s.JSONError(w, fmt.Sprintf("%s: %s", eMsg, err.Error()), http.StatusBadRequest)
+			s.presenter.WriteError(w, fmt.Sprintf("%s: %s", eMsg, err.Error()), http.StatusBadRequest)
 			return
 		}
 
-		assetTypes := [2]string{"comment", "worknote"}
+		assetTypes := [2]comment.AssetType{comment.AssetTypeComment, comment.AssetTypeWorknote}
 
 		bothExisted := true
 
-		ctx := r.Context()
-
 		for _, assetType := range assetTypes {
-			alreadyExisted, err := s.repositoryService.CreateDatabase(ctx, request.ChannelID, assetType)
+			alreadyExisted, err := s.repositoryService.CreateDatabase(r.Context(), request.ChannelID, assetType)
 			if err != nil {
 				var httpError *repository.Error
 				if errors.As(err, &httpError) {
-					s.logger.Error("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType))
-					s.JSONError(w, err.Error(), httpError.StatusCode())
+					s.logger.Error("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType.String()))
+					s.presenter.WriteError(w, err.Error(), httpError.StatusCode())
 					return
 				}
 
-				s.logger.Error("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType))
-				s.JSONError(w, err.Error(), http.StatusInternalServerError)
+				s.logger.Error("CreateDatabases handler failed", zap.Error(err), zap.String("assetType", assetType.String()))
+				s.presenter.WriteError(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			if !alreadyExisted {

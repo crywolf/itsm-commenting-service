@@ -27,7 +27,7 @@ func (s Server) AddUserInfo(next httprouter.Handle, us usersvc.Service) httprout
 			s.logger.Error("AddUserInfo middleware: UserBasicInfo service failed:", zap.Error(err))
 			errMsg := errors.WithMessage(err, "could not retrieve correct user info from user service").Error()
 			statusCode := grpc2http.HTTPStatusFromCode(status.Code(err))
-			s.JSONError(w, errMsg, statusCode)
+			s.presenter.WriteError(w, errMsg, statusCode)
 			return
 		}
 
@@ -35,7 +35,7 @@ func (s Server) AddUserInfo(next httprouter.Handle, us usersvc.Service) httprout
 			s.logger.Error(fmt.Sprintf("AddUserInfo middleware: UserBasicInfo service returned invalid data: %v", userData))
 			errMsg := errors.WithMessage(err, "could not retrieve correct user info from user service").Error()
 			statusCode := grpc2http.HTTPStatusFromCode(status.Code(err))
-			s.JSONError(w, errMsg, statusCode)
+			s.presenter.WriteError(w, errMsg, statusCode)
 			return
 		}
 
@@ -45,8 +45,8 @@ func (s Server) AddUserInfo(next httprouter.Handle, us usersvc.Service) httprout
 	}
 }
 
-// UserInfoFromContext returns the BasicInfo value stored in ctx, if any.
-func (s Server) UserInfoFromContext(ctx context.Context) (*user.BasicInfo, bool) {
-	u, ok := ctx.Value(userKey).(*user.BasicInfo)
+// UserInfoFromRequest returns the BasicInfo value stored in request's context if any.
+func (s Server) UserInfoFromRequest(r *http.Request) (*user.BasicInfo, bool) {
+	u, ok := r.Context().Value(userKey).(*user.BasicInfo)
 	return u, ok
 }

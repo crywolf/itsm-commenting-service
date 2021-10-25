@@ -36,7 +36,7 @@ func TestAddCommentService(t *testing.T) {
 	}
 
 	adder := adding.NewService(mockStorage)
-	assetType := "comment"
+	assetType := comment.AssetTypeComment
 
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 

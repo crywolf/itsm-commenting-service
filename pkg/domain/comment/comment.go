@@ -6,6 +6,19 @@ import (
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/entity"
 )
 
+// AssetType represents the type of the asset (comment/worknote
+type AssetType string
+
+// Asset types definitions
+const (
+	AssetTypeComment  AssetType = "comment"
+	AssetTypeWorknote AssetType = "worknote"
+)
+
+func (a AssetType) String() string {
+	return string(a)
+}
+
 // Comment object
 // swagger:model
 type Comment struct {

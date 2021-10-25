@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/KompiTech/itsm-commenting-service/pkg/domain/comment"
 	"github.com/KompiTech/itsm-commenting-service/pkg/domain/user"
 	"github.com/KompiTech/itsm-commenting-service/pkg/http/rest/auth"
 	"github.com/KompiTech/itsm-commenting-service/pkg/mocks"
@@ -110,7 +111,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		updater := new(mocks.UpdatingMock)
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		updater.On(
 			"MarkAsReadByUser",
 			"7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
@@ -149,7 +150,7 @@ func TestMarkAsReadByHandler(t *testing.T) {
 			Return(mockUserData, nil)
 
 		updater := new(mocks.UpdatingMock)
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		updater.On(
 			"MarkAsReadByUser",
 			"7e0d38d1-e5f5-4211-b2aa-3b142e4da80e",
@@ -180,9 +181,9 @@ func TestMarkAsReadByHandler(t *testing.T) {
 
 	// worknote
 	t.Run("when worknote is being marked as read", func(t *testing.T) {
-		assetType := "worknote"
+		assetType := comment.AssetTypeWorknote
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		us := new(mocks.UserServiceMock)

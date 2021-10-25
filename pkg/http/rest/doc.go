@@ -70,6 +70,14 @@ type createdResponseWrapper struct {
 	Location string
 }
 
+// HypermediaLinks contain links to other API calls
+type HypermediaLinks struct {
+	Rel struct {
+		// swagger:strfmt uri
+		Href string `json:"href"`
+	} `json:"self"`
+}
+
 // Created
 // swagger:response commentCreatedResponse
 type commentCreatedResponseWrapper struct {
@@ -106,7 +114,8 @@ type commentsListResponseWrapper struct {
 		// required: true
 		Result []comment.Comment `json:"result"`
 		// Pagination bookmark
-		Bookmark string `json:"bookmark"`
+		Bookmark string          `json:"bookmark"`
+		Links    HypermediaLinks `json:"_links"`
 	}
 }
 
@@ -114,11 +123,14 @@ type commentsListResponseWrapper struct {
 // swagger:response commentResponse
 type commentResponseWrapper struct {
 	// in: body
-	Body comment.Comment
+	Body struct {
+		comment.Comment
+		Links HypermediaLinks `json:"_links"`
+	}
 }
 
-// swagger:parameters GetComment GetWorknote MarkCommentAsReadByUser MarkWorknoteAsReadByUser
-type commentIDParameterWrapper struct {
+// AuthorizationHeaders represents general authorization header parameters used in many API calls
+type AuthorizationHeaders struct {
 	// Bearer token
 	// in: header
 	// required: true
@@ -128,6 +140,11 @@ type commentIDParameterWrapper struct {
 	// required: true
 	// swagger:strfmt uuid
 	ChannelID string `json:"grpc-metadata-space"`
+}
+
+// swagger:parameters GetComment GetWorknote MarkCommentAsReadByUser MarkWorknoteAsReadByUser
+type commentIDParameterWrapper struct {
+	AuthorizationHeaders
 
 	// ID of the comment/worknote
 	// in: path
@@ -138,15 +155,7 @@ type commentIDParameterWrapper struct {
 
 // swagger:parameters ListComments ListWorknotes
 type listCommentsParameterWrapper struct {
-	// Bearer token
-	// in: header
-	// required: true
-	Authorization string `json:"authorization"`
-
-	// in: header
-	// required: true
-	// swagger:strfmt uuid
-	ChannelID string `json:"grpc-metadata-space"`
+	AuthorizationHeaders
 
 	// Entity represents some external entity reference in the form "&lt;entity&gt;:&lt;UUID&gt;"
 	// example: incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444
@@ -166,15 +175,7 @@ type listCommentsParameterWrapper struct {
 
 // swagger:parameters AddComment AddWorknote
 type commentParamWrapper struct {
-	// Bearer token
-	// in: header
-	// required: true
-	Authorization string `json:"authorization"`
-
-	// in: header
-	// required: true
-	// swagger:strfmt uuid
-	ChannelID string `json:"grpc-metadata-space"`
+	AuthorizationHeaders
 
 	// in: header
 	// swagger:strfmt uuid

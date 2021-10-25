@@ -41,7 +41,7 @@ func TestAddCommentDBMock(t *testing.T) {
 	bearerToken := "some valid Bearer token"
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 	orgID := "a897a407-e41b-4b14-924a-39f5d5a8038f"
-	assetType := "comment"
+	assetType := comment.AssetTypeComment
 
 	validator := new(mocks.ValidatorMock)
 	validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
@@ -59,7 +59,7 @@ func TestAddCommentDBMock(t *testing.T) {
 	db.ExpectPut()
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", assetType, auth.CreateAction, channelID, bearerToken).
+	as.On("Enforce", assetType.String(), auth.CreateAction, channelID, bearerToken).
 		Return(true, nil)
 
 	us := new(mocks.UserServiceMock)
@@ -114,7 +114,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	bearerToken := "some valid Bearer token"
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 	orgID := "a897a407-e41b-4b14-924a-39f5d5a8038f"
-	assetType := "comment"
+	assetType := comment.AssetTypeComment
 
 	validator := new(mocks.ValidatorMock)
 	validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
@@ -165,7 +165,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	}
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+	as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
 	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType)
@@ -174,10 +174,11 @@ func TestGetCommentDBMock(t *testing.T) {
 	lister := listing.NewService(s)
 
 	server := rest.NewServer(rest.Config{
-		Addr:           "service.url",
-		Logger:         logger,
-		AuthService:    as,
-		ListingService: lister,
+		Addr:                    "service.url",
+		Logger:                  logger,
+		AuthService:             as,
+		ListingService:          lister,
+		ExternalLocationAddress: "http://service.url",
 	})
 
 	req := httptest.NewRequest("GET", "/comments/"+storedComment.UUID, nil)
@@ -208,7 +209,11 @@ func TestGetCommentDBMock(t *testing.T) {
 			"org_name":"a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
 			"org_display_name":"Kompitech"
 		},
-		"created_at":"2021-04-01T12:34:56+02:00"
+		"created_at":"2021-04-01T12:34:56+02:00",
+		"_links":{
+			"self":{"href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"},
+			"MarkCommentAsReadByUser":{"href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433/read_by"}
+		}
 	}`
 	require.JSONEq(t, expectedJSON, string(b), "response does not match")
 }
@@ -285,10 +290,10 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 
 	bearerToken := "some valid Bearer token"
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
-	assetType := "comment"
+	assetType := comment.AssetTypeComment
 
 	as := new(mocks.AuthServiceMock)
-	as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+	as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 		Return(true, nil)
 
 	storedComment, err := s.AddComment(context.Background(), c1, channelID, assetType)
@@ -297,10 +302,11 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 	lister := listing.NewService(s)
 
 	server := rest.NewServer(rest.Config{
-		Addr:           "service.url",
-		Logger:         logger,
-		AuthService:    as,
-		ListingService: lister,
+		Addr:                    "service.url",
+		Logger:                  logger,
+		AuthService:             as,
+		ListingService:          lister,
+		ExternalLocationAddress: "http://service.url",
 	})
 
 	req := httptest.NewRequest("GET", "/comments/"+storedComment.UUID, nil)
@@ -324,7 +330,11 @@ func TestGetCommentMemoryStorage(t *testing.T) {
 		"uuid":"38316161-3035-4864-ad30-6231392d3433",
 		"text":"Test comment 1",
 		"entity":"incident:f49d5fd5-8da4-4779-b5ba-32e78aa2c444",
-		"created_at":"2021-04-01T12:34:56+02:00"
+		"created_at":"2021-04-01T12:34:56+02:00",
+		"_links":{
+			"self":{"href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433"},
+			"MarkCommentAsReadByUser":{"href":"http://service.url/comments/38316161-3035-4864-ad30-6231392d3433/read_by"}
+		}
 	}`
 	require.JSONEq(t, expectedJSON, string(b), "response does not match")
 }

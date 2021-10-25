@@ -52,8 +52,8 @@ func TestGetCommentHandler(t *testing.T) {
 
 	t.Run("when authorization service returns error", func(t *testing.T) {
 		as := new(mocks.AuthServiceMock)
-		assetType := "comment"
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		assetType := comment.AssetTypeComment
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(false, errors.New("some authorization service error"))
 
 		server := NewServer(Config{
@@ -132,9 +132,9 @@ func TestGetCommentHandler(t *testing.T) {
 			CreatedAt: "2021-04-01T12:34:56+02:00",
 		}
 
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -142,10 +142,11 @@ func TestGetCommentHandler(t *testing.T) {
 			Return(retC, nil)
 
 		server := NewServer(Config{
-			Addr:           "service.url",
-			Logger:         logger,
-			AuthService:    as,
-			ListingService: lister,
+			Addr:                    "service.url",
+			Logger:                  logger,
+			AuthService:             as,
+			ListingService:          lister,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		req := httptest.NewRequest("GET", "/comments/"+uuid, nil)
@@ -177,17 +178,21 @@ func TestGetCommentHandler(t *testing.T) {
 				"org_name":"a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
 				"org_display_name":"Kompitech"
 			},
-			"created_at":"2021-04-01T12:34:56+02:00"
+			"created_at":"2021-04-01T12:34:56+02:00",
+			"_links":{
+				"self":{"href":"http://service.url/comments/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"},
+				"MarkCommentAsReadByUser":{"href":"http://service.url/comments/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0/read_by"}
+			}
 		}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
 
 	t.Run("when comment does not exist", func(t *testing.T) {
 		uuid := "someNonexistentUUID"
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -225,10 +230,10 @@ func TestGetCommentHandler(t *testing.T) {
 
 	t.Run("when repository returns some other error", func(t *testing.T) {
 		uuid := "someNonexistentUUID"
-		assetType := "comment"
+		assetType := comment.AssetTypeComment
 
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -281,10 +286,10 @@ func TestGetCommentHandler(t *testing.T) {
 			CreatedAt: "2021-04-01T12:34:56+02:00",
 		}
 
-		assetType := "worknote"
+		assetType := comment.AssetTypeWorknote
 
 		as := new(mocks.AuthServiceMock)
-		as.On("Enforce", assetType, auth.ReadAction, channelID, bearerToken).
+		as.On("Enforce", assetType.String(), auth.ReadAction, channelID, bearerToken).
 			Return(true, nil)
 
 		lister := new(mocks.ListingMock)
@@ -292,10 +297,11 @@ func TestGetCommentHandler(t *testing.T) {
 			Return(retC, nil)
 
 		server := NewServer(Config{
-			Addr:           "service.url",
-			AuthService:    as,
-			Logger:         logger,
-			ListingService: lister,
+			Addr:                    "service.url",
+			AuthService:             as,
+			Logger:                  logger,
+			ListingService:          lister,
+			ExternalLocationAddress: "http://service.url",
 		})
 
 		req := httptest.NewRequest("GET", "/worknotes/"+uuid, nil)
@@ -327,7 +333,11 @@ func TestGetCommentHandler(t *testing.T) {
 				"org_name":"a897a407-e41b-4b14-924a-39f5d5a8038f.kompitech.com",
 				"org_display_name":"Kompitech"
 			},
-			"created_at":"2021-04-01T12:34:56+02:00"
+			"created_at":"2021-04-01T12:34:56+02:00",
+			"_links":{
+				"self":{"href":"http://service.url/worknotes/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"},
+				"MarkWorknoteAsReadByUser":{"href":"http://service.url/worknotes/cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0/read_by"}
+			}
 		}`
 		assert.JSONEq(t, expectedJSON, string(b), "response does not match")
 	})
