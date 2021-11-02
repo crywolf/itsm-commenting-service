@@ -52,7 +52,7 @@ func TestAddCommentDBMock(t *testing.T) {
 	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
 	queue.On("PublishEvents").Return(nil)
 
-	couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, events)
+	couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, validator, events)
 
 	db := couchMock.NewDB()
 	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
@@ -125,7 +125,7 @@ func TestGetCommentDBMock(t *testing.T) {
 	queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
 	queue.On("PublishEvents").Return(nil)
 
-	couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, events)
+	couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, validator, events)
 
 	db := couchMock.NewDB()
 	couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)

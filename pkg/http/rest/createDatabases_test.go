@@ -102,7 +102,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 	})
 
 	t.Run("when databases already exist", func(t *testing.T) {
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, nil, nil)
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(true)
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(true)
 
@@ -143,7 +143,7 @@ func TestCreateDatabasesHandler(t *testing.T) {
 	})
 
 	t.Run("when databases do not exist", func(t *testing.T) {
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, nil, nil)
 
 		// comments
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(false)

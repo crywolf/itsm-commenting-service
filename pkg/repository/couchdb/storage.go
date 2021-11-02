@@ -408,7 +408,7 @@ func pluralize(assetType comment.AssetType) string {
 
 // waitForCouchDB repeatedly tries to ping DB server until it is ready for requests or timeout expires
 func waitForCouchDB(logger *zap.Logger, client *kivik.Client, tlsOn bool) {
-	logger.Info("Waiting for CouchDB to become ready...")
+	logger.Info("waiting for CouchDB to become ready...")
 	maxIters := 100 // default 100 * 100ms = 10 seconds
 	iter := 0
 	stepMs := 100

@@ -14,6 +14,9 @@ func loadEnvConfiguration() {
 	viper.SetDefault("ExternalLocationAddress", "http://localhost:8080")
 	_ = viper.BindEnv("ExternalLocationAddress", "EXTERNAL_LOCATION_ADDRESS")
 
+	viper.SetDefault("HTTPShutdownTimeoutInSeconds", "30")
+	_ = viper.BindEnv("HTTPShutdownTimeoutInSeconds", "HTTP_SHUTDOWN_TIMEOUT_SECONDS")
+
 	// NATS connection
 	viper.SetDefault("NATSQueueAddress", "127.0.0.1")
 	_ = viper.BindEnv("NATSQueueAddress", "NATS_QUEUE_ADDRESS")

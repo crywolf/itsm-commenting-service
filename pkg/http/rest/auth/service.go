@@ -39,11 +39,20 @@ func (a Action) OnBehalf() (Action, error) {
 
 // Service provides ACL functionality
 type Service interface {
+	// Enforce returns true if action is allowed to be performed on specified asset
 	Enforce(assetType string, act Action, channelID, authToken string) (bool, error)
 }
 
-// NewService creates an authorization service
-func NewService(logger *zap.Logger) Service {
+// ServiceCloser provides Service functionality plus allows to close connection to external service
+type ServiceCloser interface {
+	Service
+
+	// Close closes connection to external auth service
+	Close() error
+}
+
+// NewService creates new authorization service with initialized client for connection to external user service
+func NewService(logger *zap.Logger) ServiceCloser {
 	c := http.DefaultClient
 	return &service{
 		logger: logger,
@@ -56,7 +65,11 @@ type service struct {
 	client *http.Client
 }
 
-// Enforce returns true if action is allowed to be performed on specified asset
+func (s *service) Close() error {
+	s.client.CloseIdleConnections()
+	return nil
+}
+
 func (s *service) Enforce(assetType string, act Action, channelID, authToken string) (bool, error) {
 	// example: GET /api/v1/kompiguard/enforce?obj=/comment/*&act=read
 	u := fmt.Sprintf("http://%s/api/v1/kompiguard/enforce?", viper.GetString("AuthServiceAddress"))

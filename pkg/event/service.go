@@ -115,6 +115,14 @@ func (q *queue) PublishEvents() error {
 		return err
 	}
 
+	err = q.client.Publish(natswatcher.Message{
+		Subject: string(q.channelID),
+		Data:    mEvents,
+	})
+	if err != nil {
+		return err
+	}
+
 	// clear the events queue
 	q.events = nil
 

@@ -14,11 +14,21 @@ import (
 
 // Service provides basic info about user
 type Service interface {
+	// UserBasicInfo calls external use service and returns basic info about user who initiated the request
+	// or about user this request is made on behalf of
 	UserBasicInfo(r *http.Request) (user.BasicInfo, error)
 }
 
-// NewService creates user service with initialized GRPC client
-func NewService() (Service, error) {
+// ServiceCloser provides Service functionality plus allows to close connection to external service
+type ServiceCloser interface {
+	Service
+
+	// Close tears down connection to external user service
+	Close() error
+}
+
+// NewService creates new user service with initialized client for connection to external user service
+func NewService() (ServiceCloser, error) {
 	conn, err := grpc.Dial(
 		viper.GetString("UserServiceGRPCDialTarget"),
 		grpc.WithInsecure(),
@@ -28,16 +38,20 @@ func NewService() (Service, error) {
 	}
 
 	return &userService{
+		conn:   conn,
 		client: usermanagement.NewUserManagementServiceClient(conn),
 	}, nil
 }
 
 type userService struct {
+	conn   *grpc.ClientConn
 	client usermanagement.UserManagementServiceClient
 }
 
-// UserBasicInfo calls external use service and returns basic info about user who initiated the request
-// or about user this request is made on behalf of
+func (s userService) Close() error {
+	return s.conn.Close()
+}
+
 func (s userService) UserBasicInfo(r *http.Request) (user.BasicInfo, error) {
 	md := metadata.New(map[string]string{
 		"grpc-metadata-space": r.Header.Get("grpc-metadata-space"),

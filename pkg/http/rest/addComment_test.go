@@ -407,13 +407,13 @@ func TestAddCommentHandler(t *testing.T) {
 		queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), assetType).Return(nil)
 		queue.On("PublishEvents").Return(errors.New("some NATS error"))
 
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, events)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, validator, events)
 
 		db := couchMock.NewDB()
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, assetType)).WillReturn(db)
 		expRev := "6067f156-c811-4b36-acfe-c9f4d1c491bc"
-		db.ExpectPut().WithDocID(testutils.GeneratedCommentUUID).WillReturn(expRev)
-		db.ExpectDelete().WithDocID(testutils.GeneratedCommentUUID).WithRev(expRev)
+		db.ExpectPut().WithDocID(mocks.GeneratedCommentUUID).WillReturn(expRev)
+		db.ExpectDelete().WithDocID(mocks.GeneratedCommentUUID).WithRev(expRev)
 
 		adder := adding.NewService(s)
 

@@ -32,14 +32,25 @@ func Test_Events_Publishing(t *testing.T) {
 			"org_id":"23d1ddf9-107d-4555-a740-87ec5dd78234"
 		}`)
 
-	// client should publish events from the queue only once even if the queue.PublishEvents is called repeatedly
+	// Client should publish 2 messages with the same 'events' array on PublishEvents():
+	// 1st with subject (topic) = "service"
 	client.On("Publish", mock.AnythingOfType("[]natswatcher.Message")).Return(nil).Run(func(args mock.Arguments) {
 		msgs := args.Get(0).([]natswatcher.Message)
 		msg := msgs[0]
 
 		// test JSON event message data
-		assert.Equalf(t, "service", msg.Subject, "event queue message subject is not correct")
-		assert.JSONEqf(t, string(expectedData), string(msg.Data), "event queue message data is not correct")
+		assert.Equalf(t, "service", msg.Subject, "1st event queue message subject is not correct")
+		assert.JSONEqf(t, string(expectedData), string(msg.Data), "1st event queue message data is not correct")
+	}).Once()
+
+	// 2nd with subject (topic) = channelID (to be consumed by websocket)
+	client.On("Publish", mock.AnythingOfType("[]natswatcher.Message")).Return(nil).Run(func(args mock.Arguments) {
+		msgs := args.Get(0).([]natswatcher.Message)
+		msg := msgs[0]
+
+		// test JSON event message data
+		assert.Equalf(t, "97671694-c01a-4294-8852-3500e6e5553e", msg.Subject, "2nd event queue message subject is not correct")
+		assert.JSONEqf(t, string(expectedData), string(msg.Data), "2nd event queue message data is not correct")
 	}).Once()
 
 	es := event.NewService(client)

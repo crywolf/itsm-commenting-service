@@ -39,7 +39,7 @@ func TestAddComment(t *testing.T) {
 		queue.On("AddCreateEvent", mock.AnythingOfType("comment.Comment"), comment.AssetTypeComment).Return(nil)
 		queue.On("PublishEvents").Return(nil)
 
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, events)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, validator, events)
 
 		db := couchMock.NewDB()
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
@@ -70,7 +70,7 @@ func TestAddComment(t *testing.T) {
 		validator := new(mocks.ValidatorMock)
 		validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(errors.New("invalid comment"))
 
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, validator, nil)
 
 		db := couchMock.NewDB()
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
@@ -93,7 +93,7 @@ func TestAddComment(t *testing.T) {
 		validator := new(mocks.ValidatorMock)
 		validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
 
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, validator, nil)
 
 		db := couchMock.NewDB()
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
@@ -125,7 +125,7 @@ func TestGetComment(t *testing.T) {
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
 	t.Run("when comment does not exist", func(t *testing.T) {
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, nil, nil)
 
 		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
 
@@ -147,7 +147,7 @@ func TestGetComment(t *testing.T) {
 	})
 
 	t.Run("when comment exists", func(t *testing.T) {
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, nil, nil)
 
 		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
 		dbC := comment.Comment{
@@ -183,7 +183,7 @@ func TestQueryComments(t *testing.T) {
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
 	t.Run("with invalid query", func(t *testing.T) {
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, nil, nil)
 
 		db := couchMock.NewDB()
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
@@ -203,7 +203,7 @@ func TestQueryComments(t *testing.T) {
 	})
 
 	t.Run("with valid query", func(t *testing.T) {
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, nil, nil)
 
 		db := couchMock.NewDB()
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
@@ -264,7 +264,7 @@ func TestMarkAsReadByUser(t *testing.T) {
 		validator := new(mocks.ValidatorMock)
 		validator.On("Validate", mock.AnythingOfType("comment.Comment")).Return(nil)
 
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, validator, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, validator, nil)
 
 		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
 
@@ -307,7 +307,7 @@ func TestMarkAsReadByUser(t *testing.T) {
 	})
 
 	t.Run("when comment does not exist", func(t *testing.T) {
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, nil, nil)
 
 		uuid := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
 
@@ -340,7 +340,7 @@ func TestMarkAsReadByUser(t *testing.T) {
 	})
 
 	t.Run("when comment was already read by user", func(t *testing.T) {
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, nil, nil)
 
 		commentUUID := "cb2fe2a7-ab9f-4f6d-9fd6-c7c209403cf0"
 		userUUID := "f49d5fd5-8da4-4779-b5ba-32e78aa2c444"
@@ -397,7 +397,7 @@ func TestCreateDatabase(t *testing.T) {
 	channelID := "e27ddcd0-0e1f-4bc5-93df-f6f04155beec"
 
 	t.Run("when database already exists", func(t *testing.T) {
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, nil, nil)
 
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(true)
 
@@ -407,7 +407,7 @@ func TestCreateDatabase(t *testing.T) {
 	})
 
 	t.Run("when database does not exist", func(t *testing.T) {
-		couchMock, s := testutils.NewCouchDBMock(context.Background(), logger, nil, nil)
+		couchMock, s := mocks.NewCouchDBMock(context.Background(), logger, nil, nil)
 
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(false)
 		couchMock.ExpectCreateDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment))

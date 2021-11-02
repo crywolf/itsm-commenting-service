@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/KompiTech/go-toolkit/natswatcher"
 	"github.com/KompiTech/go-toolkit/tracing"
@@ -28,6 +32,8 @@ func main() {
 	defer func(logger *zap.Logger) {
 		_ = logger.Sync()
 	}(logger)
+
+	logger.Info("app starting...")
 
 	loadEnvConfiguration()
 
@@ -72,6 +78,9 @@ func main() {
 		logger.Fatal("could not create user service", zap.Error(err))
 	}
 
+	// Auth service provides ACL functionality
+	authService := auth.NewService(logger)
+
 	adder := adding.NewService(s)
 	lister := listing.NewService(s)
 	updater := updating.NewService(s)
@@ -87,7 +96,7 @@ func main() {
 		Addr:                    viper.GetString("HTTPBindAddress"),
 		URISchema:               "http://",
 		Logger:                  logger,
-		AuthService:             auth.NewService(logger),
+		AuthService:             authService,
 		UserService:             userService,
 		AddingService:           adder,
 		ListingService:          lister,
@@ -97,9 +106,8 @@ func main() {
 		ExternalLocationAddress: viper.GetString("ExternalLocationAddress"),
 	})
 
-	// TODO add graceful shutdown
-
-	{
+	{ // Setup tracing
+		logger.Info("setting up tracing")
 		tracer, err := tracing.NewZipkinTracer(viper.GetString("TracingCollectorEndpoint"),
 			"blits-itsm-commenting-service",
 			viper.GetString("HTTPBindPort"),
@@ -112,6 +120,70 @@ func main() {
 		opentracing.SetGlobalTracer(openTracer)
 	}
 
-	logger.Info(fmt.Sprintf("starting server at %s...", server.Addr))
-	logger.Fatal("server start failed", zap.Error(http.ListenAndServe(server.Addr, server)))
+	srv := &http.Server{
+		Addr:    server.Addr,
+		Handler: server,
+	}
+
+	// Graceful shutdown
+	idleConnsClosed := make(chan struct{})
+	go func() {
+		// Trap sigterm or interrupt and gracefully shutdown the server
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
+		sig := <-sigint
+		logger.Info(fmt.Sprintf("got signal: %s", sig))
+		// We received a signal, shut down.
+
+		// Gracefully shutdown the server, waiting max 'timeout' seconds for current operations to complete
+		timeout := viper.GetInt("HTTPShutdownTimeoutInSeconds")
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+		defer cancel()
+
+		logger.Info("shutting down HTTP server...")
+		if err := srv.Shutdown(ctx); err != nil {
+			// Error from closing listeners, or context timeout:
+			logger.Error("HTTP server Shutdown", zap.Error(err))
+		}
+		logger.Info("HTTP server shutdown finished successfully")
+
+		// Close connection to external user service
+		logger.Info("closing UserService client")
+		if err := userService.Close(); err != nil {
+			logger.Error("error closing UserService client", zap.Error(err))
+		}
+
+		// Close connection to external auth service
+		logger.Info("closing AuthService client")
+		if err := authService.Close(); err != nil {
+			logger.Error("error closing AuthService client", zap.Error(err))
+		}
+
+		// Close database client
+		logger.Info("closing database client")
+		if err := s.Client().Close(context.Background()); err != nil {
+			logger.Error("error closing database client", zap.Error(err))
+		}
+
+		// Unsubscribe NATS client from all subscriptions and close the connection to the cluster
+		logger.Info("closing NATS client")
+		if err := nc.Close(); err != nil {
+			logger.Error("error closing NATS client", zap.Error(err))
+		}
+
+		close(idleConnsClosed)
+	}()
+
+	// Start the server
+	logger.Info(fmt.Sprintf("starting HTTP server at %s", server.Addr))
+	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+		// Error starting or closing listener:
+		logger.Fatal("HTTP server ListenAndServe", zap.Error(err))
+	}
+
+	// Block until a signal is received and graceful shutdown completed.
+	<-idleConnsClosed
+
+	logger.Info("exiting")
+	_ = logger.Sync()
 }
