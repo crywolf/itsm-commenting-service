@@ -73,7 +73,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		resultJSON, err := json.Marshal(result)
 		if err != nil {
-			t.Fatalf("could not marshall moc result: %v", err)
+			t.Fatalf("could not marshall result: %v", err)
 		}
 
 		assetType := comment.AssetTypeComment
@@ -140,7 +140,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		resultJSON, err := json.Marshal(result)
 		if err != nil {
-			t.Fatalf("could not marshall moc result: %v", err)
+			t.Fatalf("could not marshall result: %v", err)
 		}
 
 		assetType := comment.AssetTypeComment
@@ -332,7 +332,7 @@ func TestQueryCommentsHandler(t *testing.T) {
 
 		resultJSON, err := json.Marshal(result)
 		if err != nil {
-			t.Fatalf("could not marshall moc result: %v", err)
+			t.Fatalf("could not marshall result: %v", err)
 		}
 
 		assetType := comment.AssetTypeWorknote

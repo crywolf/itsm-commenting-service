@@ -414,6 +414,9 @@ func TestCreateDatabase(t *testing.T) {
 		db := couchMock.NewDB()
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, comment.AssetTypeComment)).WillReturn(db)
 		db.ExpectCreateIndex()
+		db.ExpectCreateIndex()
+		db.ExpectCreateIndex()
+		db.ExpectCreateIndex()
 
 		existed, err := s.CreateDatabase(context.Background(), channelID, comment.AssetTypeComment)
 		assert.Nil(t, err)

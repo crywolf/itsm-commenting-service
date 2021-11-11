@@ -384,15 +384,20 @@ func (s *DBStorage) CreateDatabase(ctx context.Context, channelID string, assetT
 		return false, err
 	}
 
+	// create indexes
 	db := s.client.DB(ctx, dbName)
-
-	index := map[string]interface{}{
-		"fields": []string{"created_at"},
+	indexes := []map[string]interface{}{
+		{"fields": []map[string]string{{"uuid": "asc"}}},
+		{"fields": []map[string]string{{"created_at": "asc"}}},
+		{"fields": []map[string]string{{"entity": "asc"}}},
+		{"fields": []map[string]string{{"created_at": "asc"}, {"entity": "asc"}}},
 	}
-	err = db.CreateIndex(ctx, "", "", index)
-	if err != nil {
-		s.logger.Error("couchdb database index creation failed", zap.Error(err))
-		return false, err
+	for _, index := range indexes {
+		err = db.CreateIndex(ctx, "", "", index)
+		if err != nil {
+			s.logger.Error("couchdb database index creation failed", zap.Error(err))
+			return false, err
+		}
 	}
 
 	return false, nil

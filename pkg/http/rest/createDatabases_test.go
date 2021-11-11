@@ -151,11 +151,17 @@ func TestCreateDatabasesHandler(t *testing.T) {
 		db := couchMock.NewDB()
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "comment")).WillReturn(db)
 		db.ExpectCreateIndex()
+		db.ExpectCreateIndex()
+		db.ExpectCreateIndex()
+		db.ExpectCreateIndex()
 
 		// worknotes
 		couchMock.ExpectDBExists().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(false)
 		couchMock.ExpectCreateDB().WithName(testutils.DatabaseName(channelID, "worknote"))
 		couchMock.ExpectDB().WithName(testutils.DatabaseName(channelID, "worknote")).WillReturn(db)
+		db.ExpectCreateIndex()
+		db.ExpectCreateIndex()
+		db.ExpectCreateIndex()
 		db.ExpectCreateIndex()
 
 		as := new(mocks.AuthServiceMock)
